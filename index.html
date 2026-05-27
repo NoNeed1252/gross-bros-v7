@@ -238,7 +238,7 @@
                 <button onclick="initiateFusion()" class="w-full py-7 text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl text-[#00ffc8]">
                     INITIATE FUSION • $50 USD
                 </button>
-                <p class="text-xs text-[#00ffc8]/70 mt-6">Treasury: rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX</p>
+                <p class="text-xs text-[#00ffc8]/70 mt-6">Treasury: <span id="fusion-treasury-address">loading…</span></p>
             </div>
         </div>
 
@@ -322,6 +322,77 @@
     let xamanSession = null;
     let xamanConnecting = false;
     let latestXrpAmount = 37.6;
+    const runtimeConfig = {
+        xamanApiKey: '',
+        fusionTreasuryAddress: '',
+    };
+    let runtimeConfigPromise = null;
+
+    function updateFusionTreasuryDisplay() {
+        const target = document.getElementById('fusion-treasury-address');
+        if (!target) return;
+        target.textContent = runtimeConfig.fusionTreasuryAddress || 'not configured';
+    }
+
+    async function loadRuntimeConfig() {
+        if (runtimeConfigPromise) return runtimeConfigPromise;
+
+        runtimeConfigPromise = (async () => {
+            try {
+                const response = await fetch('/api/config', { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error('Config endpoint returned ' + response.status);
+                }
+
+                const data = await response.json();
+                const apiKey = String(data.xamanApiKey ?? data.XAMAN_API_KEY ?? '').trim();
+                const treasury = String(data.fusionTreasuryAddress ?? data.FUSION_TREASURY_ADDRESS ?? '').trim();
+
+                runtimeConfig.xamanApiKey = apiKey;
+                runtimeConfig.fusionTreasuryAddress = treasury;
+                window.XAMANAPIKEY = apiKey;
+                window.FUSION_TREASURY_ADDRESS = treasury;
+                updateFusionTreasuryDisplay();
+            } catch (error) {
+                console.warn('Unable to load runtime config.', error);
+            } finally {
+                runtimeConfigPromise = null;
+            }
+
+            return runtimeConfig;
+        })();
+
+        return runtimeConfigPromise;
+    }
+
+    async function getRuntimeXamanApiKey() {
+        if (!runtimeConfig.xamanApiKey) {
+            await loadRuntimeConfig();
+        }
+
+        const apiKey = runtimeConfig.xamanApiKey || String(window.XAMANAPIKEY || '').trim();
+        if (!apiKey) {
+            throw new Error('Missing Xaman API key');
+        }
+
+        runtimeConfig.xamanApiKey = apiKey;
+        return apiKey;
+    }
+
+    async function getRuntimeFusionTreasuryAddress() {
+        if (!runtimeConfig.fusionTreasuryAddress) {
+            await loadRuntimeConfig();
+        }
+
+        const treasury = runtimeConfig.fusionTreasuryAddress || String(window.FUSION_TREASURY_ADDRESS || '').trim();
+        if (!treasury) {
+            throw new Error('Missing fusion treasury address');
+        }
+
+        runtimeConfig.fusionTreasuryAddress = treasury;
+        updateFusionTreasuryDisplay();
+        return treasury;
+    }
     const XAMAN_API_KEY = (window.XAMANAPIKEY || document.querySelector('meta[name="xaman-api-key"]')?.content?.trim() || "").trim();
 
     function updateWalletStatus(message, isConnected = false) {
@@ -331,7 +402,7 @@
         status.classList.toggle('text-emerald-400', isConnected);
     }
 
-    function getXamanClient() {
+    async function getXamanClient() {
         if (xamanClient) {
             return xamanClient;
         }
@@ -340,11 +411,8 @@
             throw new Error('Xaman SDK failed to load');
         }
 
-        if (!XAMAN_API_KEY) {
-            throw new Error('Missing Xaman API key');
-        }
-
-        xamanClient = new window.XummPkce(XAMAN_API_KEY, {
+        const apiKey = await getRuntimeXamanApiKey();
+        xamanClient = new window.XummPkce(apiKey, {
             redirectUrl: window.location.href,
             rememberJwt: true,
         });
@@ -370,7 +438,7 @@
 
     async function restoreXamanSession() {
         try {
-            const client = getXamanClient();
+            const client = await getXamanClient();
             const state = await client.state();
             if (state?.me) {
                 xamanSession = state;
@@ -393,7 +461,7 @@
         updateWalletStatus('CONNECTING...', false);
 
         try {
-            const client = getXamanClient();
+            const client = await getXamanClient();
             const state = await client.authorize();
             xamanSession = state ?? await client.state();
 
@@ -413,7 +481,7 @@
 
     async function initiateFusion() {
         try {
-            const client = getXamanClient();
+            const client = await getXamanClient();
             const state = xamanSession?.sdk ? xamanSession : await client.state();
 
             if (!state?.me?.account) {
@@ -425,10 +493,11 @@
                 throw new Error('Xaman SDK payload creator unavailable');
             }
 
+            const destination = await getRuntimeFusionTreasuryAddress();
             const payload = await state.sdk.payload.create({
                 txjson: {
                     TransactionType: 'Payment',
-                    Destination: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
+                    Destination: destination,
                     Amount: getFusionAmountDrops(),
                 },
                 options: {
@@ -742,6 +811,7 @@
 
     window.onload = () => {
         switchTab(0);
+        void loadRuntimeConfig();
         void loadBroOfDay();
         void loadLatestStoryline();
         runTicker();
