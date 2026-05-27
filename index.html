@@ -34,28 +34,7 @@
         }
         @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
 
-        .tab {
-            transition: all 0.2s;
-        }
-        .tab-active {
-            border-bottom: 5px solid #00ffc8;
-            color: #00ffc8;
-            background: #1a1a1a;
-        }
-
-        /* Mobile Tab Fix */
-        @media (max-width: 768px) {
-            .tabs-container {
-                overflow-x: auto;
-                white-space: nowrap;
-                -webkit-overflow-scrolling: touch;
-            }
-            .tab {
-                padding: 16px 20px;
-                font-size: 15px;
-                min-width: 120px;
-            }
-        }
+        .tab-active { border-bottom: 5px solid #00ffc8; color: #00ffc8; background: #1a1a1a; }
     </style>
 </head>
 <body class="bg-black min-h-screen flex items-center justify-center p-3 md:p-6">
@@ -68,35 +47,35 @@
             <div class="w-5 h-5 bg-red-600 rounded-full animate-pulse"></div>
             <div class="header-font text-3xl tracking-widest text-[#00ffc8]">GROSS BROS</div>
         </div>
-        <div class="hidden md:flex items-center gap-8 text-sm font-mono text-[#00ffc8]/80">
+        <div class="hidden md:flex items-center gap-8 text-sm font-mono text-[#00ffc8]">
             <div>CACHE 2.4TB</div>
             <div>CPU 69.1%</div>
             <div>NEURAL 99.4%</div>
             <div class="text-emerald-400">XRP RELAY ACTIVE</div>
         </div>
-        <div onclick="toggleXaman()" class="cursor-pointer px-6 py-3 border border-[#00ffc8]/60 hover:border-[#00ffc8] rounded-3xl flex items-center gap-3 text-sm">
+        <div onclick="toggleXaman()" class="cursor-pointer px-6 py-3 border border-[#00ffc8]/60 hover:border-[#00ffc8] rounded-3xl flex items-center gap-3 text-sm text-[#00ffc8]">
             <i class="fa-solid fa-wallet"></i>
             <span id="wallet-text">CONNECT XAMAN</span>
         </div>
     </div>
 
-    <!-- TABS - FIXED FOR MOBILE -->
-    <div class="tabs-container bg-[#0f0f0f] border-b border-[#333] flex text-sm overflow-x-auto">
-        <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-5 cursor-pointer tab-active">MAIN CONSOLE</div>
-        <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-5 cursor-pointer">STORYLINE</div>
-        <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-5 cursor-pointer">FUSION LAB</div>
-        <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-5 cursor-pointer">GROSS REWARDS</div>
+    <!-- TABS -->
+    <div class="bg-[#0f0f0f] border-b border-[#333] flex text-sm overflow-x-auto">
+        <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-5 cursor-pointer tab-active text-[#00ffc8]">MAIN CONSOLE</div>
+        <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-5 cursor-pointer text-[#00ffc8]">STORYLINE</div>
+        <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-5 cursor-pointer text-[#00ffc8]">FUSION LAB</div>
+        <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-5 cursor-pointer text-[#00ffc8]">GROSS REWARDS</div>
     </div>
 
     <!-- CONTENT -->
-    <div class="flex-1 overflow-auto crt bg-[#050505] p-6 md:p-12 relative">
+    <div class="flex-1 overflow-auto crt bg-[#050505] p-6 md:p-12 relative text-[#00ffc8]">
 
         <!-- TAB 0: MAIN -->
         <div id="content-0" class="tab-content">
-            <h1 class="header-font text-5xl md:text-6xl text-center neon-cyan tracking-widest mb-8">SPECIMEN SCANNING CHAMBER</h1>
-            <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/70 mb-12">
+            <h1 class="header-font text-5xl md:text-6xl text-center text-[#00ffc8] tracking-widest mb-8">SPECIMEN SCANNING CHAMBER</h1>
+            <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/90 mb-12">
                 In the aftermath of the XRP-7 disaster, the Gross Bros were shattered across dimensions. 
-                Now fused with machine intelligence, they defend the Ledger.
+                Now fused with machine intelligence, they defend the Ledger from the BTC miners.
             </div>
             <div class="border-4 border-[#00ffc8] bg-black/70 rounded-3xl p-8 mb-12">
                 <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" 
@@ -109,8 +88,8 @@
 
         <!-- TAB 1: STORYLINE -->
         <div id="content-1" class="tab-content hidden">
-            <h1 class="header-font text-5xl neon-cyan mb-10">STORYLINE TRANSMISSIONS</h1>
-            <div class="max-w-4xl mx-auto bg-black border border-red-500/30 p-10 rounded-3xl text-[#00ffc8]/90">
+            <h1 class="header-font text-5xl text-[#00ffc8] mb-10">STORYLINE TRANSMISSIONS</h1>
+            <div class="max-w-4xl mx-auto bg-black border border-red-500/30 p-10 rounded-3xl text-[#00ffc8]">
                 <h3 class="text-red-400 mb-6">LATEST TRANSMISSION</h3>
                 <p>Before the accident we chased fortune through the rift. The XRP-7 collapse changed everything.</p>
                 <p class="mt-6">Now we fuse with machines to survive and protect the Ledger from the BTC miners.</p>
@@ -121,8 +100,8 @@
         <div id="content-2" class="tab-content hidden">
             <h1 class="header-font text-5xl text-red-400 mb-8">FUSION LAB</h1>
             <div class="max-w-2xl mx-auto border-4 border-red-600 bg-black rounded-3xl p-10 text-center">
-                <div class="h-64 border-4 border-red-500 rounded-2xl flex items-center justify-center mb-8 text-8xl fusion-pulse">⚡</div>
-                <button onclick="initiateFusion()" class="w-full py-7 text-xl border-4 border-red-500 hover:bg-red-500/10 rounded-3xl">
+                <div class="h-64 border-4 border-red-500 rounded-2xl flex items-center justify-center mb-8 text-8xl">⚡</div>
+                <button onclick="initiateFusion()" class="w-full py-7 text-xl border-4 border-red-500 hover:bg-red-500/10 rounded-3xl text-[#00ffc8]">
                     INITIATE FUSION • $50 USD
                 </button>
             </div>
@@ -130,17 +109,17 @@
 
         <!-- TAB 3: GROSS REWARDS -->
         <div id="content-3" class="tab-content hidden">
-            <h1 class="header-font text-5xl neon-cyan mb-10">GROSS REWARDS NEXUS</h1>
+            <h1 class="header-font text-5xl text-[#00ffc8] mb-10">GROSS REWARDS NEXUS</h1>
             <div class="text-center">
                 <div class="text-8xl font-bold text-[#00ffc8] mb-4">2847</div>
-                <div class="text-xl text-[#00ffc8]/60">NEURAL POINTS</div>
+                <div class="text-xl text-[#00ffc8]/80">NEURAL POINTS</div>
             </div>
         </div>
     </div>
 
     <!-- FOOTER TICKER -->
     <div class="bg-[#111] border-t-8 border-[#1a1a1a] py-4 px-6 text-xs overflow-hidden">
-        <div id="news-ticker" class="whitespace-nowrap text-[#00ffc8]/80 font-mono"></div>
+        <div id="news-ticker" class="whitespace-nowrap text-[#00ffc8] font-mono"></div>
     </div>
 </div>
 
@@ -157,15 +136,15 @@
     }
 
     function toggleMobileMenu() {
-        alert("Mobile menu active - tabs are now scrollable on small screens");
+        alert("Mobile menu active");
     }
 
     function loadBroOfDay() {
         document.getElementById('bro-of-day').innerHTML = `
-            <div class="border border-[#00ffc8]/30 rounded-3xl p-8 text-center">
+            <div class="border border-[#00ffc8]/30 rounded-3xl p-8 text-center text-[#00ffc8]">
                 <div class="text-7xl mb-6">🧬</div>
                 <div class="text-2xl font-bold">#042 • VOID REAVER</div>
-                <div class="text-[#00ffc8]/70 mt-4">Born from the first rift collapse. Today he senses BTC miner movement near the ledger.</div>
+                <div class="text-[#00ffc8]/80 mt-4">Born from the first rift collapse. Today he senses BTC miner movement near the ledger.</div>
             </div>
         `;
     }
@@ -173,8 +152,8 @@
     function runTicker() {
         const messages = [
             "[WARNING] BTC MINER INTERFERENCE DETECTED IN SECTOR 4",
-            "[LORE] THE CHAIN REMEMBERS WHAT THE VOID FORGOT",
             "[ALERT] DIMENSIONAL RIFT ACTIVITY INCREASING",
+            "[LORE] THE CHAIN REMEMBERS WHAT THE VOID FORGOT",
             "[SYSTEM] GUARDIAN BROADCAST OS v7.2.1 STABLE"
         ];
         let i = 0;
@@ -182,15 +161,15 @@
         setInterval(() => {
             ticker.textContent = messages[i];
             i = (i + 1) % messages.length;
-        }, 6000);
+        }, 5500);
     }
 
     function initiateFusion() {
-        alert("Fusion initiated - ready for your Xaman + CoinGecko keys");
+        alert("Fusion initiated - ready for your keys");
     }
 
     function toggleXaman() {
-        alert("Xaman Connect - Add your keys here");
+        alert("Xaman Connect ready");
     }
 
     window.onload = () => {
@@ -200,4 +179,4 @@
     };
 </script>
 </body>
-</html>"}}
+</html>
