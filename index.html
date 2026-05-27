@@ -322,7 +322,7 @@
     let xamanSession = null;
     let xamanConnecting = false;
     let latestXrpAmount = 37.6;
-    const XAMAN_API_KEY = window.XAMAN_API_KEY || window.__XAMAN_API_KEY__ || document.querySelector('meta[name=xaman-api-key]')?.content?.trim() || "";
+    const XAMAN_API_KEY = window.XAMAN_API_KEY || window.__XAMAN_API_KEY__ || document.querySelector('meta[name="xaman-api-key"]')?.content?.trim() || "";
 
     function updateWalletStatus(message, isConnected = false) {
         const status = document.getElementById('wallet-text');
@@ -666,8 +666,12 @@
             const data = await res.json();
             const price = data.ripple.usd;
             const xrpAmount = (50 / price).toFixed(2);
+            latestXrpAmount = Number(xrpAmount);
+            window.fusionXrpAmount = latestXrpAmount;
             document.getElementById('xrp-amount').innerHTML = `50 USD = <span class="text-white">${xrpAmount} XRP</span>`;
         } catch (e) {
+            latestXrpAmount = 37.6;
+            window.fusionXrpAmount = latestXrpAmount;
             document.getElementById('xrp-amount').textContent = '50 USD ≈ 37.6 XRP (live price unavailable)';
         }
     }
