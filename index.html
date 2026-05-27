@@ -482,8 +482,9 @@
                 throw new Error('No specimens available');
             }
 
+            const ceiling = Math.min(Number(count), 214);
             const seed = hashUtcDate(utcDate);
-            const index = Math.floor(seededRandom(seed) * count);
+            const index = Math.floor(seededRandom(seed) * ceiling);
 
             const { data, error } = await supabase
                 .from('specimens')
