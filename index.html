@@ -161,6 +161,50 @@
                 padding-right: 0.85rem !important;
             }
         }
+        @media (max-width: 768px) {
+            body {
+                align-items: flex-start;
+                justify-content: flex-start;
+                padding: 0.5rem;
+            }
+
+            .alien-monitor {
+                width: 100%;
+                max-width: 100%;
+                height: auto;
+                min-height: calc(100svh - 1rem);
+                margin: 0;
+                border-width: 14px;
+                border-radius: 22px;
+                box-shadow: 0 0 0 12px #0a0a0a, 0 28px 64px -28px rgba(0,0,0,0.92), 0 0 90px -40px rgba(0,255,200,0.26);
+            }
+
+            .tabs-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tab {
+                min-width: 9rem;
+                padding: 1rem 1.1rem;
+            }
+
+            .crt {
+                padding: 1rem !important;
+            }
+
+            .crt h1 {
+                word-break: break-word;
+            }
+
+            .crt > div,
+            .crt .max-w-3xl,
+            .crt .max-w-2xl,
+            .crt .max-w-4xl {
+                max-width: 100%;
+            }
+        }
+
     </style>
 </head>
 <body class="bg-black min-h-screen flex items-center justify-center p-3 md:p-6">
