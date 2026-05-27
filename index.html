@@ -6,6 +6,7 @@
     <title>GROSS BROS • GUARDIAN BROADCAST OS v7.2.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://xumm.app/assets/cdn/xumm-oauth2-pkce.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
@@ -187,10 +188,10 @@
             <div>NEURAL 99.4%</div>
             <div class="text-emerald-400">XRP RELAY ACTIVE</div>
         </div>
-        <div onclick="connectXaman()" class="cursor-pointer px-6 py-3 border border-[#00ffc8]/60 hover:border-[#00ffc8] rounded-3xl flex items-center gap-3 text-sm text-[#00ffc8]">
+        <button type="button" onclick="connectXaman()" class="cursor-pointer px-6 py-3 border border-[#00ffc8]/60 hover:border-[#00ffc8] rounded-3xl flex items-center gap-3 text-sm text-[#00ffc8] bg-transparent">
             <i class="fa-solid fa-wallet"></i>
             <span id="wallet-text">CONNECT XAMAN</span>
-        </div>
+        </button>
     </div>
 
     <div class="tabs-container bg-[#0f0f0f] border-b border-[#333] flex text-sm overflow-x-auto">
@@ -211,10 +212,10 @@
                 Now fused with machine intelligence, they defend the Ledger from the BTC miners.
             </div>
             <div class="border-4 border-[#00ffc8] bg-black/70 rounded-3xl p-8 mb-12 mobile-tight">
-                <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank"
-                   class="block text-center py-7 text-2xl header-font border-2 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
+                <button type="button" onclick="initiateFusion()" class="block w-full text-center py-7 text-2xl header-font border-2 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl bg-transparent">
                     BUY A BRO
-                </a>
+                </button>
+                <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" rel="noreferrer" class="block mt-4 text-center text-xs text-[#00ffc8]/60 uppercase tracking-[0.25em] hover:text-[#00ffc8]">View the collection on XRP.Cafe</a>
             </div>
             <div id="bro-of-day" class="max-w-2xl mx-auto"></div>
         </div>
@@ -317,6 +318,139 @@
     };
 
     let supabaseClient = null;
+    let xamanClient = null;
+    let xamanSession = null;
+    let xamanConnecting = false;
+    let latestXrpAmount = 37.6;
+    const XAMAN_API_KEY = window.XAMAN_API_KEY || window.__XAMAN_API_KEY__ || document.querySelector('meta[name=xaman-api-key]')?.content?.trim() || "";
+
+    function updateWalletStatus(message, isConnected = false) {
+        const status = document.getElementById('wallet-text');
+        if (!status) return;
+        status.textContent = message;
+        status.classList.toggle('text-emerald-400', isConnected);
+    }
+
+    function getXamanClient() {
+        if (xamanClient) {
+            return xamanClient;
+        }
+
+        if (!window.XummPkce) {
+            throw new Error('Xaman SDK failed to load');
+        }
+
+        if (!XAMAN_API_KEY) {
+            throw new Error('Missing Xaman API key');
+        }
+
+        xamanClient = new window.XummPkce(XAMAN_API_KEY, {
+            redirectUrl: window.location.href,
+            rememberJwt: true,
+        });
+
+        xamanClient.on('success', async () => {
+            xamanSession = await xamanClient.state();
+            updateWalletStatus('CONNECTED ✓', true);
+        });
+
+        xamanClient.on('retrieved', async () => {
+            xamanSession = await xamanClient.state();
+            updateWalletStatus('CONNECTED ✓', true);
+        });
+
+        xamanClient.on('error', (error) => {
+            console.warn('Xaman session error.', error);
+            xamanSession = null;
+            updateWalletStatus('CONNECT XAMAN', false);
+        });
+
+        return xamanClient;
+    }
+
+    async function restoreXamanSession() {
+        try {
+            const client = getXamanClient();
+            const state = await client.state();
+            if (state?.me) {
+                xamanSession = state;
+                updateWalletStatus('CONNECTED ✓', true);
+            }
+        } catch (error) {
+            console.warn('No existing Xaman session restored.', error);
+        }
+    }
+
+    function getFusionAmountDrops() {
+        const amountXrp = Number(latestXrpAmount || 37.6);
+        return String(Math.max(1, Math.round(amountXrp * 1_000_000)));
+    }
+
+    async function connectXaman() {
+        if (xamanConnecting) return;
+
+        xamanConnecting = true;
+        updateWalletStatus('CONNECTING...', false);
+
+        try {
+            const client = getXamanClient();
+            const state = await client.authorize();
+            xamanSession = state ?? await client.state();
+
+            if (xamanSession?.me?.account) {
+                updateWalletStatus('CONNECTED ✓', true);
+                alert();
+            } else {
+                updateWalletStatus('CONNECT XAMAN', false);
+            }
+        } catch (error) {
+            console.error('Unable to connect Xaman.', error);
+            alert('Unable to connect Xaman wallet. Check the SDK load and API key.');
+            updateWalletStatus('CONNECT XAMAN', false);
+        } finally {
+            xamanConnecting = false;
+        }
+    }
+
+    async function initiateFusion() {
+        try {
+            const client = getXamanClient();
+            const state = xamanSession?.sdk ? xamanSession : await client.state();
+
+            if (!state?.me?.account) {
+                await connectXaman();
+                return;
+            }
+
+            if (!state?.sdk?.payload?.create) {
+                throw new Error('Xaman SDK payload creator unavailable');
+            }
+
+            const payload = await state.sdk.payload.create({
+                txjson: {
+                    TransactionType: 'Payment',
+                    Destination: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
+                    Amount: getFusionAmountDrops(),
+                },
+                options: {
+                    submit: true,
+                },
+                custom_meta: {
+                    identifier: 'buy-a-bro',
+                    instruction: 'Sign to buy a bro and initiate fusion.',
+                },
+            });
+
+            if (payload?.next?.always) {
+                window.open(payload.next.always, '_blank', 'noopener,noreferrer');
+            }
+
+            alert('Fusion payload created in Xaman. Complete the signature to continue.');
+        } catch (error) {
+            console.error('Unable to initiate fusion.', error);
+            alert('Unable to create the fusion payload. Please reconnect Xaman and try again.');
+        }
+    }
 
     function switchTab(n) {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
@@ -554,6 +688,7 @@
         void loadBroOfDay();
         void loadLatestStoryline();
         runTicker();
+        void restoreXamanSession();
         fetchXRPPrice();
     };
 </script>
