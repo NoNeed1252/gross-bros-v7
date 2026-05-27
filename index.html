@@ -7,9 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;family=Share+Tech+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap');
         :root { --cyan: #00ffc8; }
         body { font-family: 'Share Tech Mono', monospace; background: #000; }
         .header-font { font-family: 'Orbitron', sans-serif; }
@@ -45,9 +45,7 @@
             animation: ticker-scroll 22s linear infinite;
         }
 
-        .ticker-item {
-            flex: 0 0 auto;
-        }
+        .ticker-item { flex: 0 0 auto; }
 
         @keyframes ticker-scroll {
             from { transform: translateX(0); }
@@ -84,26 +82,47 @@
             background: repeating-linear-gradient(transparent 0px, transparent 5px, rgba(0,255,200,0.15) 5px, rgba(0,255,200,0.15) 10px);
             animation: scanline 8s linear infinite;
             z-index: 10;
+            pointer-events: none;
         }
-        @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
+
+        @keyframes scanline {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
+
+        .scan-bar {
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 200, 0.5), transparent);
+            animation: scanSweep 1.4s ease-in-out infinite;
+        }
+
+        @keyframes scanSweep {
+            0% { transform: translateX(-45%); opacity: 0.35; }
+            50% { opacity: 0.9; }
+            100% { transform: translateX(45%); opacity: 0.35; }
+        }
 
         .tab-active { border-bottom: 5px solid #00ffc8; color: #00ffc8; background: #101010; box-shadow: inset 0 -1px 0 rgba(0, 255, 200, 0.3), 0 0 0 1px rgba(0, 255, 200, 0.12); }
+
+        .panel-loading {
+            background: radial-gradient(circle at top, rgba(0,255,200,0.09), transparent 58%), #000;
+        }
+
         @media (max-width: 768px) {
             body {
                 align-items: flex-start;
                 justify-content: flex-start;
-                padding: 0.25rem;
+                padding: 0.125rem;
             }
 
             .alien-monitor {
-                width: calc(100vw - 0.5rem);
-                max-width: calc(100vw - 0.5rem);
-                height: auto;
-                min-height: calc(100svh - 0.5rem);
-                margin: 0 auto;
-                border-width: 10px;
+                width: calc(100vw - 0.25rem);
+                max-width: calc(100vw - 0.25rem);
+                min-height: calc(100svh - 0.25rem);
+                margin: 0;
+                border-width: 4px;
+                border-color: #0d0d0d;
                 border-radius: 18px;
-                box-shadow: 0 0 0 8px #0a0a0a, 0 22px 48px -30px rgba(0,0,0,0.92), 0 0 72px -42px rgba(0,255,200,0.26);
+                box-shadow: 0 0 0 2px #050505, 0 18px 38px -30px rgba(0,0,0,0.95), 0 0 54px -42px rgba(0,255,200,0.18);
             }
 
             .tabs-container {
@@ -112,19 +131,22 @@
             }
 
             .tab {
-                min-width: 7rem;
-                padding: 0.72rem 0.75rem;
-                font-size: 0.72rem;
-                letter-spacing: 0.09em;
+                min-width: 6.5rem;
+                padding: 0.55rem 0.7rem;
+                font-size: 0.58rem;
+                letter-spacing: 0.08em;
                 line-height: 1.05;
             }
 
             .crt {
-                padding: 1rem !important;
+                padding: 0.6rem !important;
             }
 
             .crt h1 {
-                word-break: break-word;
+                font-size: clamp(1.35rem, 5vw, 2.1rem) !important;
+                line-height: 1.08 !important;
+                letter-spacing: 0.08em !important;
+                margin-bottom: 1rem !important;
             }
 
             .crt > div,
@@ -133,60 +155,19 @@
             .crt .max-w-4xl {
                 max-width: 100%;
             }
-        }
 
-        @media (max-width: 768px) {
-            body {
-                align-items: flex-start;
-                justify-content: flex-start;
-                padding: 0.5rem;
-            }
-
-            .alien-monitor {
-                width: 100%;
-                max-width: 100%;
-                height: auto;
-                min-height: calc(100svh - 1rem);
-                margin: 0;
-                border-width: 14px;
-                border-radius: 22px;
-                box-shadow: 0 0 0 12px #0a0a0a, 0 28px 64px -28px rgba(0,0,0,0.92), 0 0 90px -40px rgba(0,255,200,0.26);
-            }
-
-            .tabs-container {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            .tab {
-                min-width: 9rem;
-                padding: 1rem 1.1rem;
-            }
-
-            .crt {
-                padding: 1rem !important;
-            }
-
-            .crt h1 {
-                word-break: break-word;
-            }
-
-            .crt > div,
-            .crt .max-w-3xl,
-            .crt .max-w-2xl,
-            .crt .max-w-4xl {
-                max-width: 100%;
+            .mobile-tight {
+                padding-left: 0.85rem !important;
+                padding-right: 0.85rem !important;
             }
         }
-
     </style>
 </head>
 <body class="bg-black min-h-screen flex items-center justify-center p-3 md:p-6">
 
 <div class="alien-monitor w-full h-[94vh] flex flex-col shadow-2xl relative">
 
-    <!-- HEADER + TABS -->
-    <div class="bg-[#151515] border-b-8 border-[#0a0a0a] px-6 py-5 flex items-center justify-between">
+    <div class="bg-[#151515] border-b-8 border-[#0a0a0a] px-6 py-5 flex items-center justify-between mobile-tight">
         <div class="flex items-center gap-4">
             <div class="w-5 h-5 bg-red-600 rounded-full animate-pulse"></div>
             <div class="header-font text-3xl tracking-widest text-[#00ffc8]">GROSS BROS</div>
@@ -210,17 +191,15 @@
         <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-5 cursor-pointer">GROSS REWARDS</div>
     </div>
 
-    <!-- CONTENT -->
     <div class="flex-1 overflow-auto crt bg-[#050505] p-6 md:p-12 relative text-[#00ffc8]">
 
-        <!-- TAB 0: MAIN CONSOLE -->
         <div id="content-0" class="tab-content">
             <h1 class="header-font text-5xl md:text-6xl text-center text-[#00ffc8] tracking-widest mb-8">SPECIMEN SCANNING CHAMBER</h1>
             <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/90 mb-12">
                 In the aftermath of the XRP-7 disaster, the Gross Bros were shattered across dimensions.
                 Now fused with machine intelligence, they defend the Ledger from the BTC miners.
             </div>
-            <div class="border-4 border-[#00ffc8] bg-black/70 rounded-3xl p-8 mb-12">
+            <div class="border-4 border-[#00ffc8] bg-black/70 rounded-3xl p-8 mb-12 mobile-tight">
                 <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank"
                    class="block text-center py-7 text-2xl header-font border-2 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
                     BUY A BRO
@@ -229,20 +208,18 @@
             <div id="bro-of-day" class="max-w-2xl mx-auto"></div>
         </div>
 
-        <!-- TAB 1: STORYLINE -->
         <div id="content-1" class="tab-content hidden">
             <h1 class="header-font text-5xl text-[#00ffc8] mb-10">STORYLINE TRANSMISSIONS</h1>
-            <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-10 rounded-3xl text-[#00ffc8]">
+            <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-10 rounded-3xl text-[#00ffc8] mobile-tight">
                 <h3 class="mb-6 text-[#00ffc8]">LATEST TRANSMISSION</h3>
                 <p>Before the accident we chased fortune through the rift. The XRP-7 collapse changed everything.</p>
                 <p class="mt-6">Now we fuse with machines to survive and protect the Ledger from the BTC miners.</p>
             </div>
         </div>
 
-        <!-- TAB 2: FUSION LAB -->
         <div id="content-2" class="tab-content hidden">
             <h1 class="header-font text-5xl text-[#00ffc8] mb-8">FUSION LAB</h1>
-            <div class="max-w-2xl mx-auto border-4 border-[#00ffc8] bg-black rounded-3xl p-10 text-center">
+            <div class="max-w-2xl mx-auto border-4 border-[#00ffc8] bg-black rounded-3xl p-10 text-center mobile-tight">
                 <div class="h-64 border-4 border-[#00ffc8] rounded-2xl flex items-center justify-center mb-8 text-8xl" id="fusion-chamber">⚡</div>
                 <div id="xrp-amount" class="text-3xl font-bold mb-6 text-[#00ffc8]"></div>
                 <button onclick="initiateFusion()" class="w-full py-7 text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl text-[#00ffc8]">
@@ -252,18 +229,13 @@
             </div>
         </div>
 
-        <!-- TAB 3: FULL GROSS REWARDS NEXUS -->
         <div id="content-3" class="tab-content hidden">
             <h1 class="header-font text-5xl text-[#00ffc8] mb-10 text-center">GROSS REWARDS NEXUS</h1>
-
             <div class="max-w-4xl mx-auto">
-                <!-- Big Points Counter -->
                 <div class="text-center mb-12">
                     <div id="points-counter" class="text-8xl font-bold text-[#00ffc8] mb-2 animate-pulse">2,847</div>
                     <div class="text-xl text-[#00ffc8]/70">NEURAL POINTS</div>
                 </div>
-
-                <!-- Rank Progress -->
                 <div class="mb-12">
                     <div class="flex justify-between text-sm mb-3">
                         <span>RECRUIT</span>
@@ -273,22 +245,18 @@
                         <div class="h-full w-[65%] bg-gradient-to-r from-[#00ffc8] to-cyan-300"></div>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Activity Log -->
                     <div>
                         <h3 class="mb-4 text-[#00ffc8]">SPECIMEN ACTIVITY LOG</h3>
-                        <div class="bg-black border border-[#00ffc8]/30 rounded-3xl p-6 h-80 overflow-auto text-sm">
+                        <div class="bg-black border border-[#00ffc8]/30 rounded-3xl p-6 h-80 overflow-auto text-sm mobile-tight">
                             <p class="mb-2">+50 • Daily Login</p>
                             <p class="mb-2">+120 • AI Chat Session (18min)</p>
                             <p class="mb-2">+85 • Simulated XRP Trade Win</p>
                         </div>
                     </div>
-
-                    <!-- Leaderboard -->
                     <div>
                         <h3 class="mb-4 text-[#00ffc8]">FLEET LEADERBOARD</h3>
-                        <div class="bg-black border border-[#00ffc8]/30 rounded-3xl p-6 space-y-4 text-sm">
+                        <div class="bg-black border border-[#00ffc8]/30 rounded-3xl p-6 space-y-4 text-sm mobile-tight">
                             <div class="flex justify-between"><span>#1 VoidReaver42</span><span>14,920 pts</span></div>
                             <div class="flex justify-between"><span>#2 NeonPhantom07</span><span>11,450 pts</span></div>
                             <div class="flex justify-between"><span>#3 RiftStalker19</span><span>9,870 pts</span></div>
@@ -299,7 +267,6 @@
         </div>
     </div>
 
-    <!-- FOOTER TICKER -->
     <div class="bg-[#111] border-t-8 border-[#1a1a1a] py-4 px-6 text-xs overflow-hidden ticker-container">
         <div id="news-ticker" class="ticker-track text-[#00ffc8] font-mono"></div>
     </div>
@@ -323,7 +290,7 @@
     }
 
     function toggleMobileMenu() {
-        alert("Mobile navigation active. Tabs are scrollable on small screens.");
+        alert('Mobile navigation active. Tabs are scrollable on small screens.');
     }
 
     function getSupabaseClient() {
@@ -345,6 +312,30 @@
             .replace(/'/g, '&#39;');
     }
 
+    function renderBroOfDayLoading() {
+        const target = document.getElementById('bro-of-day');
+        if (!target) return;
+
+        target.innerHTML = `
+            <div class="border border-[#00ffc8]/30 rounded-3xl p-8 text-center text-[#00ffc8] bg-black/80 panel-loading overflow-hidden relative">
+                <div class="absolute inset-x-0 top-1/2 h-8 scan-bar"></div>
+                <div class="relative z-10">
+                    <div class="text-5xl mb-5 animate-pulse">◫◫◫</div>
+                    <div class="text-2xl font-bold tracking-[0.3em]">SCANNING</div>
+                    <div class="text-sm uppercase tracking-[0.35em] text-[#00ffc8]/65 mt-3">BRO OF THE DAY</div>
+                    <div class="mt-6 space-y-3">
+                        <div class="h-3 w-3/4 mx-auto rounded-full bg-[#00ffc8]/15 overflow-hidden">
+                            <div class="h-full w-1/2 bg-[#00ffc8]/45 animate-pulse"></div>
+                        </div>
+                        <div class="h-3 w-2/3 mx-auto rounded-full bg-[#00ffc8]/15 overflow-hidden">
+                            <div class="h-full w-2/5 bg-[#00ffc8]/35 animate-pulse"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     function renderBroOfDay(specimen) {
         const target = document.getElementById('bro-of-day');
         if (!target) return;
@@ -360,7 +351,7 @@
     }
 
     async function loadBroOfDay() {
-        renderBroOfDay(fallbackSpecimen);
+        renderBroOfDayLoading();
 
         try {
             const supabase = getSupabaseClient();
@@ -371,13 +362,8 @@
                 .eq('date_key', utcDate)
                 .maybeSingle();
 
-            if (error) {
-                throw error;
-            }
-
-            if (!data) {
-                throw new Error(`No specimen found for ${utcDate}`);
-            }
+            if (error) throw error;
+            if (!data) throw new Error(`No specimen found for ${utcDate}`);
 
             renderBroOfDay({
                 id: String(data.id ?? fallbackSpecimen.id),
@@ -392,10 +378,10 @@
 
     function runTicker() {
         const messages = [
-            "[WARNING] BTC MINER INTERFERENCE DETECTED IN SECTOR 4",
-            "[ALERT] DIMENSIONAL RIFT ACTIVITY INCREASING",
-            "[LORE] THE CHAIN REMEMBERS WHAT THE VOID FORGOT",
-            "[SYSTEM] GUARDIAN BROADCAST OS v7.2.1 STABLE"
+            '[WARNING] BTC MINER INTERFERENCE DETECTED IN SECTOR 4',
+            '[ALERT] DIMENSIONAL RIFT ACTIVITY INCREASING',
+            '[LORE] THE CHAIN REMEMBERS WHAT THE VOID FORGOT',
+            '[SYSTEM] GUARDIAN BROADCAST OS v7.2.1 STABLE'
         ];
         const ticker = document.getElementById('news-ticker');
         if (!ticker) return;
@@ -412,7 +398,7 @@
             const xrpAmount = (50 / price).toFixed(2);
             document.getElementById('xrp-amount').innerHTML = `50 USD = <span class="text-white">${xrpAmount} XRP</span>`;
         } catch (e) {
-            document.getElementById('xrp-amount').textContent = "50 USD ≈ 37.6 XRP (live price unavailable)";
+            document.getElementById('xrp-amount').textContent = '50 USD ≈ 37.6 XRP (live price unavailable)';
         }
     }
 
@@ -420,11 +406,11 @@
         const status = document.getElementById('wallet-text');
         status.innerHTML = 'CONNECTED ✓';
         status.classList.add('text-emerald-400');
-        alert("Xaman Wallet Connected (Add your real SDK keys for production)");
+        alert('Xaman Wallet Connected (Add your real SDK keys for production)');
     }
 
     function initiateFusion() {
-        alert("Transaction payload ready.\n\nSending ~37.6 XRP to rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX\n\nXaman integration ready for your keys.");
+        alert('Transaction payload ready.\n\nSending ~37.6 XRP to rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX\n\nXaman integration ready for your keys.');
     }
 
     window.onload = () => {
