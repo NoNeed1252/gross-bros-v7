@@ -1,67 +1,823 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Xaman config loader</title>
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GROSS BROS • GUARDIAN BROADCAST OS v7.2.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://xumm.app/assets/cdn/xumm-oauth2-pkce.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-      body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; background: #0f1115; color: #eef2ff; }
-      .card { max-width: 760px; margin: 0 auto; padding: 24px; background: #171a21; border: 1px solid #2a3140; border-radius: 16px; }
-      code, pre { background: #0c0f14; border: 1px solid #263042; border-radius: 12px; padding: 12px; overflow: auto; }
-      .row { display: grid; gap: 12px; margin-top: 20px; }
-      .label { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #93a4c3; }
-      .value { word-break: break-word; }
-      .status { margin-top: 16px; color: #bcd0ff; }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap');
+        :root { --cyan: #00ffc8; }
+        body { font-family: 'Share Tech Mono', monospace; background: #000; }
+        .header-font { font-family: 'Orbitron', sans-serif; }
+
+        .alien-monitor {
+            background: linear-gradient(145deg, #e5e5e5, #b8b8b8);
+            border: 36px solid #1f1f1f;
+            box-shadow: 0 0 0 22px #0a0a0a, 0 40px 90px -20px rgba(0,0,0,0.95), 0 0 130px -30px var(--cyan);
+            border-radius: 32px;
+            overflow: hidden;
+            max-width: 1480px;
+            margin: 20px auto;
+        }
+
+        .tabs-container {
+            background: linear-gradient(180deg, #131313 0%, #0b0b0b 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 -1px 0 rgba(0, 255, 200, 0.08);
+        }
+
+        .ticker-container {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ticker-track {
+            display: flex;
+            width: max-content;
+            align-items: center;
+            gap: 3rem;
+            white-space: nowrap;
+            will-change: transform;
+            animation: ticker-scroll 22s linear infinite;
+        }
+
+        .ticker-item { flex: 0 0 auto; }
+
+        @keyframes ticker-scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        .tab {
+            color: rgba(255, 255, 255, 0.86);
+            background: linear-gradient(180deg, #191919 0%, #101010 100%);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease;
+        }
+
+        .tab:hover,
+        .tab:focus-visible {
+            outline: none;
+            color: #ffffff;
+            background: #1f1f1f;
+        }
+
+        .tab-active {
+            border-bottom: 5px solid #00ffc8;
+            color: #00ffc8;
+            background: #101010;
+            box-shadow: inset 0 -1px 0 rgba(0, 255, 200, 0.3), 0 0 0 1px rgba(0, 255, 200, 0.12);
+        }
+
+        .crt::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(transparent 0px, transparent 5px, rgba(0,255,200,0.15) 5px, rgba(0,255,200,0.15) 10px);
+            animation: scanline 8s linear infinite;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        @keyframes scanline {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
+
+        .scan-bar {
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 200, 0.5), transparent);
+            animation: scanSweep 1.4s ease-in-out infinite;
+        }
+
+        @keyframes scanSweep {
+            0% { transform: translateX(-45%); opacity: 0.35; }
+            50% { opacity: 0.9; }
+            100% { transform: translateX(45%); opacity: 0.35; }
+        }
+
+        .tab-active { border-bottom: 5px solid #00ffc8; color: #00ffc8; background: #101010; box-shadow: inset 0 -1px 0 rgba(0, 255, 200, 0.3), 0 0 0 1px rgba(0, 255, 200, 0.12); }
+
+        .panel-loading {
+            background: radial-gradient(circle at top, rgba(0,255,200,0.09), transparent 58%), #000;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                align-items: flex-start;
+                justify-content: flex-start;
+                padding: 0;
+                background: #000;
+            }
+
+            .alien-monitor {
+                width: 100vw;
+                max-width: 100vw;
+                min-height: 100svh;
+                margin: 0;
+                border-width: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .tabs-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tab {
+                min-width: 7rem;
+                padding: 0.72rem 0.82rem;
+                font-size: 0.56rem;
+                letter-spacing: 0.08em;
+                line-height: 1.05;
+            }
+
+            .crt {
+                padding: 0.75rem !important;
+            }
+
+            .crt h1 {
+                font-size: clamp(1.45rem, 5.6vw, 2.2rem) !important;
+                line-height: 1.08 !important;
+                letter-spacing: 0.08em !important;
+                margin-bottom: 1rem !important;
+            }
+
+            .crt > div,
+            .crt .max-w-3xl,
+            .crt .max-w-2xl,
+            .crt .max-w-4xl {
+                max-width: 100%;
+            }
+
+            .mobile-tight {
+                padding-left: 0.85rem !important;
+                padding-right: 0.85rem !important;
+            }
+        }
+
+
     </style>
-  </head>
-  <body>
-    <main class="card">
-      <h1>Xaman configuration</h1>
-      <p>This page loads public runtime settings from <code>/api/xaman-config</code> so the static frontend never reads server-only environment variables directly.</p>
+</head>
+<body class="bg-black min-h-screen flex items-center justify-center p-3 md:p-6">
 
-      <div class="row">
-        <div>
-          <div class="label">Xaman public API key</div>
-          <pre class="value" id="xamanApiKey">Loading…</pre>
+<div class="alien-monitor w-full h-[94vh] flex flex-col shadow-2xl relative">
+
+    <div class="bg-[#151515] border-b-8 border-[#0a0a0a] px-6 py-3 md:py-4 flex items-center justify-between gap-6 mobile-tight">
+        <div class="flex flex-col gap-3">
+            <div class="flex items-center gap-4">
+                <div class="w-5 h-5 bg-red-600 rounded-full animate-pulse"></div>
+                <div class="header-font text-3xl md:text-4xl tracking-widest text-[#00ffc8]">GROSS BROS HUB</div>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-[0.64rem] md:text-xs uppercase tracking-[0.28em] text-[#00ffc8]/80">
+                <a href="https://x.com/thegrossbros" target="_blank" rel="noreferrer" class="px-3 py-2 rounded-full border border-[#00ffc8]/30 bg-black/60 hover:border-[#00ffc8] hover:text-white transition-colors">X</a>
+                <a href="https://discord.gg/fcZYk7UcB" target="_blank" rel="noreferrer" class="px-3 py-2 rounded-full border border-[#00ffc8]/30 bg-black/60 hover:border-[#00ffc8] hover:text-white transition-colors">Discord</a>
+                <span class="text-[#00ffc8]/50">community uplinks</span>
+            </div>
         </div>
-        <div>
-          <div class="label">Supabase URL</div>
-          <pre class="value" id="supabaseUrl">Loading…</pre>
+        <div class="hidden md:flex items-center gap-8 text-sm font-mono text-[#00ffc8]">
+            <div>CACHE 2.4TB</div>
+            <div>CPU 69.1%</div>
+            <div>NEURAL 99.4%</div>
+            <div class="text-emerald-400">XRP RELAY ACTIVE</div>
         </div>
-      </div>
+        <button type="button" onclick="connectXaman()" class="cursor-pointer px-6 py-3 border border-[#00ffc8]/60 hover:border-[#00ffc8] rounded-3xl flex items-center gap-3 text-sm text-[#00ffc8] bg-transparent">
+            <i class="fa-solid fa-wallet"></i>
+            <span id="wallet-text">CONNECT XAMAN</span>
+        </button>
+    </div>
 
-      <p class="status" id="status">Fetching config…</p>
-    </main>
+    <div class="tabs-container bg-[#0f0f0f] border-b border-[#333] flex text-sm overflow-x-auto">
+        <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-3 md:py-4 cursor-pointer tab-active">MAIN CONSOLE</div>
+        <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-3 md:py-4 cursor-pointer">STORYLINE</div>
+        <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-3 md:py-4 cursor-pointer">FUSION LAB</div>
+        <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-3 md:py-4 cursor-pointer">GROSS REWARDS</div>
+        <div onclick="switchTab(4)" id="tab-4" class="tab px-6 py-3 md:py-4 cursor-pointer">PRIVACY</div>
+        <div onclick="switchTab(5)" id="tab-5" class="tab px-6 py-3 md:py-4 cursor-pointer">TERMS</div>
+    </div>
 
-    <script>
-      async function loadConfig() {
-        const status = document.getElementById('status');
-        const xamanApiKeyEl = document.getElementById('xamanApiKey');
-        const supabaseUrlEl = document.getElementById('supabaseUrl');
+    <div class="flex-1 overflow-auto crt bg-[#050505] p-4 md:p-10 relative text-[#00ffc8]">
+
+        <div id="content-0" class="tab-content">
+            <h1 class="header-font text-5xl md:text-6xl text-center text-[#00ffc8] tracking-widest mb-8">SPECIMEN SCANNING CHAMBER</h1>
+            <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/90 mb-12">
+                In the aftermath of the XRP-7 disaster, the Gross Bros were shattered across dimensions.
+                Now fused with machine intelligence, they defend the Ledger from the BTC miners.
+            </div>
+            <div class="border-4 border-[#00ffc8] bg-black/70 rounded-3xl p-8 mb-12 mobile-tight">
+                <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" rel="noreferrer" class="block w-full text-center py-7 text-2xl header-font border-2 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl bg-transparent">
+                    BUY A BRO
+                </a>
+                <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" rel="noreferrer" class="block mt-4 text-center text-xs text-[#00ffc8]/60 uppercase tracking-[0.25em] hover:text-[#00ffc8]">View the collection on XRP.Cafe</a>
+            </div>
+            <div id="specimen-panel" class="max-w-2xl mx-auto"></div>
+        </div>
+
+        <div id="content-1" class="tab-content hidden">
+            <h1 class="header-font text-5xl text-[#00ffc8] mb-10">STORYLINE TRANSMISSIONS</h1>
+            <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-10 rounded-3xl text-[#00ffc8] mobile-tight">
+                <h3 class="mb-6 text-[#00ffc8]">LATEST TRANSMISSION</h3>
+                <div id="storyline-latest" class="space-y-6 leading-8 text-[#00ffc8]/90">
+                    <div class="animate-pulse text-[#00ffc8]/70">Loading transmission signal...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-2" class="tab-content hidden">
+            <h1 class="header-font text-5xl text-[#00ffc8] mb-8">FUSION LAB</h1>
+            <div class="max-w-2xl mx-auto border-4 border-[#00ffc8] bg-black rounded-3xl p-10 text-center mobile-tight">
+                <div class="h-64 border-4 border-[#00ffc8] rounded-2xl flex items-center justify-center mb-8 text-8xl" id="fusion-chamber">⚡</div>
+                <div id="xrp-amount" class="text-3xl font-bold mb-6 text-[#00ffc8]"></div>
+                <button onclick="initiateFusion()" class="w-full py-7 text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl text-[#00ffc8]">
+                    INITIATE FUSION • $50 USD
+                </button>
+                <p class="text-xs text-[#00ffc8]/70 mt-6">Treasury: <span id="fusion-treasury-address">loading…</span></p>
+            </div>
+        </div>
+
+        <div id="content-3" class="tab-content hidden">
+            <h1 class="header-font text-5xl text-[#00ffc8] mb-10 text-center">GROSS REWARDS NEXUS</h1>
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <div id="points-counter" class="text-8xl font-bold text-[#00ffc8] mb-2 animate-pulse">2,847</div>
+                    <div class="text-xl text-[#00ffc8]/70">NEURAL POINTS</div>
+                </div>
+                <div class="mb-12">
+                    <div class="flex justify-between text-sm mb-3">
+                        <span>RECRUIT</span>
+                        <span>GUARDIAN</span>
+                    </div>
+                    <div class="h-5 bg-black border border-[#00ffc8]/50 rounded-full overflow-hidden">
+                        <div class="h-full w-[65%] bg-gradient-to-r from-[#00ffc8] to-cyan-300"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="mb-4 text-[#00ffc8]">SPECIMEN ACTIVITY LOG</h3>
+                        <div class="bg-black border border-[#00ffc8]/30 rounded-3xl p-6 h-80 overflow-auto text-sm mobile-tight">
+                            <p class="mb-2">+50 • Daily Login</p>
+                            <p class="mb-2">+120 • AI Chat Session (18min)</p>
+                            <p class="mb-2">+85 • Simulated XRP Trade Win</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="mb-4 text-[#00ffc8]">FLEET LEADERBOARD</h3>
+                        <div class="bg-black border border-[#00ffc8]/30 rounded-3xl p-6 space-y-4 text-sm mobile-tight">
+                            <div class="flex justify-between"><span>#1 VoidReaver42</span><span>14,920 pts</span></div>
+                            <div class="flex justify-between"><span>#2 NeonPhantom07</span><span>11,450 pts</span></div>
+                            <div class="flex justify-between"><span>#3 RiftStalker19</span><span>9,870 pts</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-4" class="tab-content hidden">
+            <h1 class="header-font text-5xl text-[#00ffc8] mb-8">PRIVACY PROTOCOL</h1>
+            <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-10 rounded-3xl text-[#00ffc8] mobile-tight">
+                <div class="space-y-6 leading-8 text-[#00ffc8]/90">
+                    <p>Signal fragment 01: The hub only records the telemetry required to keep the alien terminal stable. Navigation taps, wallet handshakes, and diagnostic pulses may be retained as encrypted echoes.</p>
+                    <p>Signal fragment 02: The crew does not trade, lease, or auction your coordinates to outside void traders. If a log is preserved, it is for security, continuity, or the ritual recovery of lost transmissions.</p>
+                    <p>Signal fragment 03: By crossing this chamber you acknowledge that the void is a shared medium, and any recovered datum may return as a fragment, echo, or warning from the dark.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-5" class="tab-content hidden">
+            <h1 class="header-font text-5xl text-[#00ffc8] mb-8">TERMS OF TRANSMISSION</h1>
+            <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-10 rounded-3xl text-[#00ffc8] mobile-tight">
+                <div class="space-y-6 leading-8 text-[#00ffc8]/90">
+                    <p>Signal fragment 01: Access to the Gross Bros Hub is granted for lawful navigation, lore inspection, and sanctioned relay rituals only. Do not overload the deck, spoof the broadcast, or tamper with the fusion chassis.</p>
+                    <p>Signal fragment 02: The crew may adjust routes, features, and transmissions without prior warning when the stars shift. Continued use after any update means you have accepted the altered course, even if the new path is more haunted than the last.</p>
+                    <p>Signal fragment 03: If any clause conflicts with the laws of physics, the narrower interpretation still applies. If the laws of physics fail, the surviving interpretation belongs to the void.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-[#111] border-t-8 border-[#1a1a1a] py-4 px-6 text-xs overflow-hidden ticker-container">
+        <div id="news-ticker" class="ticker-track text-[#00ffc8] font-mono"></div>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://bwvnhlmvyjuowyyltraw.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3dm5obG12eWp1b3d5eWx0cmF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MzMwOTksImV4cCI6MjA5NTMwOTA5OX0.A51xIwF9TiTWw5BhWit1Pdf4dk-Pw1yK4wr8rrRGuOQ';
+    const fallbackSpecimen = {
+        id: 'V-042',
+        name: 'Void Reaver',
+        backstory: 'Born from the first rift collapse, he listens for BTC miner static before it reaches the Ledger.',
+        imageurl: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org/2000/svg%22%20viewBox%3D%220%200%20960%20720%22%20role%3D%22img%22%20aria-label%3D%22Specimen%20placeholder%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23041612%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23000000%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22line%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%220%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2300ffc8%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2250%25%22%20stop-color%3D%22%2300ffc8%22%20stop-opacity%3D%220.9%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2300ffc8%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22960%22%20height%3D%22720%22%20fill%3D%22url(%23bg)%22%2F%3E%0A%20%20%3Crect%20x%3D%2236%22%20y%3D%2236%22%20width%3D%22888%22%20height%3D%22648%22%20rx%3D%2228%22%20fill%3D%22none%22%20stroke%3D%22%2300ffc8%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%224%22%2F%3E%0A%20%20%3Crect%20x%3D%2276%22%20y%3D%2288%22%20width%3D%22808%22%20height%3D%2216%22%20rx%3D%228%22%20fill%3D%22url(%23line)%22%2F%3E%0A%20%20%3Crect%20x%3D%2276%22%20y%3D%22612%22%20width%3D%22808%22%20height%3D%2216%22%20rx%3D%228%22%20fill%3D%22url(%23line)%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%22480%22%20cy%3D%22350%22%20r%3D%22128%22%20fill%3D%22none%22%20stroke%3D%22%2300ffc8%22%20stroke-opacity%3D%220.55%22%20stroke-width%3D%226%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%22480%22%20cy%3D%22350%22%20r%3D%2268%22%20fill%3D%22none%22%20stroke%3D%22%2300ffc8%22%20stroke-opacity%3D%220.75%22%20stroke-width%3D%226%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M480%20250%20L480%20450%20M380%20350%20L580%20350%20M404%20274%20L556%20426%20M556%20274%20L404%20426%22%20stroke%3D%22%2300ffc8%22%20stroke-opacity%3D%220.8%22%20stroke-width%3D%226%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%3Ctext%20x%3D%2250%25%22%20y%3D%22552%22%20fill%3D%22%2300ffc8%22%20fill-opacity%3D%220.9%22%20text-anchor%3D%22middle%22%20font-family%3D%22Orbitron%2C%20sans-serif%22%20font-size%3D%2242%22%20letter-spacing%3D%228%22%3ESCANNING%20CHAMBER%20PLACEHOLDER%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%2250%25%22%20y%3D%22604%22%20fill%3D%22%2300ffc8%22%20fill-opacity%3D%220.55%22%20text-anchor%3D%22middle%22%20font-family%3D%22Share%20Tech%20Mono%2C%20monospace%22%20font-size%3D%2222%22%20letter-spacing%3D%226%22%3ENO%20IMAGE%20AVAILABLE%3C%2Ftext%3E%0A%3C%2Fsvg%3E'
+    };
+
+    let supabaseClient = null;
+    let xamanClient = null;
+    let xamanSession = null;
+    let xamanConnecting = false;
+    let latestXrpAmount = 37.6;
+    const runtimeConfig = {
+        xamanApiKey: '',
+        fusionTreasuryAddress: '',
+    };
+    let runtimeConfigPromise = null;
+
+    function updateFusionTreasuryDisplay() {
+        const target = document.getElementById('fusion-treasury-address');
+        if (!target) return;
+        target.textContent = runtimeConfig.fusionTreasuryAddress || 'not configured';
+    }
+
+    async function loadRuntimeConfig() {
+        if (runtimeConfigPromise) return runtimeConfigPromise;
+
+        runtimeConfigPromise = (async () => {
+            try {
+                const response = await fetch('/api/config', { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error('Config endpoint returned ' + response.status);
+                }
+
+                const data = await response.json();
+                const apiKey = String(data.xamanApiKey ?? data.XAMAN_API_KEY ?? '').trim();
+                const treasury = String(data.fusionTreasuryAddress ?? data.FUSION_TREASURY_ADDRESS ?? '').trim();
+
+                runtimeConfig.xamanApiKey = apiKey;
+                runtimeConfig.fusionTreasuryAddress = treasury;
+                window.XAMANAPIKEY = apiKey;
+                window.FUSION_TREASURY_ADDRESS = treasury;
+                updateFusionTreasuryDisplay();
+            } catch (error) {
+                console.warn('Unable to load runtime config.', error);
+            } finally {
+                runtimeConfigPromise = null;
+            }
+
+            return runtimeConfig;
+        })();
+
+        return runtimeConfigPromise;
+    }
+
+    async function getRuntimeXamanApiKey() {
+        if (!runtimeConfig.xamanApiKey) {
+            await loadRuntimeConfig();
+        }
+
+        const apiKey = runtimeConfig.xamanApiKey || String(window.XAMANAPIKEY || '').trim();
+        if (!apiKey) {
+            throw new Error('Missing Xaman API key');
+        }
+
+        runtimeConfig.xamanApiKey = apiKey;
+        return apiKey;
+    }
+
+    async function getRuntimeFusionTreasuryAddress() {
+        if (!runtimeConfig.fusionTreasuryAddress) {
+            await loadRuntimeConfig();
+        }
+
+        const treasury = runtimeConfig.fusionTreasuryAddress || String(window.FUSION_TREASURY_ADDRESS || '').trim();
+        if (!treasury) {
+            throw new Error('Missing fusion treasury address');
+        }
+
+        runtimeConfig.fusionTreasuryAddress = treasury;
+        updateFusionTreasuryDisplay();
+        return treasury;
+    }
+    const XAMAN_API_KEY = (window.XAMANAPIKEY || document.querySelector('meta[name="xaman-api-key"]')?.content?.trim() || "").trim();
+
+    function updateWalletStatus(message, isConnected = false) {
+        const status = document.getElementById('wallet-text');
+        if (!status) return;
+        status.textContent = message;
+        status.classList.toggle('text-emerald-400', isConnected);
+    }
+
+    async function getXamanClient() {
+        if (xamanClient) {
+            return xamanClient;
+        }
+
+        if (!window.XummPkce) {
+            throw new Error('Xaman SDK failed to load');
+        }
+
+        const apiKey = await getRuntimeXamanApiKey();
+        xamanClient = new window.XummPkce(apiKey, {
+            redirectUrl: window.location.href,
+            rememberJwt: true,
+        });
+
+        xamanClient.on('success', async () => {
+            xamanSession = await xamanClient.state();
+            updateWalletStatus('CONNECTED ✓', true);
+        });
+
+        xamanClient.on('retrieved', async () => {
+            xamanSession = await xamanClient.state();
+            updateWalletStatus('CONNECTED ✓', true);
+        });
+
+        xamanClient.on('error', (error) => {
+            console.warn('Xaman session error.', error);
+            xamanSession = null;
+            updateWalletStatus('CONNECT XAMAN', false);
+        });
+
+        return xamanClient;
+    }
+
+    async function restoreXamanSession() {
+        try {
+            const client = await getXamanClient();
+            const state = await client.state();
+            if (state?.me) {
+                xamanSession = state;
+                updateWalletStatus('CONNECTED ✓', true);
+            }
+        } catch (error) {
+            console.warn('No existing Xaman session restored.', error);
+        }
+    }
+
+    function getFusionAmountDrops() {
+        const amountXrp = Number(latestXrpAmount || 37.6);
+        return String(Math.max(1, Math.round(amountXrp * 1_000_000)));
+    }
+
+    async function connectXaman() {
+        if (xamanConnecting) return;
+
+        xamanConnecting = true;
+        updateWalletStatus('CONNECTING...', false);
 
         try {
-          const response = await fetch('/api/xaman-config', { cache: 'no-store' });
-          const data = await response.json().catch(() => null);
+            const client = await getXamanClient();
+            const state = await client.authorize();
+            xamanSession = state ?? await client.state();
 
-          if (!response.ok || !data || !data.ok) {
-            throw new Error((data && data.error) || 'Unable to load config');
-          }
-
-          xamanApiKeyEl.textContent = data.xamanApiKey || 'not provided';
-          supabaseUrlEl.textContent = data.supabaseUrl || 'not provided';
-          window.__APP_CONFIG__ = {
-            xamanApiKey: data.xamanApiKey,
-            supabaseUrl: data.supabaseUrl,
-          };
-          status.textContent = 'Config loaded successfully.';
+            if (xamanSession?.me?.account) {
+                updateWalletStatus('CONNECTED ✓', true);
+            } else {
+                updateWalletStatus('CONNECT XAMAN', false);
+            }
         } catch (error) {
-          xamanApiKeyEl.textContent = 'unavailable';
-          supabaseUrlEl.textContent = 'unavailable';
-          status.textContent = error instanceof Error ? error.message : 'Failed to load config.';
+            console.error('Unable to connect Xaman.', error);
+            alert('Unable to connect Xaman wallet. Check the SDK load and API key.');
+            updateWalletStatus('CONNECT XAMAN', false);
+        } finally {
+            xamanConnecting = false;
         }
-      }
+    }
 
-      loadConfig();
-    </script>
-  </body>
+    async function initiateFusion() {
+        try {
+            const client = await getXamanClient();
+            const state = xamanSession?.sdk ? xamanSession : await client.state();
+
+            if (!state?.me?.account) {
+                await connectXaman();
+                return;
+            }
+
+            if (!state?.sdk?.payload?.create) {
+                throw new Error('Xaman SDK payload creator unavailable');
+            }
+
+            const destination = await getRuntimeFusionTreasuryAddress();
+            const payload = await state.sdk.payload.create({
+                txjson: {
+                    TransactionType: 'Payment',
+                    Destination: destination,
+                    Amount: getFusionAmountDrops(),
+                },
+                options: {
+                    submit: true,
+                },
+                custom_meta: {
+                    identifier: 'buy-a-bro',
+                    instruction: 'Sign to buy a bro and initiate fusion.',
+                },
+            });
+
+            if (payload?.next?.always) {
+                window.open(payload.next.always, '_blank', 'noopener,noreferrer');
+            }
+
+            alert('Fusion payload created in Xaman. Complete the signature to continue.');
+        } catch (error) {
+            console.error('Unable to initiate fusion.', error);
+            alert('Unable to create the fusion payload. Please reconnect Xaman and try again.');
+        }
+    }
+
+    function switchTab(n) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById('content-' + n).classList.remove('hidden');
+        document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('tab-active', i === n));
+    }
+
+    function toggleMobileMenu() {
+        alert('Mobile navigation active. Tabs are scrollable on small screens.');
+    }
+
+    function getSupabaseClient() {
+        if (!supabaseClient) {
+            if (!window.supabase || !window.supabase.createClient) {
+                throw new Error('Supabase CDN failed to load');
+            }
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+        return supabaseClient;
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function renderSpecimenPanelLoading() {
+        const target = document.getElementById('specimen-panel');
+        if (!target) return;
+
+        target.innerHTML = `
+            <div class="border border-[#00ffc8]/30 rounded-3xl p-8 text-center text-[#00ffc8] bg-black/80 panel-loading overflow-hidden relative">
+                <div class="absolute inset-x-0 top-1/2 h-8 scan-bar"></div>
+                <div class="relative z-10">
+                    <div class="text-5xl mb-5 animate-pulse">◫◫◫</div>
+                    <div class="text-2xl font-bold tracking-[0.3em]">SCANNING</div>
+                    <div class="text-sm uppercase tracking-[0.35em] text-[#00ffc8]/65 mt-3">SPECIMEN SCAN</div>
+                    <div class="mt-6 space-y-3">
+                        <div class="h-3 w-3/4 mx-auto rounded-full bg-[#00ffc8]/15 overflow-hidden">
+                            <div class="h-full w-1/2 bg-[#00ffc8]/45 animate-pulse"></div>
+                        </div>
+                        <div class="h-3 w-2/3 mx-auto rounded-full bg-[#00ffc8]/15 overflow-hidden">
+                            <div class="h-full w-2/5 bg-[#00ffc8]/35 animate-pulse"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderSpecimenPanel(specimen) {
+        const target = document.getElementById('specimen-panel');
+        if (!target) return;
+
+        const imageUrl = escapeHtml(specimen.imageurl ?? fallbackSpecimen.imageurl);
+
+        target.innerHTML = `
+            <div class="border border-[#00ffc8]/30 rounded-3xl p-6 text-[#00ffc8] bg-black/70 overflow-hidden">
+                <div class="relative overflow-hidden rounded-2xl border border-[#00ffc8]/20 bg-black">
+                    <img
+                        src="${imageUrl}"
+                        alt="${escapeHtml(specimen.name)} scanning chamber image"
+                        class="w-full h-80 md:h-[28rem] object-cover"
+                        onerror="this.onerror=null;this.src='${fallbackSpecimen.imageurl}'"
+                    />
+                    <div class="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#00ffc8]/20 to-transparent"></div>
+                    <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/85 to-transparent"></div>
+                </div>
+                <div class="mt-6 text-center">
+                    <div class="text-2xl font-bold">${escapeHtml(specimen.name)}</div>
+                    <div class="text-sm uppercase tracking-[0.3em] text-[#00ffc8]/70 mt-3">Specimen ID: <span class="text-[#00ffc8]">${escapeHtml(specimen.id)}</span></div>
+                    <div class="text-[#00ffc8]/80 mt-4 leading-8">${escapeHtml(specimen.backstory)}</div>
+                </div>
+            </div>
+        `;
+    }
+    function renderStoryline(transmission) {
+        const target = document.getElementById('storyline-latest');
+        if (!target) return;
+
+        target.innerHTML = `
+            <div class="text-sm uppercase tracking-[0.3em] text-[#00ffc8]/60 mb-2">Signal received</div>
+            <div class="text-2xl md:text-3xl text-[#00ffc8] leading-[1.8] whitespace-pre-wrap">${escapeHtml(transmission.text)}</div>
+            <div class="pt-6 text-sm text-[#00ffc8]/60 border-t border-[#00ffc8]/15 mt-8">
+                Added ${escapeHtml(transmission.addedAt)}
+            </div>
+        `;
+    }
+
+    async function loadLatestStoryline() {
+        renderStoryline({
+            text: 'Awaiting the next transmission from the Gross Bros relay.',
+            addedAt: 'No transmissions yet',
+        });
+
+        try {
+            const supabase = getSupabaseClient();
+            const { data, error } = await supabase
+                .from('storyline')
+                .select('transmission_text,date_added')
+                .order('date_added', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            if (error) {
+                throw error;
+            }
+
+            if (!data) {
+                return;
+            }
+
+            renderStoryline({
+                text: String(data.transmission_text ?? ''),
+                addedAt: new Date(data.date_added).toLocaleString(undefined, {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                }),
+            });
+        } catch (error) {
+            console.warn('Storyline transmission load failed.', error);
+        }
+    }
+
+    function hashUtcDate(dateString) {
+        let hash = 0;
+        for (let i = 0; i < dateString.length; i++) {
+            hash = Math.imul(31, hash) + dateString.charCodeAt(i);
+            hash >>>= 0;
+        }
+        return hash;
+    }
+
+    function seededRandom(seed) {
+        let t = seed + 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+
+    async function loadSpecimenPanel() {
+        renderSpecimenPanelLoading();
+
+        try {
+            const supabase = getSupabaseClient();
+            const utcDate = new Date().toISOString().slice(0, 10);
+            const { count, error: countError } = await supabase
+                .from('specimens')
+                .select('id', { count: 'exact', head: true });
+
+            if (countError) {
+                throw countError;
+            }
+
+            if (!count) {
+                throw new Error('No specimens available');
+            }
+
+            const ceiling = Math.min(Number(count), 214);
+            const seed = hashUtcDate(utcDate);
+            const index = Math.floor(seededRandom(seed) * ceiling);
+
+            const { data, error } = await supabase
+                .from('specimens')
+                .select('id,name,backstory,imageurl,image_url')
+                .order('id', { ascending: true })
+                .range(index, index);
+
+            if (error) {
+                throw error;
+            }
+
+            const specimen = Array.isArray(data) ? data[0] : data;
+            if (!specimen) {
+                throw new Error('No specimen found at index ' + index);
+            }
+
+            renderSpecimenPanel({
+                id: String(specimen.id ?? fallbackSpecimen.id),
+                name: String(specimen.name ?? fallbackSpecimen.name),
+                backstory: String(specimen.backstory ?? fallbackSpecimen.backstory),
+                imageurl: String(specimen.imageurl ?? specimen.image_url ?? fallbackSpecimen.imageurl),
+            });
+        } catch (error) {
+            console.warn('Specimen scan fell back to Void Reaver.', error);
+            renderSpecimenPanel(fallbackSpecimen);
+        }
+    }
+    function runTicker() {
+        const messages = [
+            '[WARNING] BTC MINER INTERFERENCE DETECTED IN SECTOR 4',
+            '[ALERT] DIMENSIONAL RIFT ACTIVITY INCREASING',
+            '[LORE] THE CHAIN REMEMBERS WHAT THE VOID FORGOT',
+            '[SYSTEM] GUARDIAN BROADCAST OS v7.2.1 STABLE'
+        ];
+        const ticker = document.getElementById('news-ticker');
+        if (!ticker) return;
+
+        const items = [...messages, ...messages].map(message => '<span class="ticker-item">' + escapeHtml(message) + '</span>');
+        ticker.innerHTML = items.join('<span class="ticker-item">•</span>');
+    }
+
+    async function fetchXRPPrice() {
+        try {
+            const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd');
+            const data = await res.json();
+            const price = data.ripple.usd;
+            const xrpAmount = (50 / price).toFixed(2);
+            latestXrpAmount = Number(xrpAmount);
+            window.fusionXrpAmount = latestXrpAmount;
+            document.getElementById('xrp-amount').innerHTML = `50 USD = <span class="text-white">${xrpAmount} XRP</span>`;
+        } catch (e) {
+            latestXrpAmount = 37.6;
+            window.fusionXrpAmount = latestXrpAmount;
+            document.getElementById('xrp-amount').textContent = '50 USD ≈ 37.6 XRP (live price unavailable)';
+        }
+    }
+
+    async function connectXaman() {
+        if (xamanConnecting) return;
+
+        xamanConnecting = true;
+        updateWalletStatus('CONNECTING...', false);
+
+        try {
+            const client = getXamanClient();
+            const state = await client.authorize();
+            xamanSession = state ?? await client.state();
+
+            if (xamanSession?.me?.account) {
+                updateWalletStatus('CONNECTED ✓', true);
+            } else {
+                updateWalletStatus('CONNECT XAMAN', false);
+            }
+        } catch (error) {
+            console.error('Unable to connect Xaman.', error);
+            alert('Unable to connect Xaman wallet. Check the SDK load and API key.');
+            updateWalletStatus('CONNECT XAMAN', false);
+        } finally {
+            xamanConnecting = false;
+        }
+    }
+
+    async function initiateFusion() {
+        try {
+            const client = getXamanClient();
+            const state = xamanSession?.sdk ? xamanSession : await client.state();
+
+            if (!state?.me?.account) {
+                await connectXaman();
+                return;
+            }
+
+            if (!state?.sdk?.payload?.create) {
+                throw new Error('Xaman SDK payload creator unavailable');
+            }
+
+            const payload = await state.sdk.payload.create({
+                txjson: {
+                    TransactionType: 'Payment',
+                    Destination: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
+                    Amount: getFusionAmountDrops(),
+                },
+                options: {
+                    submit: true,
+                },
+                custom_meta: {
+                    identifier: 'buy-a-bro',
+                    instruction: 'Sign to buy a bro and initiate fusion.',
+                },
+            });
+
+            if (payload?.next?.always) {
+                window.open(payload.next.always, '_blank', 'noopener,noreferrer');
+            }
+
+            alert('Fusion payload created in Xaman. Complete the signature to continue.');
+        } catch (error) {
+            console.error('Unable to initiate fusion.', error);
+            alert('Unable to create the fusion payload. Please reconnect Xaman and try again.');
+        }
+    }
+
+    window.onload = () => {
+        switchTab(0);
+        void loadRuntimeConfig();
+        void loadSpecimenPanel();
+        void loadLatestStoryline();
+        runTicker();
+        void restoreXamanSession();
+        fetchXRPPrice();
+    };
+</script>
+</body>
 </html>
