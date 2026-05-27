@@ -10,7 +10,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;family=Share+Tech+Mono&amp;display=swap');
         :root { --cyan: #00ffc8; }
-        body { font-family: 'Share Tech Mono', monospace; }
+        body { font-family: 'Share Tech Mono', monospace; background: #000; }
         .header-font { font-family: 'Orbitron', sans-serif; }
 
         .alien-monitor {
@@ -34,21 +34,39 @@
         }
         @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
 
-        .tab-active { border-bottom: 5px solid #00ffc8; color: #00ffc8; }
-        .fusion-pulse { animation: fusionPulse 2s infinite; }
-        @keyframes fusionPulse { 0%,100% { box-shadow: 0 0 30px #ff0000; } 50% { box-shadow: 0 0 70px #ff0000; } }
+        .tab {
+            transition: all 0.2s;
+        }
+        .tab-active {
+            border-bottom: 5px solid #00ffc8;
+            color: #00ffc8;
+            background: #1a1a1a;
+        }
+
+        /* Mobile Tab Fix */
+        @media (max-width: 768px) {
+            .tabs-container {
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+            .tab {
+                padding: 16px 20px;
+                font-size: 15px;
+                min-width: 120px;
+            }
+        }
     </style>
 </head>
-<body class="bg-black min-h-screen flex items-center justify-center p-4">
+<body class="bg-black min-h-screen flex items-center justify-center p-3 md:p-6">
 
 <div class="alien-monitor w-full h-[94vh] flex flex-col shadow-2xl relative">
 
     <!-- HEADER -->
-    <div class="bg-[#151515] border-b-8 border-[#0a0a0a] px-6 md:px-10 py-5 flex items-center justify-between">
+    <div class="bg-[#151515] border-b-8 border-[#0a0a0a] px-6 py-5 flex items-center justify-between">
         <div class="flex items-center gap-4">
             <div class="w-5 h-5 bg-red-600 rounded-full animate-pulse"></div>
             <div class="header-font text-3xl tracking-widest text-[#00ffc8]">GROSS BROS</div>
-            <div class="hidden sm:block text-white/70 text-xl">GUARDIAN BROADCAST OS v7.2.1</div>
         </div>
         <div class="hidden md:flex items-center gap-8 text-sm font-mono text-[#00ffc8]/80">
             <div>CACHE 2.4TB</div>
@@ -62,43 +80,40 @@
         </div>
     </div>
 
-    <!-- TABS -->
-    <div class="bg-[#0f0f0f] border-b border-[#333] flex text-sm overflow-x-auto">
-        <div onclick="switchTab(0)" id="tab-0" class="tab px-6 md:px-10 py-5 cursor-pointer tab-active">MAIN CONSOLE</div>
-        <div onclick="switchTab(1)" id="tab-1" class="tab px-6 md:px-10 py-5 cursor-pointer">STORYLINE</div>
-        <div onclick="switchTab(2)" id="tab-2" class="tab px-6 md:px-10 py-5 cursor-pointer">FUSION LAB</div>
-        <div onclick="switchTab(3)" id="tab-3" class="tab px-6 md:px-10 py-5 cursor-pointer">GROSS REWARDS</div>
+    <!-- TABS - FIXED FOR MOBILE -->
+    <div class="tabs-container bg-[#0f0f0f] border-b border-[#333] flex text-sm overflow-x-auto">
+        <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-5 cursor-pointer tab-active">MAIN CONSOLE</div>
+        <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-5 cursor-pointer">STORYLINE</div>
+        <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-5 cursor-pointer">FUSION LAB</div>
+        <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-5 cursor-pointer">GROSS REWARDS</div>
     </div>
 
     <!-- CONTENT -->
     <div class="flex-1 overflow-auto crt bg-[#050505] p-6 md:p-12 relative">
 
-        <!-- TAB 0: MAIN CONSOLE -->
+        <!-- TAB 0: MAIN -->
         <div id="content-0" class="tab-content">
             <h1 class="header-font text-5xl md:text-6xl text-center neon-cyan tracking-widest mb-8">SPECIMEN SCANNING CHAMBER</h1>
-            <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/70 mb-12 leading-relaxed">
+            <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/70 mb-12">
                 In the aftermath of the XRP-7 disaster, the Gross Bros were shattered across dimensions. 
-                Now fused with machine intelligence, they stand as the last line of defense for the Ledger.
+                Now fused with machine intelligence, they defend the Ledger.
             </div>
-
             <div class="border-4 border-[#00ffc8] bg-black/70 rounded-3xl p-8 mb-12">
                 <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" 
                    class="block text-center py-7 text-2xl header-font border-2 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
                     ACCESS THE COLLECTION
                 </a>
             </div>
-
-            <!-- Bro of the Day -->
             <div id="bro-of-day" class="max-w-2xl mx-auto"></div>
         </div>
 
         <!-- TAB 1: STORYLINE -->
         <div id="content-1" class="tab-content hidden">
             <h1 class="header-font text-5xl neon-cyan mb-10">STORYLINE TRANSMISSIONS</h1>
-            <div class="max-w-4xl mx-auto bg-black border border-red-500/30 p-10 rounded-3xl text-[#00ffc8]/90 leading-relaxed">
+            <div class="max-w-4xl mx-auto bg-black border border-red-500/30 p-10 rounded-3xl text-[#00ffc8]/90">
                 <h3 class="text-red-400 mb-6">LATEST TRANSMISSION</h3>
                 <p>Before the accident we chased fortune through the rift. The XRP-7 collapse changed everything.</p>
-                <p class="mt-6">Now we fuse with machines to survive... and to protect the Ledger from the BTC miners and the galactic corporations that control them.</p>
+                <p class="mt-6">Now we fuse with machines to survive and protect the Ledger from the BTC miners.</p>
             </div>
         </div>
 
@@ -106,24 +121,19 @@
         <div id="content-2" class="tab-content hidden">
             <h1 class="header-font text-5xl text-red-400 mb-8">FUSION LAB</h1>
             <div class="max-w-2xl mx-auto border-4 border-red-600 bg-black rounded-3xl p-10 text-center">
-                <div id="fusion-chamber" class="fusion-pulse h-64 border-4 border-red-500 rounded-2xl flex items-center justify-center mb-8 text-8xl">⚡</div>
-                <div id="xrp-price-display" class="text-3xl font-bold mb-6 text-white"></div>
+                <div class="h-64 border-4 border-red-500 rounded-2xl flex items-center justify-center mb-8 text-8xl fusion-pulse">⚡</div>
                 <button onclick="initiateFusion()" class="w-full py-7 text-xl border-4 border-red-500 hover:bg-red-500/10 rounded-3xl">
                     INITIATE FUSION • $50 USD
                 </button>
-                <p class="text-xs text-red-400/70 mt-6">Send to treasury: rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX</p>
             </div>
         </div>
 
         <!-- TAB 3: GROSS REWARDS -->
         <div id="content-3" class="tab-content hidden">
             <h1 class="header-font text-5xl neon-cyan mb-10">GROSS REWARDS NEXUS</h1>
-            <div class="max-w-2xl mx-auto text-center">
-                <div class="text-8xl font-bold text-[#00ffc8] mb-4" id="points-display">2847</div>
+            <div class="text-center">
+                <div class="text-8xl font-bold text-[#00ffc8] mb-4">2847</div>
                 <div class="text-xl text-[#00ffc8]/60">NEURAL POINTS</div>
-                <div class="mt-12 text-sm text-[#00ffc8]/50">
-                    Connected to Supabase • Ready for your backend
-                </div>
             </div>
         </div>
     </div>
@@ -140,30 +150,26 @@
 </button>
 
 <script>
-    // Tab System
     function switchTab(n) {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
         document.getElementById('content-' + n).classList.remove('hidden');
         document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('tab-active', i === n));
     }
 
-    // Mobile Menu
     function toggleMobileMenu() {
-        alert("Mobile menu expanded (ready for full implementation)");
+        alert("Mobile menu active - tabs are now scrollable on small screens");
     }
 
-    // Bro of the Day
     function loadBroOfDay() {
         document.getElementById('bro-of-day').innerHTML = `
             <div class="border border-[#00ffc8]/30 rounded-3xl p-8 text-center">
                 <div class="text-7xl mb-6">🧬</div>
                 <div class="text-2xl font-bold">#042 • VOID REAVER</div>
-                <div class="text-[#00ffc8]/70 mt-4">Born from the first rift collapse, he stands watch over the ledger. Today he senses BTC miner movement in Sector 4.</div>
+                <div class="text-[#00ffc8]/70 mt-4">Born from the first rift collapse. Today he senses BTC miner movement near the ledger.</div>
             </div>
         `;
     }
 
-    // Ticker
     function runTicker() {
         const messages = [
             "[WARNING] BTC MINER INTERFERENCE DETECTED IN SECTOR 4",
@@ -179,16 +185,14 @@
         }, 6000);
     }
 
-    // Fusion Lab Placeholder (Add your CoinGecko + Xaman logic here)
     function initiateFusion() {
-        alert("Fusion initiated. Ready for Xaman SDK + $50 USD → XRP conversion.");
+        alert("Fusion initiated - ready for your Xaman + CoinGecko keys");
     }
 
     function toggleXaman() {
-        alert("Xaman Wallet Connect - Add your SDK keys here");
+        alert("Xaman Connect - Add your keys here");
     }
 
-    // Initialize
     window.onload = () => {
         switchTab(0);
         loadBroOfDay();
@@ -196,4 +200,4 @@
     };
 </script>
 </body>
-</html>
+</html>"}}
