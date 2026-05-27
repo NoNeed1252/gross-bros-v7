@@ -217,7 +217,7 @@
                 </a>
                 <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" rel="noreferrer" class="block mt-4 text-center text-xs text-[#00ffc8]/60 uppercase tracking-[0.25em] hover:text-[#00ffc8]">View the collection on XRP.Cafe</a>
             </div>
-            <div id="bro-of-day" class="max-w-2xl mx-auto"></div>
+            <div id="specimen-panel" class="max-w-2xl mx-auto"></div>
         </div>
 
         <div id="content-1" class="tab-content hidden">
@@ -549,8 +549,8 @@
             .replace(/'/g, '&#39;');
     }
 
-    function renderBroOfDayLoading() {
-        const target = document.getElementById('bro-of-day');
+    function renderSpecimenPanelLoading() {
+        const target = document.getElementById('specimen-panel');
         if (!target) return;
 
         target.innerHTML = `
@@ -559,7 +559,7 @@
                 <div class="relative z-10">
                     <div class="text-5xl mb-5 animate-pulse">◫◫◫</div>
                     <div class="text-2xl font-bold tracking-[0.3em]">SCANNING</div>
-                    <div class="text-sm uppercase tracking-[0.35em] text-[#00ffc8]/65 mt-3">BRO OF THE DAY</div>
+                    <div class="text-sm uppercase tracking-[0.35em] text-[#00ffc8]/65 mt-3">SPECIMEN SCAN</div>
                     <div class="mt-6 space-y-3">
                         <div class="h-3 w-3/4 mx-auto rounded-full bg-[#00ffc8]/15 overflow-hidden">
                             <div class="h-full w-1/2 bg-[#00ffc8]/45 animate-pulse"></div>
@@ -573,8 +573,8 @@
         `;
     }
 
-    function renderBroOfDay(specimen) {
-        const target = document.getElementById('bro-of-day');
+    function renderSpecimenPanel(specimen) {
+        const target = document.getElementById('specimen-panel');
         if (!target) return;
 
         const imageUrl = escapeHtml(specimen.imageurl ?? fallbackSpecimen.imageurl);
@@ -666,8 +666,8 @@
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     }
 
-    async function loadBroOfDay() {
-        renderBroOfDayLoading();
+    async function loadSpecimenPanel() {
+        renderSpecimenPanelLoading();
 
         try {
             const supabase = getSupabaseClient();
@@ -703,15 +703,15 @@
                 throw new Error('No specimen found at index ' + index);
             }
 
-            renderBroOfDay({
+            renderSpecimenPanel({
                 id: String(specimen.id ?? fallbackSpecimen.id),
                 name: String(specimen.name ?? fallbackSpecimen.name),
                 backstory: String(specimen.backstory ?? fallbackSpecimen.backstory),
                 imageurl: String(specimen.imageurl ?? specimen.image_url ?? fallbackSpecimen.imageurl),
             });
         } catch (error) {
-            console.warn('Bro of the Day fell back to Void Reaver.', error);
-            renderBroOfDay(fallbackSpecimen);
+            console.warn('Specimen scan fell back to Void Reaver.', error);
+            renderSpecimenPanel(fallbackSpecimen);
         }
     }
     function runTicker() {
@@ -812,7 +812,7 @@
     window.onload = () => {
         switchTab(0);
         void loadRuntimeConfig();
-        void loadBroOfDay();
+        void loadSpecimenPanel();
         void loadLatestStoryline();
         runTicker();
         void restoreXamanSession();
