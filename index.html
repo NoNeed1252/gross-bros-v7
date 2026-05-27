@@ -30,6 +30,30 @@
             box-shadow: inset 0 -1px 0 rgba(0, 255, 200, 0.08);
         }
 
+        .ticker-container {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ticker-track {
+            display: flex;
+            width: max-content;
+            align-items: center;
+            gap: 3rem;
+            white-space: nowrap;
+            will-change: transform;
+            animation: ticker-scroll 22s linear infinite;
+        }
+
+        .ticker-item {
+            flex: 0 0 auto;
+        }
+
+        @keyframes ticker-scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
         .tab {
             color: rgba(255, 255, 255, 0.86);
             background: linear-gradient(180deg, #191919 0%, #101010 100%);
@@ -68,18 +92,18 @@
             body {
                 align-items: flex-start;
                 justify-content: flex-start;
-                padding: 0.5rem;
+                padding: 0.25rem;
             }
 
             .alien-monitor {
-                width: 100%;
-                max-width: 100%;
+                width: calc(100vw - 0.5rem);
+                max-width: calc(100vw - 0.5rem);
                 height: auto;
-                min-height: calc(100svh - 1rem);
-                margin: 0;
-                border-width: 14px;
-                border-radius: 22px;
-                box-shadow: 0 0 0 12px #0a0a0a, 0 28px 64px -28px rgba(0,0,0,0.92), 0 0 90px -40px rgba(0,255,200,0.26);
+                min-height: calc(100svh - 0.5rem);
+                margin: 0 auto;
+                border-width: 10px;
+                border-radius: 18px;
+                box-shadow: 0 0 0 8px #0a0a0a, 0 22px 48px -30px rgba(0,0,0,0.92), 0 0 72px -42px rgba(0,255,200,0.26);
             }
 
             .tabs-container {
@@ -88,8 +112,11 @@
             }
 
             .tab {
-                min-width: 9rem;
-                padding: 1rem 1.1rem;
+                min-width: 7rem;
+                padding: 0.72rem 0.75rem;
+                font-size: 0.72rem;
+                letter-spacing: 0.09em;
+                line-height: 1.05;
             }
 
             .crt {
@@ -273,8 +300,8 @@
     </div>
 
     <!-- FOOTER TICKER -->
-    <div class="bg-[#111] border-t-8 border-[#1a1a1a] py-4 px-6 text-xs overflow-hidden">
-        <div id="news-ticker" class="whitespace-nowrap text-[#00ffc8] font-mono"></div>
+    <div class="bg-[#111] border-t-8 border-[#1a1a1a] py-4 px-6 text-xs overflow-hidden ticker-container">
+        <div id="news-ticker" class="ticker-track text-[#00ffc8] font-mono"></div>
     </div>
 </div>
 
@@ -370,12 +397,11 @@
             "[LORE] THE CHAIN REMEMBERS WHAT THE VOID FORGOT",
             "[SYSTEM] GUARDIAN BROADCAST OS v7.2.1 STABLE"
         ];
-        let i = 0;
         const ticker = document.getElementById('news-ticker');
-        setInterval(() => {
-            ticker.textContent = messages[i];
-            i = (i + 1) % messages.length;
-        }, 5500);
+        if (!ticker) return;
+
+        const items = [...messages, ...messages].map(message => '<span class="ticker-item">' + escapeHtml(message) + '</span>');
+        ticker.innerHTML = items.join('<span class="ticker-item">•</span>');
     }
 
     async function fetchXRPPrice() {
