@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GROSS BROS • GUARDIAN BROADCAST OS v7.2.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
@@ -189,11 +190,11 @@
         <div id="content-0" class="tab-content">
             <h1 class="header-font text-5xl md:text-6xl text-center text-[#00ffc8] tracking-widest mb-8">SPECIMEN SCANNING CHAMBER</h1>
             <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/90 mb-12">
-                In the aftermath of the XRP-7 disaster, the Gross Bros were shattered across dimensions. 
+                In the aftermath of the XRP-7 disaster, the Gross Bros were shattered across dimensions.
                 Now fused with machine intelligence, they defend the Ledger from the BTC miners.
             </div>
             <div class="border-4 border-[#00ffc8] bg-black/70 rounded-3xl p-8 mb-12">
-                <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" 
+                <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank"
                    class="block text-center py-7 text-2xl header-font border-2 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
                     BUY A BRO
                 </a>
@@ -227,7 +228,7 @@
         <!-- TAB 3: FULL GROSS REWARDS NEXUS -->
         <div id="content-3" class="tab-content hidden">
             <h1 class="header-font text-5xl text-[#00ffc8] mb-10 text-center">GROSS REWARDS NEXUS</h1>
-            
+
             <div class="max-w-4xl mx-auto">
                 <!-- Big Points Counter -->
                 <div class="text-center mb-12">
@@ -278,64 +279,88 @@
 </div>
 
 <script>
+    const SUPABASE_URL = 'https://bwvnhlmvyjuowyyltraw.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3dm5obG12eWp1b3d5eWx0cmF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MzMwOTksImV4cCI6MjA5NTMwOTA5OX0.A51xIwF9TiTWw5BhWit1Pdf4dk-Pw1yK4wr8rrRGuOQ';
+    const fallbackSpecimen = {
+        id: 'V-042',
+        name: 'Void Reaver',
+        backstory: 'Born from the first rift collapse, he listens for BTC miner static before it reaches the Ledger.'
+    };
+
+    let supabaseClient = null;
+
     function switchTab(n) {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
         document.getElementById('content-' + n).classList.remove('hidden');
-        document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('tab-active', i === n));
+        document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('tab-active', i === n));
     }
 
     function toggleMobileMenu() {
         alert("Mobile navigation active. Tabs are scrollable on small screens.");
     }
 
-    function loadBroOfDay() {
-        const specimens = [
-            {
-                id: 'V-042',
-                name: 'Void Reaver',
-                backstory: 'Born from the first rift collapse, he listens for BTC miner static before it reaches the Ledger.'
-            },
-            {
-                id: 'N-117',
-                name: 'Neon Phantom',
-                backstory: 'A glowing infiltrator who slips through dead channels and maps hidden XRP corridors.'
-            },
-            {
-                id: 'R-309',
-                name: 'Rift Stalker',
-                backstory: 'Trained in broken dimensions, he tracks anomalies by the scent of burned code.'
-            },
-            {
-                id: 'C-888',
-                name: 'Circuit Hydra',
-                backstory: 'Every severed signal grows two more heads, each guarding a different shard of the archive.'
-            },
-            {
-                id: 'S-271',
-                name: 'Solar Warden',
-                backstory: 'Powered by captive starlight, she keeps the outer relay warm through midnight outages.'
-            },
-            {
-                id: 'O-606',
-                name: 'Chrome Oracle',
-                backstory: 'A reflective prophet who reads tomorrow from the burn marks left on yesterday’s firmware.'
+    function getSupabaseClient() {
+        if (!supabaseClient) {
+            if (!window.supabase || !window.supabase.createClient) {
+                throw new Error('Supabase CDN failed to load');
             }
-        ];
-
-        const utcDate = new Date().toISOString().slice(0, 10);
-        let seed = 0;
-        for (const ch of utcDate) {
-            seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
-        const specimen = specimens[seed % specimens.length];
+        return supabaseClient;
+    }
 
-        document.getElementById('bro-of-day').innerHTML = `
-            <div class="border border-[#00ffc8]/30 rounded-3xl p-8 text-center text-[#00ffc8]">
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function renderBroOfDay(specimen) {
+        const target = document.getElementById('bro-of-day');
+        if (!target) return;
+
+        target.innerHTML = `
+            <div class="border border-[#00ffc8]/30 rounded-3xl p-8 text-center text-[#00ffc8] bg-black/70">
                 <div class="text-7xl mb-6">🧬</div>
-                <div class="text-2xl font-bold">${specimen.id} • ${specimen.name}</div>
-                <div class="text-[#00ffc8]/80 mt-4">${specimen.backstory}</div>
+                <div class="text-2xl font-bold">${escapeHtml(specimen.name)}</div>
+                <div class="text-sm uppercase tracking-[0.3em] text-[#00ffc8]/70 mt-3">Specimen ID: <span class="text-[#00ffc8]">${escapeHtml(specimen.id)}</span></div>
+                <div class="text-[#00ffc8]/80 mt-4 leading-8">${escapeHtml(specimen.backstory)}</div>
             </div>
         `;
+    }
+
+    async function loadBroOfDay() {
+        renderBroOfDay(fallbackSpecimen);
+
+        try {
+            const supabase = getSupabaseClient();
+            const utcDate = new Date().toISOString().slice(0, 10);
+            const { data, error } = await supabase
+                .from('specimens')
+                .select('id,name,backstory')
+                .eq('date_key', utcDate)
+                .maybeSingle();
+
+            if (error) {
+                throw error;
+            }
+
+            if (!data) {
+                throw new Error(`No specimen found for ${utcDate}`);
+            }
+
+            renderBroOfDay({
+                id: String(data.id ?? fallbackSpecimen.id),
+                name: String(data.name ?? fallbackSpecimen.name),
+                backstory: String(data.backstory ?? fallbackSpecimen.backstory),
+            });
+        } catch (error) {
+            console.warn('Bro of the Day fell back to Void Reaver.', error);
+            renderBroOfDay(fallbackSpecimen);
+        }
     }
 
     function runTicker() {
@@ -378,7 +403,7 @@
 
     window.onload = () => {
         switchTab(0);
-        loadBroOfDay();
+        void loadBroOfDay();
         runTicker();
         fetchXRPPrice();
     };
