@@ -40,7 +40,7 @@
 
 <div class="alien-monitor w-full h-[94vh] flex flex-col shadow-2xl relative">
 
-    <!-- HEADER -->
+    <!-- HEADER + TABS -->
     <div class="bg-[#151515] border-b-8 border-[#0a0a0a] px-6 py-5 flex items-center justify-between">
         <div class="flex items-center gap-4">
             <div class="w-5 h-5 bg-red-600 rounded-full animate-pulse"></div>
@@ -58,12 +58,11 @@
         </div>
     </div>
 
-    <!-- TABS -->
-    <div class="bg-[#0f0f0f] border-b border-[#333] flex text-sm overflow-x-auto tabs-container">
-        <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-5 cursor-pointer tab-active text-[#00ffc8]">MAIN CONSOLE</div>
-        <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-5 cursor-pointer text-[#00ffc8]">STORYLINE</div>
-        <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-5 cursor-pointer text-[#00ffc8]">FUSION LAB</div>
-        <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-5 cursor-pointer text-[#00ffc8]">GROSS REWARDS</div>
+    <div class="bg-[#0f0f0f] border-b border-[#333] flex text-sm overflow-x-auto">
+        <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-5 cursor-pointer tab-active">MAIN CONSOLE</div>
+        <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-5 cursor-pointer">STORYLINE</div>
+        <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-5 cursor-pointer">FUSION LAB</div>
+        <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-5 cursor-pointer">GROSS REWARDS</div>
     </div>
 
     <!-- CONTENT -->
@@ -95,7 +94,7 @@
             </div>
         </div>
 
-        <!-- TAB 2: FUSION LAB (Cyan Industrial) -->
+        <!-- TAB 2: FUSION LAB -->
         <div id="content-2" class="tab-content hidden">
             <h1 class="header-font text-5xl text-[#00ffc8] mb-8">FUSION LAB</h1>
             <div class="max-w-2xl mx-auto border-4 border-[#00ffc8] bg-black rounded-3xl p-10 text-center">
@@ -108,12 +107,49 @@
             </div>
         </div>
 
-        <!-- TAB 3: GROSS REWARDS -->
+        <!-- TAB 3: FULL GROSS REWARDS NEXUS -->
         <div id="content-3" class="tab-content hidden">
-            <h1 class="header-font text-5xl text-[#00ffc8] mb-10">GROSS REWARDS NEXUS</h1>
-            <div class="text-center">
-                <div class="text-8xl font-bold text-[#00ffc8] mb-4">2847</div>
-                <div class="text-xl text-[#00ffc8]/80">NEURAL POINTS</div>
+            <h1 class="header-font text-5xl text-[#00ffc8] mb-10 text-center">GROSS REWARDS NEXUS</h1>
+            
+            <div class="max-w-4xl mx-auto">
+                <!-- Big Points Counter -->
+                <div class="text-center mb-12">
+                    <div id="points-counter" class="text-8xl font-bold text-[#00ffc8] mb-2 animate-pulse">2,847</div>
+                    <div class="text-xl text-[#00ffc8]/70">NEURAL POINTS</div>
+                </div>
+
+                <!-- Rank Progress -->
+                <div class="mb-12">
+                    <div class="flex justify-between text-sm mb-3">
+                        <span>RECRUIT</span>
+                        <span>GUARDIAN</span>
+                    </div>
+                    <div class="h-5 bg-black border border-[#00ffc8]/50 rounded-full overflow-hidden">
+                        <div class="h-full w-[65%] bg-gradient-to-r from-[#00ffc8] to-cyan-300"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Activity Log -->
+                    <div>
+                        <h3 class="mb-4 text-[#00ffc8]">SPECIMEN ACTIVITY LOG</h3>
+                        <div class="bg-black border border-[#00ffc8]/30 rounded-3xl p-6 h-80 overflow-auto text-sm">
+                            <p class="mb-2">+50 • Daily Login</p>
+                            <p class="mb-2">+120 • AI Chat Session (18min)</p>
+                            <p class="mb-2">+85 • Simulated XRP Trade Win</p>
+                        </div>
+                    </div>
+
+                    <!-- Leaderboard -->
+                    <div>
+                        <h3 class="mb-4 text-[#00ffc8]">FLEET LEADERBOARD</h3>
+                        <div class="bg-black border border-[#00ffc8]/30 rounded-3xl p-6 space-y-4 text-sm">
+                            <div class="flex justify-between"><span>#1 VoidReaver42</span><span>14,920 pts</span></div>
+                            <div class="flex justify-between"><span>#2 NeonPhantom07</span><span>11,450 pts</span></div>
+                            <div class="flex justify-between"><span>#3 RiftStalker19</span><span>9,870 pts</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -124,26 +160,17 @@
     </div>
 </div>
 
-<!-- MOBILE HAMBURGER -->
-<button onclick="toggleMobileMenu()" class="md:hidden fixed top-6 right-6 z-50 bg-[#111] border-2 border-[#00ffc8] w-14 h-14 rounded-2xl flex items-center justify-center text-3xl text-[#00ffc8]">
-    <i class="fa-solid fa-bars"></i>
-</button>
-
 <script>
-    let currentTab = 0;
-
     function switchTab(n) {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
         document.getElementById('content-' + n).classList.remove('hidden');
         document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('tab-active', i === n));
-        currentTab = n;
     }
 
     function toggleMobileMenu() {
         alert("Mobile navigation active. Tabs are scrollable on small screens.");
     }
 
-    // Load Bro of the Day
     function loadBroOfDay() {
         document.getElementById('bro-of-day').innerHTML = `
             <div class="border border-[#00ffc8]/30 rounded-3xl p-8 text-center text-[#00ffc8]">
@@ -154,7 +181,6 @@
         `;
     }
 
-    // Ticker
     function runTicker() {
         const messages = [
             "[WARNING] BTC MINER INTERFERENCE DETECTED IN SECTOR 4",
@@ -170,7 +196,6 @@
         }, 5500);
     }
 
-    // Fetch Live XRP Price + Calculate
     async function fetchXRPPrice() {
         try {
             const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd');
@@ -183,7 +208,6 @@
         }
     }
 
-    // Xaman Connect
     function connectXaman() {
         const status = document.getElementById('wallet-text');
         status.innerHTML = 'CONNECTED ✓';
@@ -191,12 +215,10 @@
         alert("Xaman Wallet Connected (Add your real SDK keys for production)");
     }
 
-    // Initiate Fusion
     function initiateFusion() {
         alert("Transaction payload ready.\n\nSending ~37.6 XRP to rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX\n\nXaman integration ready for your keys.");
     }
 
-    // Initialize
     window.onload = () => {
         switchTab(0);
         loadBroOfDay();
