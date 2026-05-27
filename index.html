@@ -676,15 +676,70 @@
         }
     }
 
-    function connectXaman() {
-        const status = document.getElementById('wallet-text');
-        status.innerHTML = 'CONNECTED ✓';
-        status.classList.add('text-emerald-400');
-        alert('Xaman Wallet Connected (Add your real SDK keys for production)');
+    async function connectXaman() {
+        if (xamanConnecting) return;
+
+        xamanConnecting = true;
+        updateWalletStatus('CONNECTING...', false);
+
+        try {
+            const client = getXamanClient();
+            const state = await client.authorize();
+            xamanSession = state ?? await client.state();
+
+            if (xamanSession?.me?.account) {
+                updateWalletStatus('CONNECTED ✓', true);
+                alert(`Xaman Wallet Connected: ${xamanSession.me.account}`);
+            } else {
+                updateWalletStatus('CONNECT XAMAN', false);
+            }
+        } catch (error) {
+            console.error('Unable to connect Xaman.', error);
+            alert('Unable to connect Xaman wallet. Check the SDK load and API key.');
+            updateWalletStatus('CONNECT XAMAN', false);
+        } finally {
+            xamanConnecting = false;
+        }
     }
 
-    function initiateFusion() {
-        alert('Transaction payload ready.\n\nSending ~37.6 XRP to rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX\n\nXaman integration ready for your keys.');
+    async function initiateFusion() {
+        try {
+            const client = getXamanClient();
+            const state = xamanSession?.sdk ? xamanSession : await client.state();
+
+            if (!state?.me?.account) {
+                await connectXaman();
+                return;
+            }
+
+            if (!state?.sdk?.payload?.create) {
+                throw new Error('Xaman SDK payload creator unavailable');
+            }
+
+            const payload = await state.sdk.payload.create({
+                txjson: {
+                    TransactionType: 'Payment',
+                    Destination: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
+                    Amount: getFusionAmountDrops(),
+                },
+                options: {
+                    submit: true,
+                },
+                custom_meta: {
+                    identifier: 'buy-a-bro',
+                    instruction: 'Sign to buy a bro and initiate fusion.',
+                },
+            });
+
+            if (payload?.next?.always) {
+                window.open(payload.next.always, '_blank', 'noopener,noreferrer');
+            }
+
+            alert('Fusion payload created in Xaman. Complete the signature to continue.');
+        } catch (error) {
+            console.error('Unable to initiate fusion.', error);
+            alert('Unable to create the fusion payload. Please reconnect Xaman and try again.');
+        }
     }
 
     window.onload = () => {
