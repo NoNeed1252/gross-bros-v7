@@ -27,10 +27,9 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: repeating-linear-gradient(transparent 0px, transparent 5px, rgba(0,255,200,0.12) 5px, rgba(0,255,200,0.12) 10px);
+            background: repeating-linear-gradient(transparent 0px, transparent 5px, rgba(0,255,200,0.15) 5px, rgba(0,255,200,0.15) 10px);
             animation: scanline 8s linear infinite;
             z-index: 10;
-            pointer-events: none;
         }
         @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
 
@@ -53,14 +52,14 @@
             <div>NEURAL 99.4%</div>
             <div class="text-emerald-400">XRP RELAY ACTIVE</div>
         </div>
-        <div onclick="toggleXaman()" class="cursor-pointer px-6 py-3 border border-[#00ffc8]/60 hover:border-[#00ffc8] rounded-3xl flex items-center gap-3 text-sm text-[#00ffc8]">
+        <div onclick="connectXaman()" class="cursor-pointer px-6 py-3 border border-[#00ffc8]/60 hover:border-[#00ffc8] rounded-3xl flex items-center gap-3 text-sm text-[#00ffc8]">
             <i class="fa-solid fa-wallet"></i>
             <span id="wallet-text">CONNECT XAMAN</span>
         </div>
     </div>
 
     <!-- TABS -->
-    <div class="bg-[#0f0f0f] border-b border-[#333] flex text-sm overflow-x-auto">
+    <div class="bg-[#0f0f0f] border-b border-[#333] flex text-sm overflow-x-auto tabs-container">
         <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-5 cursor-pointer tab-active text-[#00ffc8]">MAIN CONSOLE</div>
         <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-5 cursor-pointer text-[#00ffc8]">STORYLINE</div>
         <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-5 cursor-pointer text-[#00ffc8]">FUSION LAB</div>
@@ -70,7 +69,7 @@
     <!-- CONTENT -->
     <div class="flex-1 overflow-auto crt bg-[#050505] p-6 md:p-12 relative text-[#00ffc8]">
 
-        <!-- TAB 0: MAIN -->
+        <!-- TAB 0: MAIN CONSOLE -->
         <div id="content-0" class="tab-content">
             <h1 class="header-font text-5xl md:text-6xl text-center text-[#00ffc8] tracking-widest mb-8">SPECIMEN SCANNING CHAMBER</h1>
             <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/90 mb-12">
@@ -89,21 +88,23 @@
         <!-- TAB 1: STORYLINE -->
         <div id="content-1" class="tab-content hidden">
             <h1 class="header-font text-5xl text-[#00ffc8] mb-10">STORYLINE TRANSMISSIONS</h1>
-            <div class="max-w-4xl mx-auto bg-black border border-red-500/30 p-10 rounded-3xl text-[#00ffc8]">
-                <h3 class="text-red-400 mb-6">LATEST TRANSMISSION</h3>
+            <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-10 rounded-3xl text-[#00ffc8]">
+                <h3 class="mb-6 text-[#00ffc8]">LATEST TRANSMISSION</h3>
                 <p>Before the accident we chased fortune through the rift. The XRP-7 collapse changed everything.</p>
                 <p class="mt-6">Now we fuse with machines to survive and protect the Ledger from the BTC miners.</p>
             </div>
         </div>
 
-        <!-- TAB 2: FUSION LAB -->
+        <!-- TAB 2: FUSION LAB (Cyan Industrial) -->
         <div id="content-2" class="tab-content hidden">
-            <h1 class="header-font text-5xl text-red-400 mb-8">FUSION LAB</h1>
-            <div class="max-w-2xl mx-auto border-4 border-red-600 bg-black rounded-3xl p-10 text-center">
-                <div class="h-64 border-4 border-red-500 rounded-2xl flex items-center justify-center mb-8 text-8xl">⚡</div>
-                <button onclick="initiateFusion()" class="w-full py-7 text-xl border-4 border-red-500 hover:bg-red-500/10 rounded-3xl text-[#00ffc8]">
+            <h1 class="header-font text-5xl text-[#00ffc8] mb-8">FUSION LAB</h1>
+            <div class="max-w-2xl mx-auto border-4 border-[#00ffc8] bg-black rounded-3xl p-10 text-center">
+                <div class="h-64 border-4 border-[#00ffc8] rounded-2xl flex items-center justify-center mb-8 text-8xl" id="fusion-chamber">⚡</div>
+                <div id="xrp-amount" class="text-3xl font-bold mb-6 text-[#00ffc8]"></div>
+                <button onclick="initiateFusion()" class="w-full py-7 text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl text-[#00ffc8]">
                     INITIATE FUSION • $50 USD
                 </button>
+                <p class="text-xs text-[#00ffc8]/70 mt-6">Treasury: rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX</p>
             </div>
         </div>
 
@@ -129,16 +130,20 @@
 </button>
 
 <script>
+    let currentTab = 0;
+
     function switchTab(n) {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
         document.getElementById('content-' + n).classList.remove('hidden');
         document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('tab-active', i === n));
+        currentTab = n;
     }
 
     function toggleMobileMenu() {
-        alert("Mobile menu active");
+        alert("Mobile navigation active. Tabs are scrollable on small screens.");
     }
 
+    // Load Bro of the Day
     function loadBroOfDay() {
         document.getElementById('bro-of-day').innerHTML = `
             <div class="border border-[#00ffc8]/30 rounded-3xl p-8 text-center text-[#00ffc8]">
@@ -149,6 +154,7 @@
         `;
     }
 
+    // Ticker
     function runTicker() {
         const messages = [
             "[WARNING] BTC MINER INTERFERENCE DETECTED IN SECTOR 4",
@@ -164,18 +170,38 @@
         }, 5500);
     }
 
+    // Fetch Live XRP Price + Calculate
+    async function fetchXRPPrice() {
+        try {
+            const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd');
+            const data = await res.json();
+            const price = data.ripple.usd;
+            const xrpAmount = (50 / price).toFixed(2);
+            document.getElementById('xrp-amount').innerHTML = `50 USD = <span class="text-white">${xrpAmount} XRP</span>`;
+        } catch (e) {
+            document.getElementById('xrp-amount').textContent = "50 USD ≈ 37.6 XRP (live price unavailable)";
+        }
+    }
+
+    // Xaman Connect
+    function connectXaman() {
+        const status = document.getElementById('wallet-text');
+        status.innerHTML = 'CONNECTED ✓';
+        status.classList.add('text-emerald-400');
+        alert("Xaman Wallet Connected (Add your real SDK keys for production)");
+    }
+
+    // Initiate Fusion
     function initiateFusion() {
-        alert("Fusion initiated - ready for your keys");
+        alert("Transaction payload ready.\n\nSending ~37.6 XRP to rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX\n\nXaman integration ready for your keys.");
     }
 
-    function toggleXaman() {
-        alert("Xaman Connect ready");
-    }
-
+    // Initialize
     window.onload = () => {
         switchTab(0);
         loadBroOfDay();
         runTicker();
+        fetchXRPPrice();
     };
 </script>
 </body>
