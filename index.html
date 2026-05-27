@@ -23,6 +23,35 @@
             margin: 20px auto;
         }
 
+        .tabs-container {
+            background: linear-gradient(180deg, #131313 0%, #0b0b0b 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 -1px 0 rgba(0, 255, 200, 0.08);
+        }
+
+        .tab {
+            color: rgba(255, 255, 255, 0.86);
+            background: linear-gradient(180deg, #191919 0%, #101010 100%);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease;
+        }
+
+        .tab:hover,
+        .tab:focus-visible {
+            outline: none;
+            color: #ffffff;
+            background: #1f1f1f;
+        }
+
+        .tab-active {
+            border-bottom: 5px solid #00ffc8;
+            color: #00ffc8;
+            background: #101010;
+            box-shadow: inset 0 -1px 0 rgba(0, 255, 200, 0.3), 0 0 0 1px rgba(0, 255, 200, 0.12);
+        }
+
         .crt::before {
             content: '';
             position: absolute;
@@ -33,7 +62,51 @@
         }
         @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
 
-        .tab-active { border-bottom: 5px solid #00ffc8; color: #00ffc8; background: #1a1a1a; }
+        .tab-active { border-bottom: 5px solid #00ffc8; color: #00ffc8; background: #101010; box-shadow: inset 0 -1px 0 rgba(0, 255, 200, 0.3), 0 0 0 1px rgba(0, 255, 200, 0.12); }
+        @media (max-width: 768px) {
+            body {
+                align-items: flex-start;
+                justify-content: flex-start;
+                padding: 0.5rem;
+            }
+
+            .alien-monitor {
+                width: 100%;
+                max-width: 100%;
+                height: auto;
+                min-height: calc(100svh - 1rem);
+                margin: 0;
+                border-width: 14px;
+                border-radius: 22px;
+                box-shadow: 0 0 0 12px #0a0a0a, 0 28px 64px -28px rgba(0,0,0,0.92), 0 0 90px -40px rgba(0,255,200,0.26);
+            }
+
+            .tabs-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tab {
+                min-width: 9rem;
+                padding: 1rem 1.1rem;
+            }
+
+            .crt {
+                padding: 1rem !important;
+            }
+
+            .crt h1 {
+                word-break: break-word;
+            }
+
+            .crt > div,
+            .crt .max-w-3xl,
+            .crt .max-w-2xl,
+            .crt .max-w-4xl {
+                max-width: 100%;
+            }
+        }
+
     </style>
 </head>
 <body class="bg-black min-h-screen flex items-center justify-center p-3 md:p-6">
@@ -58,7 +131,7 @@
         </div>
     </div>
 
-    <div class="bg-[#0f0f0f] border-b border-[#333] flex text-sm overflow-x-auto">
+    <div class="tabs-container bg-[#0f0f0f] border-b border-[#333] flex text-sm overflow-x-auto">
         <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-5 cursor-pointer tab-active">MAIN CONSOLE</div>
         <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-5 cursor-pointer">STORYLINE</div>
         <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-5 cursor-pointer">FUSION LAB</div>
