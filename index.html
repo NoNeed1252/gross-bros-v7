@@ -393,8 +393,6 @@
         updateFusionTreasuryDisplay();
         return treasury;
     }
-    const XAMAN_API_KEY = (window.XAMANAPIKEY || document.querySelector('meta[name="xaman-api-key"]')?.content?.trim() || "").trim();
-
     function updateWalletStatus(message, isConnected = false) {
         const status = document.getElementById('wallet-text');
         if (!status) return;
@@ -751,7 +749,7 @@
         updateWalletStatus('CONNECTING...', false);
 
         try {
-            const client = getXamanClient();
+            const client = await getXamanClient();
             const state = await client.authorize();
             xamanSession = state ?? await client.state();
 
@@ -771,7 +769,7 @@
 
     async function initiateFusion() {
         try {
-            const client = getXamanClient();
+            const client = await getXamanClient();
             const state = xamanSession?.sdk ? xamanSession : await client.state();
 
             if (!state?.me?.account) {
@@ -786,7 +784,7 @@
             const payload = await state.sdk.payload.create({
                 txjson: {
                     TransactionType: 'Payment',
-                    Destination: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
+                    Destination: await getRuntimeFusionTreasuryAddress(),
                     Amount: getFusionAmountDrops(),
                 },
                 options: {
