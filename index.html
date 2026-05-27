@@ -111,18 +111,18 @@
             body {
                 align-items: flex-start;
                 justify-content: flex-start;
-                padding: 0.125rem;
+                padding: 0;
+                background: #000;
             }
 
             .alien-monitor {
-                width: calc(100vw - 0.25rem);
-                max-width: calc(100vw - 0.25rem);
-                min-height: calc(100svh - 0.25rem);
+                width: 100vw;
+                max-width: 100vw;
+                min-height: 100svh;
                 margin: 0;
-                border-width: 4px;
-                border-color: #0d0d0d;
-                border-radius: 18px;
-                box-shadow: 0 0 0 2px #050505, 0 18px 38px -30px rgba(0,0,0,0.95), 0 0 54px -42px rgba(0,255,200,0.18);
+                border-width: 0;
+                border-radius: 0;
+                box-shadow: none;
             }
 
             .tabs-container {
@@ -131,19 +131,19 @@
             }
 
             .tab {
-                min-width: 6.5rem;
-                padding: 0.55rem 0.7rem;
-                font-size: 0.58rem;
+                min-width: 7rem;
+                padding: 0.72rem 0.82rem;
+                font-size: 0.56rem;
                 letter-spacing: 0.08em;
                 line-height: 1.05;
             }
 
             .crt {
-                padding: 0.6rem !important;
+                padding: 0.75rem !important;
             }
 
             .crt h1 {
-                font-size: clamp(1.35rem, 5vw, 2.1rem) !important;
+                font-size: clamp(1.45rem, 5.6vw, 2.2rem) !important;
                 line-height: 1.08 !important;
                 letter-spacing: 0.08em !important;
                 margin-bottom: 1rem !important;
@@ -161,49 +161,7 @@
                 padding-right: 0.85rem !important;
             }
         }
-        @media (max-width: 768px) {
-            body {
-                align-items: flex-start;
-                justify-content: flex-start;
-                padding: 0.5rem;
-            }
 
-            .alien-monitor {
-                width: 100%;
-                max-width: 100%;
-                height: auto;
-                min-height: calc(100svh - 1rem);
-                margin: 0;
-                border-width: 14px;
-                border-radius: 22px;
-                box-shadow: 0 0 0 12px #0a0a0a, 0 28px 64px -28px rgba(0,0,0,0.92), 0 0 90px -40px rgba(0,255,200,0.26);
-            }
-
-            .tabs-container {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            .tab {
-                min-width: 9rem;
-                padding: 1rem 1.1rem;
-            }
-
-            .crt {
-                padding: 1rem !important;
-            }
-
-            .crt h1 {
-                word-break: break-word;
-            }
-
-            .crt > div,
-            .crt .max-w-3xl,
-            .crt .max-w-2xl,
-            .crt .max-w-4xl {
-                max-width: 100%;
-            }
-        }
 
     </style>
 </head>
@@ -211,10 +169,17 @@
 
 <div class="alien-monitor w-full h-[94vh] flex flex-col shadow-2xl relative">
 
-    <div class="bg-[#151515] border-b-8 border-[#0a0a0a] px-6 py-5 flex items-center justify-between mobile-tight">
-        <div class="flex items-center gap-4">
-            <div class="w-5 h-5 bg-red-600 rounded-full animate-pulse"></div>
-            <div class="header-font text-3xl tracking-widest text-[#00ffc8]">GROSS BROS</div>
+    <div class="bg-[#151515] border-b-8 border-[#0a0a0a] px-6 py-5 flex items-center justify-between gap-6 mobile-tight">
+        <div class="flex flex-col gap-3">
+            <div class="flex items-center gap-4">
+                <div class="w-5 h-5 bg-red-600 rounded-full animate-pulse"></div>
+                <div class="header-font text-3xl md:text-4xl tracking-widest text-[#00ffc8]">GROSS BROS HUB</div>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-[0.64rem] md:text-xs uppercase tracking-[0.28em] text-[#00ffc8]/80">
+                <a href="https://x.com/thegrossbros" target="_blank" rel="noreferrer" class="px-3 py-2 rounded-full border border-[#00ffc8]/30 bg-black/60 hover:border-[#00ffc8] hover:text-white transition-colors">X</a>
+                <a href="https://discord.gg/fcZYk7UcB" target="_blank" rel="noreferrer" class="px-3 py-2 rounded-full border border-[#00ffc8]/30 bg-black/60 hover:border-[#00ffc8] hover:text-white transition-colors">Discord</a>
+                <span class="text-[#00ffc8]/50">community uplinks</span>
+            </div>
         </div>
         <div class="hidden md:flex items-center gap-8 text-sm font-mono text-[#00ffc8]">
             <div>CACHE 2.4TB</div>
@@ -233,6 +198,8 @@
         <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-5 cursor-pointer">STORYLINE</div>
         <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-5 cursor-pointer">FUSION LAB</div>
         <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-5 cursor-pointer">GROSS REWARDS</div>
+        <div onclick="switchTab(4)" id="tab-4" class="tab px-6 py-5 cursor-pointer">PRIVACY</div>
+        <div onclick="switchTab(5)" id="tab-5" class="tab px-6 py-5 cursor-pointer">TERMS</div>
     </div>
 
     <div class="flex-1 overflow-auto crt bg-[#050505] p-6 md:p-12 relative text-[#00ffc8]">
@@ -311,6 +278,28 @@
             </div>
         </div>
     </div>
+
+        <div id="content-4" class="tab-content hidden">
+            <h1 class="header-font text-5xl text-[#00ffc8] mb-8">PRIVACY PROTOCOL</h1>
+            <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-10 rounded-3xl text-[#00ffc8] mobile-tight">
+                <div class="space-y-6 leading-8 text-[#00ffc8]/90">
+                    <p>Signal fragment 01: The hub only records the telemetry required to keep the alien terminal stable. Navigation taps, wallet handshakes, and diagnostic pulses may be retained as encrypted echoes.</p>
+                    <p>Signal fragment 02: The crew does not trade, lease, or auction your coordinates to outside void traders. If a log is preserved, it is for security, continuity, or the ritual recovery of lost transmissions.</p>
+                    <p>Signal fragment 03: By crossing this chamber you acknowledge that the void is a shared medium, and any recovered datum may return as a fragment, echo, or warning from the dark.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-5" class="tab-content hidden">
+            <h1 class="header-font text-5xl text-[#00ffc8] mb-8">TERMS OF TRANSMISSION</h1>
+            <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-10 rounded-3xl text-[#00ffc8] mobile-tight">
+                <div class="space-y-6 leading-8 text-[#00ffc8]/90">
+                    <p>Signal fragment 01: Access to the Gross Bros Hub is granted for lawful navigation, lore inspection, and sanctioned relay rituals only. Do not overload the deck, spoof the broadcast, or tamper with the fusion chassis.</p>
+                    <p>Signal fragment 02: The crew may adjust routes, features, and transmissions without prior warning when the stars shift. Continued use after any update means you have accepted the altered course, even if the new path is more haunted than the last.</p>
+                    <p>Signal fragment 03: If any clause conflicts with the laws of physics, the narrower interpretation still applies. If the laws of physics fail, the surviving interpretation belongs to the void.</p>
+                </div>
+            </div>
+        </div>
 
     <div class="bg-[#111] border-t-8 border-[#1a1a1a] py-4 px-6 text-xs overflow-hidden ticker-container">
         <div id="news-ticker" class="ticker-track text-[#00ffc8] font-mono"></div>
