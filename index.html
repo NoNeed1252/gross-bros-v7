@@ -169,7 +169,7 @@
 
 <div class="alien-monitor w-full h-[94vh] flex flex-col shadow-2xl relative">
 
-    <div class="bg-[#151515] border-b-8 border-[#0a0a0a] px-6 py-5 flex items-center justify-between gap-6 mobile-tight">
+    <div class="bg-[#151515] border-b-8 border-[#0a0a0a] px-6 py-3 md:py-4 flex items-center justify-between gap-6 mobile-tight">
         <div class="flex flex-col gap-3">
             <div class="flex items-center gap-4">
                 <div class="w-5 h-5 bg-red-600 rounded-full animate-pulse"></div>
@@ -194,15 +194,15 @@
     </div>
 
     <div class="tabs-container bg-[#0f0f0f] border-b border-[#333] flex text-sm overflow-x-auto">
-        <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-5 cursor-pointer tab-active">MAIN CONSOLE</div>
-        <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-5 cursor-pointer">STORYLINE</div>
-        <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-5 cursor-pointer">FUSION LAB</div>
-        <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-5 cursor-pointer">GROSS REWARDS</div>
-        <div onclick="switchTab(4)" id="tab-4" class="tab px-6 py-5 cursor-pointer">PRIVACY</div>
-        <div onclick="switchTab(5)" id="tab-5" class="tab px-6 py-5 cursor-pointer">TERMS</div>
+        <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-3 md:py-4 cursor-pointer tab-active">MAIN CONSOLE</div>
+        <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-3 md:py-4 cursor-pointer">STORYLINE</div>
+        <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-3 md:py-4 cursor-pointer">FUSION LAB</div>
+        <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-3 md:py-4 cursor-pointer">GROSS REWARDS</div>
+        <div onclick="switchTab(4)" id="tab-4" class="tab px-6 py-3 md:py-4 cursor-pointer">PRIVACY</div>
+        <div onclick="switchTab(5)" id="tab-5" class="tab px-6 py-3 md:py-4 cursor-pointer">TERMS</div>
     </div>
 
-    <div class="flex-1 overflow-auto crt bg-[#050505] p-6 md:p-12 relative text-[#00ffc8]">
+    <div class="flex-1 overflow-auto crt bg-[#050505] p-4 md:p-10 relative text-[#00ffc8]">
 
         <div id="content-0" class="tab-content">
             <h1 class="header-font text-5xl md:text-6xl text-center text-[#00ffc8] tracking-widest mb-8">SPECIMEN SCANNING CHAMBER</h1>
@@ -312,7 +312,8 @@
     const fallbackSpecimen = {
         id: 'V-042',
         name: 'Void Reaver',
-        backstory: 'Born from the first rift collapse, he listens for BTC miner static before it reaches the Ledger.'
+        backstory: 'Born from the first rift collapse, he listens for BTC miner static before it reaches the Ledger.',
+        imageurl: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20960%20720%22%20role%3D%22img%22%20aria-label%3D%22Specimen%20placeholder%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23041612%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23000000%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22line%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%220%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2300ffc8%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2250%25%22%20stop-color%3D%22%2300ffc8%22%20stop-opacity%3D%220.9%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2300ffc8%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22960%22%20height%3D%22720%22%20fill%3D%22url(%23bg)%22%2F%3E%0A%20%20%3Crect%20x%3D%2236%22%20y%3D%2236%22%20width%3D%22888%22%20height%3D%22648%22%20rx%3D%2228%22%20fill%3D%22none%22%20stroke%3D%22%2300ffc8%22%20stroke-opacity%3D%220.45%22%20stroke-width%3D%224%22%2F%3E%0A%20%20%3Crect%20x%3D%2276%22%20y%3D%2288%22%20width%3D%22808%22%20height%3D%2216%22%20rx%3D%228%22%20fill%3D%22url(%23line)%22%2F%3E%0A%20%20%3Crect%20x%3D%2276%22%20y%3D%22612%22%20width%3D%22808%22%20height%3D%2216%22%20rx%3D%228%22%20fill%3D%22url(%23line)%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%22480%22%20cy%3D%22350%22%20r%3D%22128%22%20fill%3D%22none%22%20stroke%3D%22%2300ffc8%22%20stroke-opacity%3D%220.55%22%20stroke-width%3D%226%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%22480%22%20cy%3D%22350%22%20r%3D%2268%22%20fill%3D%22none%22%20stroke%3D%22%2300ffc8%22%20stroke-opacity%3D%220.75%22%20stroke-width%3D%226%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M480%20250%20L480%20450%20M380%20350%20L580%20350%20M404%20274%20L556%20426%20M556%20274%20L404%20426%22%20stroke%3D%22%2300ffc8%22%20stroke-opacity%3D%220.8%22%20stroke-width%3D%226%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%3Ctext%20x%3D%2250%25%22%20y%3D%22552%22%20fill%3D%22%2300ffc8%22%20fill-opacity%3D%220.9%22%20text-anchor%3D%22middle%22%20font-family%3D%22Orbitron%2C%20sans-serif%22%20font-size%3D%2242%22%20letter-spacing%3D%228%22%3ESCANNING%20CHAMBER%20PLACEHOLDER%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%2250%25%22%20y%3D%22604%22%20fill%3D%22%2300ffc8%22%20fill-opacity%3D%220.55%22%20text-anchor%3D%22middle%22%20font-family%3D%22Share%20Tech%20Mono%2C%20monospace%22%20font-size%3D%2222%22%20letter-spacing%3D%226%22%3ENO%20IMAGE%20AVAILABLE%3C%2Ftext%3E%0A%3C%2Fsvg%3E'
     };
 
     let supabaseClient = null;
@@ -374,12 +375,25 @@
         const target = document.getElementById('bro-of-day');
         if (!target) return;
 
+        const imageUrl = escapeHtml(specimen.imageurl ?? fallbackSpecimen.imageurl);
+
         target.innerHTML = `
-            <div class="border border-[#00ffc8]/30 rounded-3xl p-8 text-center text-[#00ffc8] bg-black/70">
-                <div class="text-7xl mb-6">🧬</div>
-                <div class="text-2xl font-bold">${escapeHtml(specimen.name)}</div>
-                <div class="text-sm uppercase tracking-[0.3em] text-[#00ffc8]/70 mt-3">Specimen ID: <span class="text-[#00ffc8]">${escapeHtml(specimen.id)}</span></div>
-                <div class="text-[#00ffc8]/80 mt-4 leading-8">${escapeHtml(specimen.backstory)}</div>
+            <div class="border border-[#00ffc8]/30 rounded-3xl p-6 text-[#00ffc8] bg-black/70 overflow-hidden">
+                <div class="relative overflow-hidden rounded-2xl border border-[#00ffc8]/20 bg-black">
+                    <img
+                        src="${imageUrl}"
+                        alt="${escapeHtml(specimen.name)} scanning chamber image"
+                        class="w-full h-80 md:h-[28rem] object-cover"
+                        onerror="this.onerror=null;this.src='${fallbackSpecimen.imageurl}'"
+                    />
+                    <div class="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#00ffc8]/20 to-transparent"></div>
+                    <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/85 to-transparent"></div>
+                </div>
+                <div class="mt-6 text-center">
+                    <div class="text-2xl font-bold">${escapeHtml(specimen.name)}</div>
+                    <div class="text-sm uppercase tracking-[0.3em] text-[#00ffc8]/70 mt-3">Specimen ID: <span class="text-[#00ffc8]">${escapeHtml(specimen.id)}</span></div>
+                    <div class="text-[#00ffc8]/80 mt-4 leading-8">${escapeHtml(specimen.backstory)}</div>
+                </div>
             </div>
         `;
     }
@@ -473,7 +487,7 @@
 
             const { data, error } = await supabase
                 .from('specimens')
-                .select('id,name,backstory')
+                .select('id,name,backstory,imageurl,image_url')
                 .order('id', { ascending: true })
                 .range(index, index);
 
@@ -490,6 +504,7 @@
                 id: String(specimen.id ?? fallbackSpecimen.id),
                 name: String(specimen.name ?? fallbackSpecimen.name),
                 backstory: String(specimen.backstory ?? fallbackSpecimen.backstory),
+                imageurl: String(specimen.imageurl ?? specimen.image_url ?? fallbackSpecimen.imageurl),
             });
         } catch (error) {
             console.warn('Bro of the Day fell back to Void Reaver.', error);
