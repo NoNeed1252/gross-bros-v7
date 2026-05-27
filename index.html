@@ -212,8 +212,9 @@
             <h1 class="header-font text-5xl text-[#00ffc8] mb-10">STORYLINE TRANSMISSIONS</h1>
             <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-10 rounded-3xl text-[#00ffc8] mobile-tight">
                 <h3 class="mb-6 text-[#00ffc8]">LATEST TRANSMISSION</h3>
-                <p>Before the accident we chased fortune through the rift. The XRP-7 collapse changed everything.</p>
-                <p class="mt-6">Now we fuse with machines to survive and protect the Ledger from the BTC miners.</p>
+                <div id="storyline-latest" class="space-y-6 leading-8 text-[#00ffc8]/90">
+                    <div class="animate-pulse text-[#00ffc8]/70">Loading transmission signal...</div>
+                </div>
             </div>
         </div>
 
@@ -349,6 +350,56 @@
             </div>
         `;
     }
+    function renderStoryline(transmission) {
+        const target = document.getElementById('storyline-latest');
+        if (!target) return;
+
+        target.innerHTML = `
+            <div class="text-sm uppercase tracking-[0.3em] text-[#00ffc8]/60 mb-2">Signal received</div>
+            <div class="text-2xl md:text-3xl text-[#00ffc8] leading-[1.8] whitespace-pre-wrap">${escapeHtml(transmission.text)}</div>
+            <div class="pt-6 text-sm text-[#00ffc8]/60 border-t border-[#00ffc8]/15 mt-8">
+                Added ${escapeHtml(transmission.addedAt)}
+            </div>
+        `;
+    }
+
+    async function loadLatestStoryline() {
+        renderStoryline({
+            text: 'Awaiting the next transmission from the Gross Bros relay.',
+            addedAt: 'No transmissions yet',
+        });
+
+        try {
+            const supabase = getSupabaseClient();
+            const { data, error } = await supabase
+                .from('storyline')
+                .select('transmission_text,date_added')
+                .order('date_added', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            if (error) {
+                throw error;
+            }
+
+            if (!data) {
+                return;
+            }
+
+            renderStoryline({
+                text: String(data.transmission_text ?? ''),
+                addedAt: new Date(data.date_added).toLocaleString(undefined, {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                }),
+            });
+        } catch (error) {
+            console.warn('Storyline transmission load failed.', error);
+        }
+    }
 
     async function loadBroOfDay() {
         renderBroOfDayLoading();
@@ -416,6 +467,7 @@
     window.onload = () => {
         switchTab(0);
         void loadBroOfDay();
+        void loadLatestStoryline();
         runTicker();
         fetchXRPPrice();
     };
