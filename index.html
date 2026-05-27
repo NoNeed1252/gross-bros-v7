@@ -6,9 +6,9 @@
     <title>GROSS BROS • GUARDIAN BROADCAST OS v7.2.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;family=Share+Tech+Mono&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;family=Share+Tech+Mono&amp;display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;family=Share+Tech+Mono&display=swap');
         :root { --cyan: #00ffc8; }
         body { font-family: 'Share Tech Mono', monospace; background: #000; }
         .header-font { font-family: 'Orbitron', sans-serif; }
@@ -195,7 +195,7 @@
             <div class="border-4 border-[#00ffc8] bg-black/70 rounded-3xl p-8 mb-12">
                 <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" 
                    class="block text-center py-7 text-2xl header-font border-2 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
-                    BUY A BRO?
+                    BUY A BRO
                 </a>
             </div>
             <div id="bro-of-day" class="max-w-2xl mx-auto"></div>
@@ -289,11 +289,51 @@
     }
 
     function loadBroOfDay() {
+        const specimens = [
+            {
+                id: 'V-042',
+                name: 'Void Reaver',
+                backstory: 'Born from the first rift collapse, he listens for BTC miner static before it reaches the Ledger.'
+            },
+            {
+                id: 'N-117',
+                name: 'Neon Phantom',
+                backstory: 'A glowing infiltrator who slips through dead channels and maps hidden XRP corridors.'
+            },
+            {
+                id: 'R-309',
+                name: 'Rift Stalker',
+                backstory: 'Trained in broken dimensions, he tracks anomalies by the scent of burned code.'
+            },
+            {
+                id: 'C-888',
+                name: 'Circuit Hydra',
+                backstory: 'Every severed signal grows two more heads, each guarding a different shard of the archive.'
+            },
+            {
+                id: 'S-271',
+                name: 'Solar Warden',
+                backstory: 'Powered by captive starlight, she keeps the outer relay warm through midnight outages.'
+            },
+            {
+                id: 'O-606',
+                name: 'Chrome Oracle',
+                backstory: 'A reflective prophet who reads tomorrow from the burn marks left on yesterday’s firmware.'
+            }
+        ];
+
+        const utcDate = new Date().toISOString().slice(0, 10);
+        let seed = 0;
+        for (const ch of utcDate) {
+            seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+        }
+        const specimen = specimens[seed % specimens.length];
+
         document.getElementById('bro-of-day').innerHTML = `
             <div class="border border-[#00ffc8]/30 rounded-3xl p-8 text-center text-[#00ffc8]">
                 <div class="text-7xl mb-6">🧬</div>
-                <div class="text-2xl font-bold">#042 • VOID REAVER</div>
-                <div class="text-[#00ffc8]/80 mt-4">Born from the first rift collapse. Today he senses BTC miner movement near the ledger.</div>
+                <div class="text-2xl font-bold">${specimen.id} • ${specimen.name}</div>
+                <div class="text-[#00ffc8]/80 mt-4">${specimen.backstory}</div>
             </div>
         `;
     }
