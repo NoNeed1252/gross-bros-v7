@@ -71,28 +71,85 @@
 <script>
     const XAMANAPIKEY = '5f30fcbe-a810-490b-8fd5-500a37568a49';
     const XAMANAPIBASE = 'https://xumm.app/api/v1/platform';
+    const XAMANSESSIONKEY = 'grossbros:xaman-session';
     let currentWalletAddress = null;
 
     function switchTab(n) {
-        // Simple tab logic for now
-        alert("Tab " + n + " clicked - we'll expand this later");
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        const activeContent = document.getElementById('content-' + n);
+        if (activeContent) activeContent.classList.add("active");
+        
+        document.querySelectorAll('.tab').forEach((t, i) => {
+            t.classList.toggle("tab-active", i === n);
+        });
+    }
+
+    function runTicker() {
+        const messages = [
+            '[WARNING] BTC MINER INTERFERENCE DETECTED IN SECTOR 4',
+            '[ALERT] DIMENSIONAL RIFT ACTIVITY INCREASING',
+            '[LORE] THE CHAIN REMEMBERS WHAT THE VOID FORGOT',
+            '[SYSTEM] GUARDIAN BROADCAST OS v7.2.1 STABLE'
+        ];
+        let i = 0;
+        const ticker = document.getElementById('news-ticker');
+        setInterval(() => {
+            if (ticker) ticker.textContent = messages[i];
+            i = (i + 1) % messages.length;
+        }, 5500);
+    }
+
+    function shortenAddress(address) {
+        if (!address) return 'Unknown';
+        return address.slice(0, 6) + '…' + address.slice(-6);
+    }
+
+    function setWalletUI(connected, address = "") {
+        currentWalletAddress = address;
+        const walletText = document.getElementById('wallet-text');
+        const status = document.getElementById('xaman-status');
+        if (walletText) walletText.textContent = connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
+        if (status) status.textContent = connected ? `Connected: ${shortenAddress(address)}` : 'Wallet disconnected.';
     }
 
     async function connectXaman() {
-        alert("Xaman connect clicked - testing basic functionality");
-        // We'll add full logic once page loads
+        try {
+            const payloadResponse = await fetch(`${XAMANAPIBASE}/payload`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': XAMANAPIKEY
+                },
+                body: JSON.stringify({
+                    txjson: { TransactionType: 'SignIn' },
+                    options: { submit: false, expire: 5 }
+                })
+            });
+
+            const payload = await payloadResponse.json();
+            if (payload.next?.always) {
+                window.open(payload.next.always, '_blank');
+            }
+
+            // Simple poll (you can improve later)
+            alert("Xaman link opened in new tab. Approve it in the Xaman app, then come back and click CONNECT XAMAN again.");
+        } catch (err) {
+            console.error(err);
+            alert("Xaman request failed. Make sure Xaman app is open.");
+        }
     }
 
-    // Load confirmation
+    // Initialize everything
     window.onload = function() {
+        // Add full content back (you can expand this)
         document.getElementById('content-area').innerHTML = `
-            <div class="text-center py-20">
-                <h1 class="header-font text-6xl mb-6">BRO OF THE DAY</h1>
-                <p class="text-xl">Site loaded successfully.</p>
-                <p class="mt-8">Try clicking CONNECT XAMAN now.</p>
+            <div id="content-0" class="tab-content active">
+                <h1 class="header-font text-5xl text-center mb-8">BRO OF THE DAY</h1>
+                <p class="text-center text-lg">Site is now working. Test the wallet button.</p>
             </div>
         `;
-        console.log("✅ Page loaded without errors");
+        runTicker();
+        console.log("✅ Full script loaded");
     };
 </script>
 </body>
