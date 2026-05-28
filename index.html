@@ -240,7 +240,21 @@
     function getWalletSession() {
         try {
             const raw = window.localStorage.getItem(XAMAN_SESSION_KEY);
-            return raw ? JSON.parse(raw) : null;
+            const session = raw ? JSON.parse(raw) : null;
+            if (!session || typeof session !== 'object') {
+                return null;
+            }
+
+            const address = typeof session.address === 'string' ? session.address.trim() : '';
+            const payloadUuid = typeof session.payloadUuid === 'string' ? session.payloadUuid.trim() : '';
+            const connected = Boolean(session.connected && address);
+
+            return {
+                ...session,
+                address,
+                payloadUuid,
+                connected
+            };
         } catch {
             return null;
         }
@@ -252,6 +266,42 @@
 
     function clearWalletSession() {
         window.localStorage.removeItem(XAMAN_SESSION_KEY);
+    }
+
+    async function verifyWalletSession(session) {
+        if (!session?.connected || !session.address) {
+            clearWalletSession();
+            return null;
+        }
+
+        if (!session.payloadUuid) {
+            clearWalletSession();
+            return null;
+        }
+
+        try {
+            const payload = await fetchPayloadStatus(session.payloadUuid);
+            const signed = Boolean(payload?.meta?.signed || payload?.signed || payload?.response?.signed);
+            const expired = Boolean(payload?.meta?.expired || payload?.expired);
+
+            if (!signed || expired) {
+                clearWalletSession();
+                return null;
+            }
+
+            const verifiedAddress = payload?.response?.account || payload?.response?.user_token?.account || payload?.response?.signer || payload?.account || session.address;
+            const verifiedSession = {
+                ...session,
+                connected: true,
+                address: typeof verifiedAddress === 'string' ? verifiedAddress.trim() : session.address
+            };
+
+            saveWalletSession(verifiedSession);
+            return verifiedSession;
+        } catch {
+            clearWalletSession();
+            return null;
+        }
     }
 
     function shortenAddress(address) {
@@ -364,10 +414,18 @@
         });
     }
 
-    function openSigninUrl(payload) {
-        const nextUrl = payload?.next?.always?.url || payload?.next?.always || payload?.next?.no_push_msg_received?.url || payload?.next?.no_push_msg_received || payload?.refs?.qr_png?.url || payload?.refs?.qr_png || payload?.url || null;
+    function getXamanPayloadUrl(payload) {
+        return payload?.next?.always?.url || payload?.next?.always || payload?.next?.no_push_msg_received?.url || payload?.next?.no_push_msg_received || payload?.refs?.qr_png?.url || payload?.refs?.qr_png || payload?.url || null;
+    }
+
+    function openSigninUrl(payload, targetWindow = null) {
+        const nextUrl = getXamanPayloadUrl(payload);
         if (typeof nextUrl === 'string' && nextUrl) {
-            window.open(nextUrl, '_blank', 'noopener,noreferrer');
+            if (targetWindow && !targetWindow.closed) {
+                targetWindow.location.href = nextUrl;
+            } else {
+                window.location.assign(nextUrl);
+            }
         }
     }
 
@@ -397,7 +455,7 @@
     }
 
     async function connectXaman() {
-        const existing = getWalletSession();
+        const existing = await verifyWalletSession(getWalletSession());
         if (existing?.connected && existing.address) {
             setWalletUI({ connected: true, address: existing.address, message: `Connected: ${shortenAddress(existing.address)}` });
             return existing;
@@ -432,29 +490,48 @@
     }
 
     async function initiateFusion() {
+        let fusionWindow = null;
+
         try {
+            fusionWindow = window.open('about:blank', '_blank');
+
             let session = getWalletSession();
             if (!session?.connected || !session.address) {
                 session = await connectXaman();
+            } else {
+                session = await verifyWalletSession(session) || session;
+            }
+
+            if (!session?.connected || !session.address) {
+                throw new Error('Connect Xaman before starting fusion.');
             }
 
             setWalletUI({ connected: true, address: session.address, message: 'Creating fusion payload…' });
             const payload = await createFusionPayload();
-            openSigninUrl(payload);
+            const payloadUrl = getXamanPayloadUrl(payload);
+
+            if (!payloadUrl) {
+                throw new Error('Unable to open the Xaman payload URL.');
+            }
+
+            openSigninUrl(payload, fusionWindow);
             setWalletUI({ connected: true, address: session.address, message: 'Fusion payload ready for ' + shortenAddress(session.address) });
         } catch (error) {
+            if (fusionWindow && !fusionWindow.closed) {
+                fusionWindow.close();
+            }
             setWalletUI({ connected: false, address: '', message: error instanceof Error ? error.message : 'Unable to initiate fusion.' });
         }
     }
 
-    window.addEventListener('load', () => {
+    window.addEventListener('load', async () => {
         switchTab(0);
         runTicker();
 
         document.getElementById('wallet-button')?.addEventListener('click', connectXaman);
         document.getElementById('fusion-button')?.addEventListener('click', initiateFusion);
 
-        const session = getWalletSession();
+        const session = await verifyWalletSession(getWalletSession());
         if (session?.connected && session.address) {
             setWalletUI({ connected: true, address: session.address, message: `Connected: ${shortenAddress(session.address)}` });
         } else {
