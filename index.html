@@ -136,8 +136,6 @@
     </div>
 </div>
 
-<script src="https://xumm.app/assets/cdn/xumm.min.js"></script>
-
 <script>
     const XAMANAPIKEY = '5f30fcbe-a810-490b-8fd5-500a37568a49';
     let currentWalletAddress = null;
@@ -179,31 +177,71 @@
         if (xrpAmount) xrpAmount.textContent = connected ? `CONNECTED BRO: ${shortenAddress(address)}` : '';
     }
 
+    async function createXamanSigninPayload() {
+        const response = await fetch(`${XAMANAPIBASE}/payload`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': XAMANAPIKEY
+            },
+            body: JSON.stringify({
+                txjson: { TransactionType: 'SignIn' },
+                options: { submit: false, expire: 5 }
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data?.uuid) {
+            throw new Error(data?.message || "Failed to create request");
+        }
+        return data;
+    }
+
+    function openXamanLink(payload) {
+        const link = payload?.next?.always || payload?.next?.nopushmsgreceived || payload?.refs?.qrpng;
+        if (link) {
+            window.open(link, '_blank');
+        } else {
+            alert("Could not open Xaman link");
+        }
+    }
+
+    async function pollForSignin(uuid) {
+        for (let i = 0; i < 40; i++) {   // ~80 seconds max
+            const response = await fetch(`${XAMANAPIBASE}/payload/${uuid}`, {
+                headers: { 'X-API-Key': XAMANAPIKEY }
+            });
+            const data = await response.json();
+
+            if (data?.meta?.signed || data?.signed) {
+                return data?.response?.account || data?.account || '';
+            }
+            if (data?.meta?.expired || data?.expired) {
+                throw new Error("Request expired");
+            }
+            await new Promise(r => setTimeout(r, 2000));
+        }
+        throw new Error("Timed out waiting for approval");
+    }
+
     async function connectXaman() {
         try {
             setWalletUI(false);
             
-            const xumm = new Xumm(XAMANAPIKEY);
-            
-            xumm.on("ready", () => {
-                console.log("Xumm SDK ready");
-            });
+            const payload = await createXamanSigninPayload();
+            openXamanLink(payload);
 
-            // Authorize (SignIn)
-            const authorization = await xumm.authorize();
+            const address = await pollForSignin(payload.uuid);
             
-            if (authorization && authorization.account) {
-                const address = authorization.account;
-                const session = { connected: true, address: address };
-                localStorage.setItem('grossbros:xaman-session', JSON.stringify(session));
-                setWalletUI(true, address);
-            } else {
-                throw new Error("No account returned");
-            }
-
+            const session = { connected: true, address: address };
+            localStorage.setItem('grossbros:xaman-session', JSON.stringify(session));
+            setWalletUI(true, address);
+            
+            alert("✅ Wallet connected successfully!");
         } catch (err) {
-            console.error("Xaman error:", err);
-            alert("Connection failed. Please open the Xaman app on your phone first, then try again.");
+            console.error(err);
+            setWalletUI(false);
+            alert(err.message || "Connection failed. Make sure Xaman app is installed and open.");
         }
     }
 
