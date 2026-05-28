@@ -169,7 +169,7 @@
 
     function escapeHtml(value) {
         return String(value).replace(/[&<>"']/g, function (ch) {
-            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', ''': '&#39;' })[ch];
+            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
         });
     }
 
@@ -192,7 +192,7 @@
     function decodeTokenUri(uriHex) {
         const decoded = hexToUtf8(uriHex);
         if (!decoded) return '';
-        return decoded.replace(/^ipfs:///i, 'ipfs://');
+        return decoded.replace(/^ipfs:\/\//i, 'ipfs://');
     }
 
     function normalizeIpfsUrl(raw) {
@@ -214,7 +214,7 @@
         const gatewayUrl = normalizeIpfsUrl(rawUri);
         if (!gatewayUrl) return '';
 
-        if (/.json(?|$)/i.test(gatewayUrl)) {
+        if (/\.json(?:$|[?#])/i.test(gatewayUrl)) {
             try {
                 const res = await fetch(gatewayUrl);
                 if (res.ok) {
@@ -228,7 +228,7 @@
             return '';
         }
 
-        if (/.(png|jpg|jpeg|gif|webp|svg)(?|$)/i.test(gatewayUrl) || gatewayUrl.startsWith('data:image/')) {
+        if (/\.(png|jpg|jpeg|gif|webp|svg)(?:$|[?#])/i.test(gatewayUrl) || gatewayUrl.startsWith('data:image/')) {
             return gatewayUrl;
         }
 
