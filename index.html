@@ -189,7 +189,7 @@
             <div class="text-emerald-400">XRP RELAY ACTIVE</div>
         </div>
         <div class="flex flex-col items-end gap-1">
-            <button id="wallet-button" type="button" onclick="connectXaman()" class="cursor-pointer px-6 py-3 border border-[#00ffc8]/60 hover:border-[#00ffc8] rounded-3xl flex items-center gap-3 text-sm text-[#00ffc8] bg-transparent">
+            <button type="button" onclick="connectXaman()" class="cursor-pointer px-6 py-3 border border-[#00ffc8]/60 hover:border-[#00ffc8] rounded-3xl flex items-center gap-3 text-sm text-[#00ffc8] bg-transparent">
                 <i class="fa-solid fa-wallet"></i>
                 <span id="wallet-text">CONNECT XAMAN</span>
             </button>
@@ -238,7 +238,7 @@
             <div class="max-w-2xl mx-auto border-4 border-[#00ffc8] bg-black rounded-3xl p-10 text-center mobile-tight">
                 <div class="h-64 border-4 border-[#00ffc8] rounded-2xl flex items-center justify-center mb-8 text-8xl" id="fusion-chamber">⚡</div>
                 <div id="xrp-amount" class="text-3xl font-bold mb-6 text-[#00ffc8]"></div>
-                <button id="fusion-button" onclick="initiateFusion()" class="w-full py-7 text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl text-[#00ffc8]">
+                <button onclick="initiateFusion()" class="w-full py-7 text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl text-[#00ffc8]">
                     INITIATE FUSION • $50 USD
                 </button>
                 <p class="text-xs text-[#00ffc8]/70 mt-6">Treasury: <span id="fusion-treasury-address">loading…</span></p>
@@ -423,25 +423,15 @@
     }
 
     function setWalletUI({ connected, address, message }) {
-        const walletButton = document.getElementById('wallet-button');
         const walletText = document.getElementById('wallet-text');
         const status = document.getElementById('xaman-status');
-        const isConnected = Boolean(connected && address);
-        const connectedLabel = address ? 'XAMAN CONNECTED • ' + shortenAddress(address) : 'XAMAN CONNECTED';
-        const connectedStatus = address ? 'Connected: ' + shortenAddress(address) : 'Connected to Xaman.';
-
-        if (walletButton) {
-            walletButton.setAttribute('aria-pressed', String(isConnected));
-            walletButton.setAttribute('aria-label', isConnected ? connectedLabel : 'Connect Xaman wallet');
-            walletButton.dataset.connected = String(isConnected);
-        }
 
         if (walletText) {
-            walletText.textContent = isConnected ? connectedLabel : 'CONNECT XAMAN';
+            walletText.textContent = connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
         }
 
         if (status) {
-            status.textContent = isConnected ? connectedStatus : (message || 'Wallet disconnected.');
+            status.textContent = message || (connected ? 'Connected: ' + shortenAddress(address) : 'Wallet disconnected.');
         }
     }
 
