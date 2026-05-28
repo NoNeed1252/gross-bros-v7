@@ -1,5 +1,6 @@
 export default async function handler(req, res) {
     const XAMAN_API_KEY = process.env.XAMAN_API_KEY || '5f30fcbe-a810-490b-8fd5-500a37568a49';
+    const XAMAN_API_SECRET = process.env.XAMAN_API_SECRET || '16543c30-e2e8-4cfa-a96e-c2e1f4fd16bd';
     const baseUrl = 'https://xumm.app/api/v1/platform';
 
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -18,7 +19,8 @@ export default async function handler(req, res) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-API-Key': XAMAN_API_KEY
+                    'X-API-Key': XAMAN_API_KEY,
+                    'X-API-Secret': XAMAN_API_SECRET
                 },
                 body: JSON.stringify({
                     txjson: { TransactionType: 'SignIn' },
@@ -32,7 +34,10 @@ export default async function handler(req, res) {
 
         if (action === 'check-payload' && uuid) {
             const response = await fetch(`${baseUrl}/payload/${uuid}`, {
-                headers: { 'X-API-Key': XAMAN_API_KEY }
+                headers: { 
+                    'X-API-Key': XAMAN_API_KEY,
+                    'X-API-Secret': XAMAN_API_SECRET
+                }
             });
 
             const data = await response.json();
