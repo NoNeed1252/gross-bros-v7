@@ -136,7 +136,7 @@
     </div>
 </div>
 
-<script src="https://xumm.app/api/v1/platform/xumm.js"></script>
+<script src="https://xumm.app/assets/cdn/xumm.min.js"></script>
 
 <script>
     const XAMANAPIKEY = '5f30fcbe-a810-490b-8fd5-500a37568a49';
@@ -183,31 +183,27 @@
         try {
             setWalletUI(false);
             
-            // Use Xaman SDK
             const xumm = new Xumm(XAMANAPIKEY);
             
-            const payload = await xumm.payload.create({
-                txjson: { TransactionType: 'SignIn' },
-                options: { expire: 5 }
+            xumm.on("ready", () => {
+                console.log("Xumm SDK ready");
             });
 
-            if (payload.next.always) {
-                window.open(payload.next.always, '_blank');
+            // Authorize (SignIn)
+            const authorization = await xumm.authorize();
+            
+            if (authorization && authorization.account) {
+                const address = authorization.account;
+                const session = { connected: true, address: address };
+                localStorage.setItem('grossbros:xaman-session', JSON.stringify(session));
+                setWalletUI(true, address);
+            } else {
+                throw new Error("No account returned");
             }
 
-            // Poll for result
-            payload.on('signed', async () => {
-                const user = await xumm.user.get();
-                if (user?.account) {
-                    const session = { connected: true, address: user.account };
-                    localStorage.setItem('grossbros:xaman-session', JSON.stringify(session));
-                    setWalletUI(true, user.account);
-                }
-            });
-
         } catch (err) {
-            console.error(err);
-            alert("Xaman connection failed. Make sure you have the Xaman app installed and try again.");
+            console.error("Xaman error:", err);
+            alert("Connection failed. Please open the Xaman app on your phone first, then try again.");
         }
     }
 
