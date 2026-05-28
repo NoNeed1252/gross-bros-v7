@@ -97,17 +97,17 @@
     <div class="news-ticker">
         <div class="news-track">
             <span class="news-item">NEWS //</span>
-            <span class="news-item">Strict Gross Bros NFT filter enabled</span>
-            <span class="news-item">Issuer locked: rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY</span>
-            <span class="news-item">Taxon locked: 1</span>
-            <span class="news-item">Improved IPFS image loading</span>
-            <span class="news-item">UI and mobile spacing fixes</span>
+            <span class="news-item">ENEMY // BTC miners detected at the perimeter</span>
+            <span class="news-item">ENEMY // Rift scanners locked on the Ledger</span>
+            <span class="news-item">ENEMY // Fusion Core stable</span>
+            <span class="news-item">ENEMY // Broadcast relay secured</span>
+            <span class="news-item">ENEMY // Shadow drones approaching</span>
             <span class="news-item">NEWS //</span>
-            <span class="news-item">Strict Gross Bros NFT filter enabled</span>
-            <span class="news-item">Issuer locked: rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY</span>
-            <span class="news-item">Taxon locked: 1</span>
-            <span class="news-item">Improved IPFS image loading</span>
-            <span class="news-item">UI and mobile spacing fixes</span>
+            <span class="news-item">ENEMY // BTC miners detected at the perimeter</span>
+            <span class="news-item">ENEMY // Rift scanners locked on the Ledger</span>
+            <span class="news-item">ENEMY // Fusion Core stable</span>
+            <span class="news-item">ENEMY // Broadcast relay secured</span>
+            <span class="news-item">ENEMY // Shadow drones approaching</span>
         </div>
     </div>
 
@@ -164,11 +164,7 @@
                 <div id="nft-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8"></div>
                 
                 <div class="border-4 border-[#00ffc8] bg-black rounded-3xl p-5 sm:p-8 text-center">
-                    <div id="xrp-amount" class="text-xl sm:text-3xl font-bold mb-5 sm:mb-6"></div>
-                    <button onclick="initiateFusion()" 
-                            class="w-full py-4 sm:py-7 text-base sm:text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
-                        INITIATE FUSION • $50 USD
-                    </button>
+                    <div class="text-xl sm:text-3xl font-bold tracking-[0.35em] text-[#00ffc8]">FUSION CORE ONLINE</div>
                 </div>
             </div>
         </div>
@@ -187,7 +183,7 @@
     <div class="bg-[#0a0a0a] border-t-4 border-[#00ffc8]/30 px-6 py-5 flex justify-between text-xs">
         <div class="flex gap-6">
             <a href="https://x.com/thegrossbros" target="_blank" class="hover:text-white">𝕏</a>
-            <a href="#" class="hover:text-white">DISCORD</a>
+            <a href="https://discord.gg/thegrossbros" target="_blank" rel="noreferrer" class="hover:text-white">DISCORD</a>
         </div>
         <div class="flex gap-6">
             <a href="#" class="hover:text-white">PRIVACY</a>
@@ -299,8 +295,6 @@
         const monitor = document.getElementById('main-monitor');
         if (isConnected) monitor.classList.add('connected-glow');
         else monitor.classList.remove('connected-glow');
-
-        document.getElementById('xrp-amount').textContent = isConnected ? 'CONNECTED BRO: ' + shortenAddress(address) : '';
 
         if (isConnected && document.getElementById('content-2').classList.contains('active')) {
             loadNFTs();
