@@ -84,35 +84,60 @@
 
     async function connectXaman() {
         try {
+            setWalletUI(false);
             document.getElementById('wallet-text').textContent = "CONNECTING...";
-            
-            const response = await fetch(`${XAMANAPIBASE}/payload`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-API-Key': XAMANAPIKEY
-                },
-                body: JSON.stringify({
-                    txjson: { TransactionType: 'SignIn' },
-                    options: { submit: false, expire: 5 }
-                })
-            });
 
-            const payload = await response.json();
+            const createRes = await fetch('/api/xaman?action=create-payload', { method: 'POST' });
+            const payload = await createRes.json();
 
-            if (payload.next?.always) {
-                window.open(payload.next.always, '_blank');
-                alert("✅ Xaman link opened! Approve in the app or scan the QR code.");
-            } else {
-                alert("Could not open Xaman. Please try again.");
+            if (!payload.next?.always) {
+                throw new Error("Failed to create Xaman request");
             }
+
+            window.open(payload.next.always, '_blank');
+
+            let attempts = 0;
+            const maxAttempts = 40;
+
+            const pollInterval = setInterval(async () => {
+                attempts++;
+                if (attempts > maxAttempts) {
+                    clearInterval(pollInterval);
+                    alert("Timed out waiting for Xaman approval.");
+                    setWalletUI(false);
+                    return;
+                }
+
+                try {
+                    const checkRes = await fetch(`/api/xaman?action=check-payload&uuid=${payload.uuid}`);
+                    const status = await checkRes.json();
+
+                    if (status.meta?.signed || status.signed) {
+                        clearInterval(pollInterval);
+                        const address = status.response?.account || status.account;
+                        if (address) {
+                            const session = { connected: true, address };
+                            localStorage.setItem('grossbros:xaman-session', JSON.stringify(session));
+                            setWalletUI(true, address);
+                            alert("✅ Successfully connected!");
+                        }
+                    } else if (status.meta?.expired) {
+                        clearInterval(pollInterval);
+                        alert("Request expired.");
+                        setWalletUI(false);
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }, 2500);
+
         } catch (err) {
             console.error(err);
-            alert("Xaman connection failed. Make sure the Xaman app is installed.");
-        } finally {
-            document.getElementById('wallet-text').textContent = currentAddress ? "CONNECTED" : "CONNECT XAMAN";
+            alert("Failed to connect to Xaman. Try again.");
+            setWalletUI(false);
         }
     }
+
 
     // Initialize
     window.onload = () => {
