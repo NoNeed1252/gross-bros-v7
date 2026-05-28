@@ -263,11 +263,7 @@
             const data = await response.json();
             const allNFTs = data.result?.account_nfts || [];
             
-            // Strict filter
-            const grossNFTs = allNFTs.filter(nft => 
-                nft.Issuer === "rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY" && 
-                nft.NFTokenTaxon === 1
-            );
+            const grossNFTs = allNFTs.filter(nft => (nft.Issuer || nft.issuer || '').toLowerCase() === 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY'.toLowerCase() && Number(nft.NFTokenTaxon || nft.taxon) === 1);
 
             grid.innerHTML = '';
 
