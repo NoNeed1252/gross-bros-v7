@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRO OF THE DAY</title>
+    <title>GROSS BROS • BRO OF THE DAY</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;family=Share+Tech+Mono&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;family=Share+Tech+Mono&amp;display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap');
         :root { --cyan: #00ffc8; }
         body { font-family: 'Share Tech Mono', monospace; background: #000; }
         .header-font { font-family: 'Orbitron', sans-serif; }
@@ -23,7 +23,6 @@
             margin: 0 auto;
             width: min(1640px, calc(100vw - 24px));
         }
-
         .crt::before {
             content: '';
             position: absolute;
@@ -31,35 +30,32 @@
             background: repeating-linear-gradient(transparent 0px, transparent 5px, rgba(0,255,200,0.15) 5px, rgba(0,255,200,0.15) 10px);
             animation: scanline 8s linear infinite;
             z-index: 10;
+            pointer-events: none;
         }
         @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
 
         .tab-active { border-bottom: 5px solid #00ffc8; color: #00ffc8; background: #1a1a1a; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
     </style>
 </head>
 <body class="bg-black min-h-screen flex items-center justify-center p-4">
 
-<div class="alien-monitor h-[94vh] flex flex-col shadow-2xl relative w-full max-w-[1480px]">
+<div class="alien-monitor h-[94vh] flex flex-col shadow-2xl relative w-full">
 
     <!-- HEADER -->
     <div class="bg-[#151515] border-b-8 border-[#0a0a0a] px-6 py-5 flex items-center justify-between gap-6">
-        <div class="flex items-center gap-4">
-            <div class="w-5 h-5 bg-red-600 rounded-full animate-pulse"></div>
-            <div class="header-font text-3xl tracking-widest text-[#00ffc8]">GROSS BROS</div>
+        <div class="flex items-center gap-3">
+            <div class="w-6 h-6 bg-red-600 rounded-full animate-pulse"></div>
+            <div class="header-font text-xl tracking-widest text-[#00ffc8]">GROSS BROS OS v7</div>
         </div>
-        <div class="hidden md:flex items-center gap-8 text-sm font-mono text-[#00ffc8]">
-            <div>CACHE 2.4TB</div>
-            <div>CPU 69.1%</div>
-            <div>NEURAL 99.4%</div>
-            <div class="text-emerald-400">XRP RELAY ACTIVE</div>
+        
+        <div onclick="connectXaman()" class="cursor-pointer px-6 py-3 border border-[#00ffc8]/60 hover:border-[#00ffc8] rounded-3xl flex items-center gap-3 text-sm text-[#00ffc8]">
+            <i class="fa-solid fa-wallet"></i>
+            <span id="wallet-text">CONNECT XAMAN</span>
         </div>
-        <div class="flex flex-col items-end gap-1">
-            <div onclick="connectXaman()" class="cursor-pointer px-6 py-3 border border-[#00ffc8]/60 hover:border-[#00ffc8] rounded-3xl flex items-center gap-3 text-sm text-[#00ffc8]">
-                <i class="fa-solid fa-wallet"></i>
-                <span id="wallet-text">CONNECT XAMAN</span>
-            </div>
-            <p id="xaman-status" class="text-[11px] text-[#00ffc8]/60 text-right max-w-[220px]">Wallet disconnected.</p>
-        </div>
+        
+        <p id="xaman-status" class="text-[11px] text-[#00ffc8]/60 text-right max-w-[220px]">Wallet disconnected.</p>
     </div>
 
     <!-- TABS -->
@@ -74,12 +70,25 @@
     <div class="flex-1 overflow-auto crt bg-[#050505] p-6 md:p-10 relative text-[#00ffc8]">
 
         <!-- TAB 0: MAIN CONSOLE -->
-        <div id="content-0" class="tab-content">
+        <div id="content-0" class="tab-content active">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-5 h-5 bg-red-600 rounded-full animate-pulse"></div>
+                <div class="header-font text-3xl tracking-widest text-[#00ffc8]">GROSS BROS</div>
+            </div>
+            <div class="hidden md:flex items-center gap-8 text-sm font-mono text-[#00ffc8] mb-8">
+                <div>CACHE 2.4TB</div>
+                <div>CPU 69.1%</div>
+                <div>NEURAL 99.4%</div>
+                <div class="text-emerald-400">XRP RELAY ACTIVE</div>
+            </div>
+            
             <h1 class="header-font text-5xl md:text-6xl text-center text-[#00ffc8] tracking-widest mb-8">BRO OF THE DAY</h1>
+            
             <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/90 mb-12">
-                In the aftermath of the XRP-7 disaster, the Gross Bros were shattered across dimensions.
+                In the aftermath of the XRP-7 disaster, the Gross Bros were shattered across dimensions.<br>
                 Now fused with machine intelligence, they defend the Ledger from the BTC miners.
             </div>
+
             <div class="border-4 border-[#00ffc8] bg-black/70 rounded-3xl p-8">
                 <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank"
                    class="block text-center py-7 text-2xl header-font border-2 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
@@ -89,7 +98,7 @@
         </div>
 
         <!-- TAB 1: STORYLINE -->
-        <div id="content-1" class="tab-content hidden">
+        <div id="content-1" class="tab-content">
             <h1 class="header-font text-5xl text-[#00ffc8] mb-10">STORYLINE TRANSMISSIONS</h1>
             <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-10 rounded-3xl text-[#00ffc8]">
                 <h3 class="mb-6 text-[#00ffc8]">LATEST TRANSMISSION</h3>
@@ -99,19 +108,20 @@
         </div>
 
         <!-- TAB 2: FUSION LAB -->
-        <div id="content-2" class="tab-content hidden">
+        <div id="content-2" class="tab-content">
             <h1 class="header-font text-5xl text-[#00ffc8] mb-8">FUSION LAB</h1>
             <div class="max-w-2xl mx-auto border-4 border-[#00ffc8] bg-black rounded-3xl p-10 text-center">
                 <div class="h-64 border-4 border-[#00ffc8] rounded-2xl flex items-center justify-center mb-8 text-8xl">⚡</div>
                 <div id="xrp-amount" class="text-3xl font-bold mb-6 text-[#00ffc8]"></div>
-                <button onclick="initiateFusion()" class="w-full py-7 text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
+                <button onclick="initiateFusion()" 
+                        class="w-full py-7 text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
                     INITIATE FUSION • $50 USD
                 </button>
             </div>
         </div>
 
         <!-- TAB 3: GROSS REWARDS -->
-        <div id="content-3" class="tab-content hidden">
+        <div id="content-3" class="tab-content">
             <h1 class="header-font text-5xl text-[#00ffc8] mb-10">GROSS REWARDS NEXUS</h1>
             <div class="text-center">
                 <div class="text-8xl font-bold text-[#00ffc8] mb-4">2847</div>
@@ -127,45 +137,20 @@
 </div>
 
 <script>
-    const XAMAN_API_KEY = '5f30fcbe-a810-490b-8fd5-500a37568a49';
-    const XAMAN_API_BASE = 'https://xumm.app/api/v1/platform';
-    const XAMAN_SESSION_KEY = 'grossbros:xaman-session';
+    const XAMANAPIKEY = '5f30fcbe-a810-490b-8fd5-500a37568a49';
+    const XAMANAPIBASE = 'https://xumm.app/api/v1/platform';
+    const XAMANSESSIONKEY = 'grossbros:xaman-session';
+    
     let xamanPolling = null;
-    let runtimeConfig = {};
-    let runtimeConfigPromise = null;
-
-    async function loadRuntimeConfig() {
-        if (runtimeConfigPromise) return runtimeConfigPromise;
-
-        runtimeConfigPromise = (async () => {
-            try {
-                // Hard-coded for static HTML site
-                runtimeConfig.xamanApiKey = "5f30fcbe-a810-490b-8fd5-500a37568a49";
-                runtimeConfig.fusionTreasuryAddress = "rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX";
-
-                window.XAMANAPIKEY = runtimeConfig.xamanApiKey;
-                window.FUSION_TREASURY_ADDRESS = runtimeConfig.fusionTreasuryAddress;
-
-                updateFusionTreasuryDisplay();
-                console.log("✅ Static config loaded");
-            } catch (error) {
-                console.warn('Config load failed', error);
-            } finally {
-                runtimeConfigPromise = null;
-            }
-
-            return runtimeConfig;
-        })();
-
-        return runtimeConfigPromise;
-    }
-
-    loadRuntimeConfig();
+    let currentWalletAddress = null;
 
     function switchTab(n) {
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-        document.getElementById('content-' + n).classList.remove('hidden');
-        document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('tab-active', i === n));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById('content-' + n).classList.add('active');
+        
+        document.querySelectorAll('.tab').forEach((t, i) => {
+            t.classList.toggle('tab-active', i === n);
+        });
     }
 
     function runTicker() {
@@ -183,9 +168,25 @@
         }, 5500);
     }
 
+    function shortenAddress(address) {
+        if (!address || address.length < 12) return address || 'Unknown';
+        return address.slice(0, 6) + '…' + address.slice(-6);
+    }
+
+    function setWalletUI(connected, address = '') {
+        currentWalletAddress = address;
+        const walletText = document.getElementById('wallet-text');
+        const status = document.getElementById('xaman-status');
+        const xrpAmount = document.getElementById('xrp-amount');
+
+        if (walletText) walletText.textContent = connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
+        if (status) status.textContent = connected ? `Connected: ${shortenAddress(address)}` : 'Wallet disconnected.';
+        if (xrpAmount) xrpAmount.textContent = connected ? `CONNECTED BRO: ${shortenAddress(address)}` : '';
+    }
+
     function getWalletSession() {
         try {
-            const raw = window.localStorage.getItem(XAMAN_SESSION_KEY);
+            const raw = localStorage.getItem(XAMANSESSIONKEY);
             return raw ? JSON.parse(raw) : null;
         } catch {
             return null;
@@ -193,167 +194,100 @@
     }
 
     function saveWalletSession(session) {
-        window.localStorage.setItem(XAMAN_SESSION_KEY, JSON.stringify(session));
+        localStorage.setItem(XAMANSESSIONKEY, JSON.stringify(session));
     }
 
     function clearWalletSession() {
-        window.localStorage.removeItem(XAMAN_SESSION_KEY);
+        localStorage.removeItem(XAMANSESSIONKEY);
     }
 
-    function shortenAddress(address) {
-        if (!address) return 'Wallet disconnected.';
-        if (address.length <= 12) return address;
-        return `${address.slice(0, 6)}…${address.slice(-6)}`;
-    }
-
-    function setWalletUI({ connected, address, message }) {
-        const walletText = document.getElementById('wallet-text');
-        const status = document.getElementById('xaman-status');
-        const xrpAmount = document.getElementById('xrp-amount');
-
-        if (walletText) {
-            walletText.textContent = connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
-        }
-
-        if (status) {
-            status.textContent = message || (connected ? `Connected: ${shortenAddress(address)}` : 'Wallet disconnected.');
-        }
-
-        if (xrpAmount) {
-            xrpAmount.textContent = connected && address ? `CONNECTED BRO: ${shortenAddress(address)}` : '';
-        }
-    }
-
+    // Xaman functions (simplified)
     async function createXamanSigninPayload() {
-        const response = await fetch(`${XAMAN_API_BASE}/payload`, {
+        const response = await fetch(`${XAMANAPIBASE}/payload`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-API-Key': XAMAN_API_KEY
+                'X-API-Key': XAMANAPIKEY
             },
             body: JSON.stringify({
                 txjson: { TransactionType: 'SignIn' },
-                options: {
-                    submit: false,
-                    expire: 5
-                }
+                options: { submit: false, expire: 5 }
             })
         });
 
-        const data = await response.json().catch(() => null);
-        if (!response.ok || !data || !data.uuid) {
-            throw new Error((data && (data.message || data.error)) || 'Unable to create Xaman sign-in request.');
-        }
-
+        const data = await response.json();
+        if (!response.ok || !data?.uuid) throw new Error(data?.message || 'Failed to create Xaman request');
         return data;
     }
 
     async function fetchPayloadStatus(uuid) {
-        const response = await fetch(`${XAMAN_API_BASE}/payload/${uuid}`, {
-            headers: {
-                'X-API-Key': XAMAN_API_KEY
-            }
+        const response = await fetch(`${XAMANAPIBASE}/payload/${uuid}`, {
+            headers: { 'X-API-Key': XAMANAPIKEY }
         });
-
-        const data = await response.json().catch(() => null);
-        if (!response.ok || !data) {
-            throw new Error((data && (data.message || data.error)) || 'Unable to check Xaman sign-in status.');
-        }
-
+        const data = await response.json();
+        if (!response.ok) throw new Error(data?.message || 'Failed to check status');
         return data;
     }
 
     function openSigninUrl(payload) {
-        const nextUrl = payload?.next?.always || payload?.next?.no_push_msg_received || payload?.refs?.qr_png || null;
-        if (typeof nextUrl === 'string' && nextUrl) {
-            window.open(nextUrl, '_blank', 'noopener,noreferrer');
-        }
-    }
-
-    function wait(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+        const url = payload?.next?.always || payload?.refs?.qrpng;
+        if (url) window.open(url, '_blank');
     }
 
     async function pollForSignin(uuid) {
-        for (let attempt = 0; attempt < 60; attempt += 1) {
+        for (let i = 0; i < 60; i++) {
             const payload = await fetchPayloadStatus(uuid);
-            const signed = Boolean(payload?.meta?.signed || payload?.signed || payload?.response?.signed);
-            const expired = Boolean(payload?.meta?.expired || payload?.expired);
-
-            if (signed) {
-                const address = payload?.response?.account || payload?.response?.user_token?.account || payload?.response?.signer || payload?.account || '';
-                return { signed: true, address, payload };
+            if (payload?.meta?.signed || payload?.signed) {
+                return payload?.response?.account || payload?.account || '';
             }
-
-            if (expired) {
-                throw new Error('Xaman sign-in expired. Please try again.');
-            }
-
-            await wait(2000);
+            if (payload?.meta?.expired) throw new Error('Request expired');
+            await new Promise(r => setTimeout(r, 2000));
         }
-
-        throw new Error('Timed out waiting for Xaman approval.');
+        throw new Error('Timed out');
     }
 
     async function connectXaman() {
         const existing = getWalletSession();
         if (existing?.connected && existing.address) {
-            setWalletUI({ connected: true, address: existing.address, message: `Connected: ${shortenAddress(existing.address)}` });
-            return existing;
+            setWalletUI(true, existing.address);
+            return;
         }
 
         try {
-            setWalletUI({ connected: false, address: '', message: 'Preparing Xaman sign-in…' });
+            setWalletUI(false);
             const payload = await createXamanSigninPayload();
             openSigninUrl(payload);
-            setWalletUI({ connected: false, address: '', message: 'Approve the Xaman request in your wallet.' });
-
-            if (xamanPolling) {
-                clearTimeout(xamanPolling);
-                xamanPolling = null;
-            }
-
-            const signed = await pollForSignin(payload.uuid);
-            const session = {
-                connected: true,
-                address: signed.address || '',
-                payloadUuid: payload.uuid,
-                signedAt: new Date().toISOString()
-            };
+            
+            const address = await pollForSignin(payload.uuid);
+            const session = { connected: true, address };
             saveWalletSession(session);
-            setWalletUI({ connected: true, address: session.address, message: `Connected: ${shortenAddress(session.address)}` });
-            return session;
-        } catch (error) {
+            setWalletUI(true, address);
+        } catch (err) {
             clearWalletSession();
-            setWalletUI({ connected: false, address: '', message: error instanceof Error ? error.message : 'Unable to connect Xaman.' });
-            throw error;
+            setWalletUI(false);
+            alert(err.message || 'Connection failed');
         }
     }
 
     async function initiateFusion() {
-        try {
-            const session = getWalletSession();
-            if (!session?.connected || !session.address) {
-                await connectXaman();
-                return;
-            }
-
-            setWalletUI({ connected: true, address: session.address, message: `Fusion ready for ${shortenAddress(session.address)}` });
-            alert(`Fusion initiated for ${shortenAddress(session.address)}.`);
-        } catch (error) {
-            setWalletUI({ connected: false, address: '', message: error instanceof Error ? error.message : 'Unable to initiate fusion.' });
+        if (!currentWalletAddress) {
+            alert("Please connect Xaman first");
+            await connectXaman();
+            return;
         }
+        alert(`Fusion initiated for ${shortenAddress(currentWalletAddress)}`);
     }
 
+    // Initialize
     window.addEventListener('load', () => {
         switchTab(0);
         runTicker();
 
         const session = getWalletSession();
         if (session?.connected && session.address) {
-            setWalletUI({ connected: true, address: session.address, message: `Connected: ${shortenAddress(session.address)}` });
+            setWalletUI(true, session.address);
         } else {
-            setWalletUI({ connected: false, address: '', message: 'Wallet disconnected.' });
+            setWalletUI(false);
         }
     });
 </script>
