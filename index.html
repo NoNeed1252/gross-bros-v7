@@ -9,19 +9,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap');
-        :root { --cyan: #00ffc8; }
         body { font-family: 'Share Tech Mono', monospace; background: #000; }
         .header-font { font-family: 'Orbitron', sans-serif; }
 
         .alien-monitor {
             background: #050505;
             border: 1px solid #333;
-            box-shadow: 0 0 0 18px #0a0a0a, 0 30px 70px -15px rgba(0,0,0,0.95), 0 0 100px -20px var(--cyan);
+            box-shadow: 0 0 0 18px #0a0a0a, 0 30px 70px -15px rgba(0,0,0,0.95), 0 0 100px -20px #00ffc8;
             border-radius: 24px;
             overflow: hidden;
             max-width: 1640px;
             margin: 0 auto;
-            width: min(1640px, calc(100vw - 24px));
         }
         .crt::before {
             content: '';
@@ -33,7 +31,6 @@
             pointer-events: none;
         }
         @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
-
         .tab-active { border-bottom: 5px solid #00ffc8; color: #00ffc8; background: #1a1a1a; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -69,102 +66,82 @@
     <!-- CONTENT -->
     <div class="flex-1 overflow-auto crt bg-[#050505] p-6 md:p-10 relative text-[#00ffc8]">
 
-        <!-- TAB 0: MAIN CONSOLE -->
+        <!-- TAB 0 -->
         <div id="content-0" class="tab-content active">
             <div class="flex items-center gap-4 mb-6">
                 <div class="w-5 h-5 bg-red-600 rounded-full animate-pulse"></div>
                 <div class="header-font text-3xl tracking-widest text-[#00ffc8]">GROSS BROS</div>
             </div>
-            <div class="hidden md:flex items-center gap-8 text-sm font-mono text-[#00ffc8] mb-8">
-                <div>CACHE 2.4TB</div>
-                <div>CPU 69.1%</div>
-                <div>NEURAL 99.4%</div>
-                <div class="text-emerald-400">XRP RELAY ACTIVE</div>
+            <div class="hidden md:flex items-center gap-8 text-sm mb-8 text-[#00ffc8]">
+                <div>CACHE 2.4TB</div><div>CPU 69.1%</div><div>NEURAL 99.4%</div><div class="text-emerald-400">XRP RELAY ACTIVE</div>
             </div>
-            
-            <h1 class="header-font text-5xl md:text-6xl text-center text-[#00ffc8] tracking-widest mb-8">BRO OF THE DAY</h1>
-            
-            <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/90 mb-12">
+            <h1 class="header-font text-5xl md:text-6xl text-center tracking-widest mb-8">BRO OF THE DAY</h1>
+            <div class="max-w-3xl mx-auto text-center mb-12 text-[#00ffc8]/90">
                 In the aftermath of the XRP-7 disaster, the Gross Bros were shattered across dimensions.<br>
                 Now fused with machine intelligence, they defend the Ledger from the BTC miners.
             </div>
-
             <div class="border-4 border-[#00ffc8] bg-black/70 rounded-3xl p-8">
-                <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank"
-                   class="block text-center py-7 text-2xl header-font border-2 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
+                <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" class="block text-center py-7 text-2xl header-font border-2 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
                     ACCESS THE COLLECTION
                 </a>
             </div>
         </div>
 
-        <!-- TAB 1: STORYLINE -->
+        <!-- TAB 1 -->
         <div id="content-1" class="tab-content">
-            <h1 class="header-font text-5xl text-[#00ffc8] mb-10">STORYLINE TRANSMISSIONS</h1>
-            <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-10 rounded-3xl text-[#00ffc8]">
-                <h3 class="mb-6 text-[#00ffc8]">LATEST TRANSMISSION</h3>
+            <h1 class="header-font text-5xl mb-10">STORYLINE TRANSMISSIONS</h1>
+            <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-10 rounded-3xl">
+                <h3 class="mb-6">LATEST TRANSMISSION</h3>
                 <p>Before the accident we chased fortune through the rift. The XRP-7 collapse changed everything.</p>
                 <p class="mt-6">Now we fuse with machines to survive and protect the Ledger from the BTC miners.</p>
             </div>
         </div>
 
-        <!-- TAB 2: FUSION LAB -->
+        <!-- TAB 2 -->
         <div id="content-2" class="tab-content">
-            <h1 class="header-font text-5xl text-[#00ffc8] mb-8">FUSION LAB</h1>
+            <h1 class="header-font text-5xl mb-8">FUSION LAB</h1>
             <div class="max-w-2xl mx-auto border-4 border-[#00ffc8] bg-black rounded-3xl p-10 text-center">
                 <div class="h-64 border-4 border-[#00ffc8] rounded-2xl flex items-center justify-center mb-8 text-8xl">⚡</div>
-                <div id="xrp-amount" class="text-3xl font-bold mb-6 text-[#00ffc8]"></div>
-                <button onclick="initiateFusion()" 
-                        class="w-full py-7 text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
+                <div id="xrp-amount" class="text-3xl font-bold mb-6"></div>
+                <button onclick="initiateFusion()" class="w-full py-7 text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
                     INITIATE FUSION • $50 USD
                 </button>
             </div>
         </div>
 
-        <!-- TAB 3: GROSS REWARDS -->
+        <!-- TAB 3 -->
         <div id="content-3" class="tab-content">
-            <h1 class="header-font text-5xl text-[#00ffc8] mb-10">GROSS REWARDS NEXUS</h1>
+            <h1 class="header-font text-5xl mb-10">GROSS REWARDS NEXUS</h1>
             <div class="text-center">
-                <div class="text-8xl font-bold text-[#00ffc8] mb-4">2847</div>
+                <div class="text-8xl font-bold mb-4">2847</div>
                 <div class="text-xl text-[#00ffc8]/80">NEURAL POINTS</div>
             </div>
         </div>
     </div>
 
-    <!-- FOOTER TICKER -->
+    <!-- TICKER -->
     <div class="bg-[#111] border-t-8 border-[#1a1a1a] py-4 px-6 text-xs overflow-hidden">
         <div id="news-ticker" class="whitespace-nowrap text-[#00ffc8] font-mono"></div>
     </div>
 </div>
 
 <script>
-    // === CONSTANTS ===
     const XAMANAPIKEY = '5f30fcbe-a810-490b-8fd5-500a37568a49';
     const XAMANAPIBASE = 'https://xumm.app/api/v1/platform';
     const XAMANSESSIONKEY = 'grossbros:xaman-session';
-
     let currentWalletAddress = null;
 
-    // === TAB SWITCHING ===
     function switchTab(n) {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById('content-' + n).classList.add('active');
         document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('tab-active', i === n));
     }
 
-    // === TICKER ===
     function runTicker() {
-        const messages = [
-            '[WARNING] BTC MINER INTERFERENCE DETECTED IN SECTOR 4',
-            '[ALERT] DIMENSIONAL RIFT ACTIVITY INCREASING',
-            '[LORE] THE CHAIN REMEMBERS WHAT THE VOID FORGOT',
-            '[SYSTEM] GUARDIAN BROADCAST OS v7.2.1 STABLE'
-        ];
+        const messages = ['[WARNING] BTC MINER INTERFERENCE DETECTED IN SECTOR 4', '[ALERT] DIMENSIONAL RIFT ACTIVITY INCREASING', '[LORE] THE CHAIN REMEMBERS WHAT THE VOID FORGOT', '[SYSTEM] GUARDIAN BROADCAST OS v7.2.1 STABLE'];
         let i = 0;
         const ticker = document.getElementById('news-ticker');
-        setInterval(() => {
-            ticker.textContent = messages[i];
-            i = (i + 1) % messages.length;
-        }, 5500);
+        setInterval(() => { ticker.textContent = messages[i]; i = (i + 1) % messages.length; }, 5500);
     }
 
     function shortenAddress(address) {
@@ -174,106 +151,74 @@
 
     function setWalletUI(connected, address = '') {
         currentWalletAddress = address;
-        const walletText = document.getElementById('wallet-text');
-        const status = document.getElementById('xaman-status');
-        const xrpAmount = document.getElementById('xrp-amount');
-
-        if (walletText) walletText.textContent = connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
-        if (status) status.textContent = connected ? `Connected: ${shortenAddress(address)}` : 'Wallet disconnected.';
-        if (xrpAmount) xrpAmount.textContent = connected ? `CONNECTED BRO: ${shortenAddress(address)}` : '';
+        document.getElementById('wallet-text').textContent = connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
+        document.getElementById('xaman-status').textContent = connected ? `Connected: ${shortenAddress(address)}` : 'Wallet disconnected.';
+        const xrpEl = document.getElementById('xrp-amount');
+        if (xrpEl) xrpEl.textContent = connected ? `CONNECTED BRO: ${shortenAddress(address)}` : '';
     }
 
-    // === XAMAN FUNCTIONS ===
     async function createXamanSigninPayload() {
         const response = await fetch(`${XAMANAPIBASE}/payload`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-API-Key': XAMANAPIKEY
-            },
-            body: JSON.stringify({
-                txjson: { TransactionType: 'SignIn' },
-                options: { submit: false, expire: 5 }
-            })
+            headers: { 'Content-Type': 'application/json', 'X-API-Key': XAMANAPIKEY },
+            body: JSON.stringify({ txjson: { TransactionType: 'SignIn' }, options: { submit: false, expire: 5 } })
         });
-
         const data = await response.json();
-        if (!response.ok || !data?.uuid) {
-            throw new Error(data?.message || "Failed to create Xaman request");
-        }
+        if (!response.ok || !data?.uuid) throw new Error(data?.message || "Failed to create request");
         return data;
     }
 
     function openXamanLink(payload) {
-        const link = payload?.next?.always || payload?.next?.nopushmsgreceived || payload?.refs?.qrpng;
-        if (link) {
-            window.open(link, '_blank');
-        } else {
-            alert("Could not open Xaman link. Try again.");
-        }
+        const link = payload?.next?.always || payload?.refs?.qrpng;
+        if (link) window.open(link, '_blank');
+        else alert("Could not open Xaman. Try again.");
     }
 
     async function pollForSignin(uuid) {
         for (let i = 0; i < 40; i++) {
-            const response = await fetch(`${XAMANAPIBASE}/payload/${uuid}`, {
-                headers: { 'X-API-Key': XAMANAPIKEY }
-            });
-            const data = await response.json();
-
-            if (data?.meta?.signed || data?.signed) {
-                return data?.response?.account || data?.account || '';
-            }
-            if (data?.meta?.expired || data?.expired) {
-                throw new Error("Request expired. Please try again.");
-            }
+            const res = await fetch(`${XAMANAPIBASE}/payload/${uuid}`, { headers: { 'X-API-Key': XAMANAPIKEY } });
+            const data = await res.json();
+            if (data?.meta?.signed || data?.signed) return data?.response?.account || data?.account || '';
+            if (data?.meta?.expired) throw new Error("Request expired");
             await new Promise(r => setTimeout(r, 2000));
         }
-        throw new Error("Timed out waiting for Xaman approval.");
+        throw new Error("Timed out");
     }
 
     async function connectXaman() {
         try {
             setWalletUI(false);
-            
             const payload = await createXamanSigninPayload();
             openXamanLink(payload);
-
             const address = await pollForSignin(payload.uuid);
-            
-            const session = { connected: true, address: address };
+            const session = { connected: true, address };
             localStorage.setItem(XAMANSESSIONKEY, JSON.stringify(session));
             setWalletUI(true, address);
-            
             alert("✅ Wallet connected successfully!");
         } catch (err) {
             console.error(err);
             setWalletUI(false);
-            alert(err.message || "Connection failed. Make sure the Xaman app is installed and open.");
+            alert(err.message || "Connection failed. Open Xaman app first.");
         }
     }
 
     function initiateFusion() {
         if (!currentWalletAddress) {
-            alert("Please connect your Xaman wallet first.");
-            connectXaman();
+            alert("Please connect Xaman first");
             return;
         }
         alert(`Fusion initiated for ${shortenAddress(currentWalletAddress)}`);
     }
 
-    // === INIT ===
     window.addEventListener('load', () => {
         switchTab(0);
         runTicker();
-
         const saved = localStorage.getItem(XAMANSESSIONKEY);
         if (saved) {
             try {
-                const session = JSON.parse(saved);
-                if (session.connected && session.address) {
-                    setWalletUI(true, session.address);
-                }
-            } catch (e) {}
+                const s = JSON.parse(saved);
+                if (s.connected && s.address) setWalletUI(true, s.address);
+            } catch(e){}
         }
     });
 </script>
