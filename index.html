@@ -15,13 +15,23 @@
 
         .alien-monitor {
             background: #050505;
-            border: 36px solid #1f1f1f;
-            box-shadow: 0 0 0 22px #0a0a0a, 0 40px 90px -20px rgba(0,0,0,0.95), 0 0 130px -30px var(--cyan);
-            border-radius: 32px;
+            border: 24px solid #1f1f1f;
+            box-shadow: 0 0 0 14px #0a0a0a, 0 30px 70px -20px rgba(0,0,0,0.95), 0 0 100px -20px var(--cyan);
+            border-radius: 24px;
             overflow: hidden;
             max-width: 1480px;
-            margin: 20px auto;
+            margin: 12px auto;
+            height: 92vh;
         }
+
+        @media (max-width: 640px) {
+            .alien-monitor {
+                border: 16px solid #1f1f1f;
+                height: 96vh;
+                margin: 8px auto;
+            }
+        }
+
         .crt::before {
             content: '';
             position: absolute;
@@ -32,44 +42,47 @@
             z-index: 1;
         }
         @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
+
         .tab-active { border-bottom: 5px solid var(--cyan); color: var(--cyan); background: #1a1a1a; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+
+        .connected-glow { box-shadow: 0 0 30px var(--cyan); }
     </style>
 </head>
-<body class="bg-black min-h-screen p-4">
+<body class="bg-black min-h-screen p-2 sm:p-4">
 
-<div class="alien-monitor h-[94vh] flex flex-col relative crt">
+<div id="main-monitor" class="alien-monitor flex flex-col relative crt">
 
     <!-- HEADER -->
-    <div class="bg-[#0a0a0a] border-b-4 border-[#00ffc8]/30 px-8 py-6 flex items-center justify-between">
-        <div class="flex items-center gap-4">
-            <div class="w-6 h-6 bg-red-600 rounded-full animate-pulse"></div>
-            <div class="header-font text-2xl tracking-widest">GUARDIAN BROADCAST OS v7.2.1</div>
+    <div class="bg-[#0a0a0a] border-b-4 border-[#00ffc8]/30 px-6 py-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-5 h-5 bg-red-600 rounded-full animate-pulse"></div>
+            <div class="header-font text-xl sm:text-2xl tracking-widest">GUARDIAN BROADCAST OS v7.2.1</div>
         </div>
         
-        <div onclick="connectXaman()" class="cursor-pointer px-8 py-4 border-2 border-[#00ffc8]/70 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-lg hover:bg-[#00ffc8]/10 transition-all">
+        <div onclick="connectXaman()" class="cursor-pointer px-6 py-3 border-2 border-[#00ffc8]/70 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-base hover:bg-[#00ffc8]/10 transition-all">
             <i class="fa-solid fa-wallet"></i>
             <span id="wallet-text">CONNECT XAMAN</span>
         </div>
         
-        <p id="xaman-status" class="text-sm text-[#00ffc8]/60">Wallet disconnected.</p>
+        <p id="xaman-status" class="text-xs sm:text-sm text-[#00ffc8]/60">Wallet disconnected.</p>
     </div>
 
     <!-- TABS -->
-    <div class="bg-[#111] border-b border-[#00ffc8]/20 flex text-sm overflow-x-auto">
-        <div onclick="switchTab(0)" id="tab-0" class="tab px-8 py-5 cursor-pointer tab-active">MAIN CONSOLE</div>
-        <div onclick="switchTab(1)" id="tab-1" class="tab px-8 py-5 cursor-pointer">STORYLINE</div>
-        <div onclick="switchTab(2)" id="tab-2" class="tab px-8 py-5 cursor-pointer">FUSION LAB</div>
-        <div onclick="switchTab(3)" id="tab-3" class="tab px-8 py-5 cursor-pointer">GROSS REWARDS</div>
+    <div class="bg-[#111] border-b border-[#00ffc8]/20 flex text-xs sm:text-sm overflow-x-auto">
+        <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-4 cursor-pointer tab-active">MAIN CONSOLE</div>
+        <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-4 cursor-pointer">STORYLINE</div>
+        <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-4 cursor-pointer">FUSION LAB</div>
+        <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-4 cursor-pointer">REWARDS</div>
     </div>
 
     <!-- CONTENT -->
-    <div class="flex-1 overflow-auto p-8 relative z-10 bg-[#050505]">
+    <div class="flex-1 overflow-auto p-6 relative z-10 bg-[#050505]" id="content-area">
 
-        <!-- MAIN CONSOLE -->
+        <!-- TAB 0: MAIN CONSOLE -->
         <div id="content-0" class="tab-content active">
-            <h1 class="header-font text-5xl mb-8 text-center">BRO OF THE DAY</h1>
+            <h1 class="header-font text-4xl sm:text-5xl text-center mb-8">BRO OF THE DAY</h1>
             <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/80 mb-12">
                 In the aftermath of the XRP-7 disaster, the Gross Bros were shattered across dimensions.<br>
                 Now fused with machine intelligence, they defend the Ledger from the BTC miners.
@@ -82,32 +95,35 @@
             </div>
         </div>
 
-        <!-- STORYLINE -->
+        <!-- TAB 1: STORYLINE -->
         <div id="content-1" class="tab-content">
-            <h1 class="header-font text-5xl mb-10">STORYLINE TRANSMISSIONS</h1>
-            <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-10 rounded-3xl">
+            <h1 class="header-font text-4xl mb-8">STORYLINE TRANSMISSIONS</h1>
+            <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-8 rounded-3xl">
                 <h3 class="mb-6">LATEST TRANSMISSION</h3>
                 <p>Before the accident we chased fortune through the rift. The XRP-7 collapse changed everything.</p>
                 <p class="mt-6">Now we fuse with machines to survive and protect the Ledger from the BTC miners.</p>
             </div>
         </div>
 
-        <!-- FUSION LAB -->
+        <!-- TAB 2: FUSION LAB -->
         <div id="content-2" class="tab-content">
-            <h1 class="header-font text-5xl mb-8">FUSION LAB</h1>
-            <div class="max-w-2xl mx-auto border-4 border-[#00ffc8] bg-black rounded-3xl p-10 text-center">
-                <div class="h-64 border-4 border-[#00ffc8] rounded-2xl flex items-center justify-center mb-8 text-8xl">⚡</div>
-                <div id="xrp-amount" class="text-3xl font-bold mb-6"></div>
-                <button onclick="initiateFusion()" 
-                        class="w-full py-7 text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
-                    INITIATE FUSION • $50 USD
-                </button>
+            <h1 class="header-font text-4xl mb-8">FUSION LAB</h1>
+            <div class="max-w-4xl mx-auto">
+                <div id="nft-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8"></div>
+                
+                <div class="border-4 border-[#00ffc8] bg-black rounded-3xl p-8 text-center">
+                    <div id="xrp-amount" class="text-3xl font-bold mb-6"></div>
+                    <button onclick="initiateFusion()" 
+                            class="w-full py-7 text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
+                        INITIATE FUSION • $50 USD
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- GROSS REWARDS -->
+        <!-- TAB 3: REWARDS -->
         <div id="content-3" class="tab-content">
-            <h1 class="header-font text-5xl mb-10">GROSS REWARDS NEXUS</h1>
+            <h1 class="header-font text-4xl mb-10">GROSS REWARDS NEXUS</h1>
             <div class="text-center">
                 <div class="text-8xl font-bold text-[#00ffc8] mb-4">2847</div>
                 <div class="text-xl text-[#00ffc8]/80">NEURAL POINTS</div>
@@ -116,9 +132,9 @@
     </div>
 
     <!-- FOOTER -->
-    <div class="bg-[#0a0a0a] border-t-4 border-[#00ffc8]/30 px-8 py-6 flex justify-between text-xs">
+    <div class="bg-[#0a0a0a] border-t-4 border-[#00ffc8]/30 px-6 py-5 flex justify-between text-xs">
         <div class="flex gap-6">
-            <a href="https://x.com/thegrossbros" target="_blank" class="hover:text-white">X</a>
+            <a href="https://x.com/thegrossbros" target="_blank" class="hover:text-white">𝕏</a>
             <a href="#" class="hover:text-white">DISCORD</a>
         </div>
         <div class="flex gap-6">
@@ -130,6 +146,7 @@
 
 <script>
     let currentWalletAddress = null;
+    let selectedNFT = null;
 
     function shortenAddress(addr) {
         if (!addr) return 'Unknown';
@@ -138,15 +155,27 @@
 
     function setWalletUI(connected, address = '') {
         currentWalletAddress = address;
-        document.getElementById('wallet-text').textContent = connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
-        document.getElementById('xaman-status').textContent = connected ? `Connected: ${shortenAddress(address)}` : 'Wallet disconnected.';
-        document.getElementById('xrp-amount').textContent = connected ? `CONNECTED BRO: ${shortenAddress(address)}` : '';
+        const isConnected = connected && address;
+        
+        document.getElementById('wallet-text').textContent = isConnected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
+        document.getElementById('xaman-status').textContent = isConnected ? `Connected: ${shortenAddress(address)}` : 'Wallet disconnected.';
+        
+        const monitor = document.getElementById('main-monitor');
+        if (isConnected) {
+            monitor.classList.add('connected-glow');
+        } else {
+            monitor.classList.remove('connected-glow');
+        }
+        
+        document.getElementById('xrp-amount').textContent = isConnected ? `CONNECTED BRO: ${shortenAddress(address)}` : '';
     }
 
     function switchTab(n) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.getElementById(`content-${n}`).classList.add('active');
         document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('tab-active', i === n));
+
+        if (n === 2) loadNFTs();
     }
 
     async function connectXaman() {
@@ -156,9 +185,7 @@
             const res = await fetch('/api/xaman?action=create-payload', { method: 'POST' });
             const payload = await res.json();
 
-            if (payload.next?.always) {
-                window.open(payload.next.always, '_blank');
-            }
+            if (payload.next?.always) window.open(payload.next.always, '_blank');
 
             let attempts = 0;
             const interval = setInterval(async () => {
@@ -192,16 +219,47 @@
         }
     }
 
+    async function loadNFTs() {
+        const grid = document.getElementById('nft-grid');
+        grid.innerHTML = '<p class="col-span-full text-center">Loading your Gross Bros NFTs...</p>';
+
+        try {
+            const res = await fetch(`https://xrplcluster.com/accounts/rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY/nfts`);
+            const data = await res.json();
+
+            grid.innerHTML = '';
+
+            if (data.nfts && data.nfts.length > 0) {
+                data.nfts.forEach(nft => {
+                    const div = document.createElement('div');
+                    div.className = `border border-[#00ffc8]/30 rounded-2xl p-3 cursor-pointer hover:border-[#00ffc8] ${selectedNFT === nft.NFTokenID ? 'bg-[#00ffc8]/10' : ''}`;
+                    div.innerHTML = `
+                        <div class="h-32 bg-black rounded-xl flex items-center justify-center text-4xl mb-3">🃏</div>
+                        <p class="text-xs text-center truncate">${nft.NFTokenID.slice(0,12)}...</p>
+                    `;
+                    div.onclick = () => {
+                        selectedNFT = nft.NFTokenID;
+                        loadNFTs();
+                    };
+                    grid.appendChild(div);
+                });
+            } else {
+                grid.innerHTML = '<p class="col-span-full text-center text-[#00ffc8]/60">No Gross Bros NFTs found in this wallet.</p>';
+            }
+        } catch (e) {
+            grid.innerHTML = '<p class="col-span-full text-center text-red-400">Could not load NFTs. Try again later.</p>';
+        }
+    }
+
     async function initiateFusion() {
         if (!currentWalletAddress) {
-            alert("Please connect Xaman first");
+            alert("Please connect your Xaman wallet first.");
             connectXaman();
             return;
         }
 
-        // Whitelist test
         if (currentWalletAddress === "rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY") {
-            alert("✅ Fusion Complete (Whitelist Access)");
+            alert("✅ Fusion Complete (Whitelist Access - No payment required)");
             return;
         }
 
@@ -219,7 +277,7 @@
             });
             const payload = await res.json();
             if (payload.next?.always) window.open(payload.next.always, '_blank');
-            alert("Fusion payload sent to Xaman. Approve in app.");
+            alert("Fusion payload sent to Xaman. Approve the 50 XRP payment in the app.");
         } catch (e) {
             alert("Unable to create the fusion payload");
         }
