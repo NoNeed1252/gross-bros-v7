@@ -39,13 +39,13 @@
 <div class="alien-monitor h-[94vh] flex flex-col shadow-2xl relative w-full">
 
     <!-- HEADER -->
-    <div class="bg-[#151515] border-b-8 border-[#0a0a0a] px-6 py-5 flex items-center justify-between">
+    <div class="bg-[#151515] border-b-8 border-[#0a0a0a] px-6 py-5 flex items-center justify-between gap-6">
         <div class="flex items-center gap-3">
             <div class="w-6 h-6 bg-red-600 rounded-full animate-pulse"></div>
             <div class="header-font text-xl tracking-widest">GROSS BROS OS v7</div>
         </div>
         
-        <div onclick="connectXaman()" class="cursor-pointer px-6 py-3 border border-[#00ffc8]/60 hover:border-[#00ffc8] rounded-3xl flex items-center gap-3 text-sm">
+        <div onclick="connectXaman()" class="cursor-pointer px-6 py-3 border border-[#00ffc8]/60 hover:border-[#00ffc8] rounded-3xl flex items-center gap-3 text-sm text-[#00ffc8]">
             <i class="fa-solid fa-wallet"></i>
             <span id="wallet-text">CONNECT XAMAN</span>
         </div>
@@ -61,60 +61,26 @@
         <div onclick="switchTab(3)" class="tab px-6 py-5 cursor-pointer">GROSS REWARDS</div>
     </div>
 
-    <!-- CONTENT AREA -->
-    <div class="flex-1 overflow-auto crt bg-[#050505] p-8 relative" id="content-area">
-        <!-- Content loaded by JS -->
+    <!-- CONTENT -->
+    <div class="flex-1 overflow-auto crt bg-[#050505] p-8 relative text-[#00ffc8]">
+        <div id="content-0" class="tab-content active">
+            <h1 class="header-font text-5xl text-center mb-8">BRO OF THE DAY</h1>
+            <p class="text-center max-w-2xl mx-auto">Test wallet connection below. We'll restore full design once wallet works.</p>
+        </div>
     </div>
-
 </div>
 
 <script>
     const XAMANAPIKEY = '5f30fcbe-a810-490b-8fd5-500a37568a49';
     const XAMANAPIBASE = 'https://xumm.app/api/v1/platform';
-    const XAMANSESSIONKEY = 'grossbros:xaman-session';
-    let currentWalletAddress = null;
 
     function switchTab(n) {
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        const activeContent = document.getElementById('content-' + n);
-        if (activeContent) activeContent.classList.add("active");
-        
-        document.querySelectorAll('.tab').forEach((t, i) => {
-            t.classList.toggle("tab-active", i === n);
-        });
-    }
-
-    function runTicker() {
-        const messages = [
-            '[WARNING] BTC MINER INTERFERENCE DETECTED IN SECTOR 4',
-            '[ALERT] DIMENSIONAL RIFT ACTIVITY INCREASING',
-            '[LORE] THE CHAIN REMEMBERS WHAT THE VOID FORGOT',
-            '[SYSTEM] GUARDIAN BROADCAST OS v7.2.1 STABLE'
-        ];
-        let i = 0;
-        const ticker = document.getElementById('news-ticker');
-        setInterval(() => {
-            if (ticker) ticker.textContent = messages[i];
-            i = (i + 1) % messages.length;
-        }, 5500);
-    }
-
-    function shortenAddress(address) {
-        if (!address) return 'Unknown';
-        return address.slice(0, 6) + '…' + address.slice(-6);
-    }
-
-    function setWalletUI(connected, address = "") {
-        currentWalletAddress = address;
-        const walletText = document.getElementById('wallet-text');
-        const status = document.getElementById('xaman-status');
-        if (walletText) walletText.textContent = connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
-        if (status) status.textContent = connected ? `Connected: ${shortenAddress(address)}` : 'Wallet disconnected.';
+        alert("Tab " + (n+1) + " selected");
     }
 
     async function connectXaman() {
         try {
-            const payloadResponse = await fetch(`${XAMANAPIBASE}/payload`, {
+            const response = await fetch(`${XAMANAPIBASE}/payload`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -126,31 +92,18 @@
                 })
             });
 
-            const payload = await payloadResponse.json();
+            const payload = await response.json();
             if (payload.next?.always) {
                 window.open(payload.next.always, '_blank');
+                document.getElementById('xaman-status').textContent = "Check Xaman app or new tab...";
+            } else {
+                alert("Failed to open Xaman");
             }
-
-            // Simple poll (you can improve later)
-            alert("Xaman link opened in new tab. Approve it in the Xaman app, then come back and click CONNECT XAMAN again.");
         } catch (err) {
             console.error(err);
-            alert("Xaman request failed. Make sure Xaman app is open.");
+            alert("Xaman request failed. Make sure Xaman app is installed and open on your phone.");
         }
     }
-
-    // Initialize everything
-    window.onload = function() {
-        // Add full content back (you can expand this)
-        document.getElementById('content-area').innerHTML = `
-            <div id="content-0" class="tab-content active">
-                <h1 class="header-font text-5xl text-center mb-8">BRO OF THE DAY</h1>
-                <p class="text-center text-lg">Site is now working. Test the wallet button.</p>
-            </div>
-        `;
-        runTicker();
-        console.log("✅ Full script loaded");
-    };
 </script>
 </body>
 </html>
