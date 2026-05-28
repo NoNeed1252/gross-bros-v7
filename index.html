@@ -16,8 +16,8 @@
         .header-font { font-family: 'Orbitron', sans-serif; }
 
         .alien-monitor {
-            background: linear-gradient(145deg, #e5e5e5, #b8b8b8);
-            border: 36px solid #1f1f1f;
+            background: #050505;
+            border: 1px solid #333;
             box-shadow: 0 0 0 22px #0a0a0a, 0 40px 90px -20px rgba(0,0,0,0.95), 0 0 130px -30px var(--cyan);
             border-radius: 32px;
             overflow: hidden;
@@ -206,7 +206,7 @@
     <div class="flex-1 overflow-auto crt bg-[#050505] p-4 md:p-10 relative text-[#00ffc8]">
 
         <div id="content-0" class="tab-content">
-            <h1 class="header-font text-5xl md:text-6xl text-center text-[#00ffc8] tracking-widest mb-8">SPECIMEN SCANNING CHAMBER</h1>
+            <h1 class="header-font text-5xl md:text-6xl text-center text-[#00ffc8] tracking-widest mb-8">BRO OF THE DAY</h1>
             <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/90 mb-12">
                 In the aftermath of the XRP-7 disaster, the Gross Bros were shattered across dimensions.
                 Now fused with machine intelligence, they defend the Ledger from the BTC miners.
@@ -393,7 +393,7 @@
         updateFusionTreasuryDisplay();
         return treasury;
     }
-    const XAMAN_API_KEY = (window.XAMANAPIKEY || document.querySelector('meta[name="xaman-api-key"]')?.content?.trim() || "").trim();
+    const XAMAN_API_KEY = '5f30fcbe-a810-490b-8fd5-500a37568a49';
 
     function updateWalletStatus(message, isConnected = false) {
         const status = document.getElementById('wallet-text');
@@ -411,7 +411,7 @@
             throw new Error('Xaman SDK failed to load');
         }
 
-        const apiKey = await getRuntimeXamanApiKey();
+        const apiKey = XAMAN_API_KEY;
         xamanClient = new window.XummPkce(apiKey, {
             redirectUrl: window.location.href,
             rememberJwt: true,
