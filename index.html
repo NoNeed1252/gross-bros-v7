@@ -229,21 +229,14 @@
         return decoded.replace(/^ipfs:\/\//i, 'ipfs://');
     }
 
-    function normalizeIpfsUrl(raw) {
-        if (!raw) return '';
-        let url = String(raw).trim();
-        if (url.startsWith('ipfs://ipfs/')) url = url.slice('ipfs://ipfs/'.length);
-        else if (url.startsWith('ipfs://')) url = url.slice('ipfs://'.length);
-        if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
-        return url ? 'https://ipfs.io/ipfs/' + url : '';
-    }
+    undefined
 
     async function resolveNftImage(nft) {
         const rawUri = decodeTokenUri(nft.URI || nft.Uri || nft.uri || '');
         if (!rawUri) return '';
 
         const candidates = [];
-        const base = normalizeIpfsUrl(rawUri);
+        const base = getIPFSUrl(rawUri);
         if (base) candidates.push(base);
 
         if (/\.json(?:$|[?#])/i.test(base)) {
@@ -296,9 +289,7 @@
         if (isConnected) monitor.classList.add('connected-glow');
         else monitor.classList.remove('connected-glow');
 
-        if (isConnected && document.getElementById('content-2').classList.contains('active')) {
-            loadNFTs();
-        }
+        undefined
     }
 
     function switchTab(n) {
@@ -333,11 +324,7 @@
                 if (status.meta && status.meta.signed || status.signed) {
                     clearInterval(interval);
                     const address = (status.response && status.response.account) || status.account;
-                    if (address) {
-                        localStorage.setItem('grossbros:xaman-session', JSON.stringify({ connected: true, address: address }));
-                        setWalletUI(true, address);
-                        alert('✅ Wallet Connected Successfully!');
-                    }
+                    undefined
                 } else if (status.meta && status.meta.expired) {
                     clearInterval(interval);
                     setWalletUI(false);
@@ -350,71 +337,7 @@
         }
     }
 
-    async function loadNFTs() {
-        const grid = document.getElementById('nft-grid');
-        const summary = document.getElementById('nft-summary');
-        grid.innerHTML = '<p class="col-span-full text-center py-8">Loading matching Gross Bros NFTs...</p>';
-
-        if (!currentWalletAddress) {
-            grid.innerHTML = '<p class="col-span-full text-center py-8 text-yellow-400">Please connect your wallet first.</p>';
-            if (summary) summary.textContent = 'Connect a wallet to load matching NFTs.';
-            return;
-        }
-
-        try {
-            const response = await fetch('https://xrplcluster.com/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    method: 'account_nfts',
-                    params: [{
-                        account: currentWalletAddress,
-                        ledger_index: 'validated',
-                        limit: 200
-                    }]
-                })
-            });
-
-            const data = await response.json();
-            const rawNfts = data.result && data.result.account_nfts ? data.result.account_nfts : [];
-            const filtered = rawNfts.filter(isStrictMatch);
-
-            if (summary) {
-                summary.textContent = 'Showing ' + filtered.length + ' matching NFTs for issuer ' + STRICT_ISSUER + ' and taxon ' + STRICT_TAXON + '.';
-            }
-
-            grid.innerHTML = '';
-
-            if (filtered.length > 0) {
-                const rendered = await Promise.all(filtered.map(async function (nft) {
-                    return { nft: nft, image: await resolveNftImage(nft) };
-                }));
-
-                rendered.forEach(function (item) {
-                    const nft = item.nft;
-                    const image = item.image;
-                    const issuer = nft.Issuer || nft.issuer || 'Unknown';
-                    const taxon = String(nft.NFTokenTaxon ?? nft.nft_taxon ?? nft.NFTTaxon ?? nft.taxon ?? 'Unknown');
-                    const isSelected = selectedNFT === nft.NFTokenID;
-
-                    const div = document.createElement('div');
-                    div.className = 'nft-card border ' + (isSelected ? 'border-[#00ffc8] bg-[#00ffc8]/10' : 'border-[#00ffc8]/20') + ' rounded-2xl p-3 cursor-pointer hover:border-[#00ffc8] transition-all overflow-hidden';
-                    div.innerHTML = '<div class="fallback-art rounded-xl overflow-hidden mb-3">' + (image ? '<img src="' + escapeHtml(image) + '" alt="NFT image" loading="lazy" />' : '<div class="text-5xl">🃏</div>') + '</div>' + '<div class="space-y-1">' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50">NFTokenID</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(nft.NFTokenID) + '</p>' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Issuer</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(issuer) + '</p>' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Taxon</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(taxon) + '</p>' + '</div>';
-                    div.onclick = function () {
-                        selectedNFT = nft.NFTokenID;
-                        loadNFTs();
-                    };
-                    grid.appendChild(div);
-                });
-            } else {
-                grid.innerHTML = '<p class="col-span-full text-center py-8 text-[#00ffc8]/60">No NFTs match the strict filter.</p>';
-            }
-        } catch (e) {
-            console.error(e);
-            grid.innerHTML = '<p class="col-span-full text-center py-8 text-red-400">Could not load NFTs. Check connection.</p>';
-            if (summary) summary.textContent = 'Unable to load NFTs right now.';
-        }
-    }
+    undefined
 
     async function initiateFusion() {
         if (!currentWalletAddress) {
@@ -448,16 +371,7 @@
         }
     }
 
-    window.onload = function () {
-        switchTab(0);
-        const saved = localStorage.getItem('grossbros:xaman-session');
-        if (saved) {
-            try {
-                const s = JSON.parse(saved);
-                if (s.connected && s.address) setWalletUI(true, s.address);
-            } catch (e) {}
-        }
-    };
+    undefined
 </script>
 </body>
 </html>
