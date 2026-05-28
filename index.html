@@ -137,15 +137,21 @@
 </div>
 
 <script>
+    // === CONSTANTS ===
     const XAMANAPIKEY = '5f30fcbe-a810-490b-8fd5-500a37568a49';
+    const XAMANAPIBASE = 'https://xumm.app/api/v1/platform';
+    const XAMANSESSIONKEY = 'grossbros:xaman-session';
+
     let currentWalletAddress = null;
 
+    // === TAB SWITCHING ===
     function switchTab(n) {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById('content-' + n).classList.add('active');
         document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('tab-active', i === n));
     }
 
+    // === TICKER ===
     function runTicker() {
         const messages = [
             '[WARNING] BTC MINER INTERFERENCE DETECTED IN SECTOR 4',
@@ -177,6 +183,7 @@
         if (xrpAmount) xrpAmount.textContent = connected ? `CONNECTED BRO: ${shortenAddress(address)}` : '';
     }
 
+    // === XAMAN FUNCTIONS ===
     async function createXamanSigninPayload() {
         const response = await fetch(`${XAMANAPIBASE}/payload`, {
             method: 'POST',
@@ -192,7 +199,7 @@
 
         const data = await response.json();
         if (!response.ok || !data?.uuid) {
-            throw new Error(data?.message || "Failed to create request");
+            throw new Error(data?.message || "Failed to create Xaman request");
         }
         return data;
     }
@@ -202,12 +209,12 @@
         if (link) {
             window.open(link, '_blank');
         } else {
-            alert("Could not open Xaman link");
+            alert("Could not open Xaman link. Try again.");
         }
     }
 
     async function pollForSignin(uuid) {
-        for (let i = 0; i < 40; i++) {   // ~80 seconds max
+        for (let i = 0; i < 40; i++) {
             const response = await fetch(`${XAMANAPIBASE}/payload/${uuid}`, {
                 headers: { 'X-API-Key': XAMANAPIKEY }
             });
@@ -217,11 +224,11 @@
                 return data?.response?.account || data?.account || '';
             }
             if (data?.meta?.expired || data?.expired) {
-                throw new Error("Request expired");
+                throw new Error("Request expired. Please try again.");
             }
             await new Promise(r => setTimeout(r, 2000));
         }
-        throw new Error("Timed out waiting for approval");
+        throw new Error("Timed out waiting for Xaman approval.");
     }
 
     async function connectXaman() {
@@ -234,34 +241,39 @@
             const address = await pollForSignin(payload.uuid);
             
             const session = { connected: true, address: address };
-            localStorage.setItem('grossbros:xaman-session', JSON.stringify(session));
+            localStorage.setItem(XAMANSESSIONKEY, JSON.stringify(session));
             setWalletUI(true, address);
             
             alert("✅ Wallet connected successfully!");
         } catch (err) {
             console.error(err);
             setWalletUI(false);
-            alert(err.message || "Connection failed. Make sure Xaman app is installed and open.");
+            alert(err.message || "Connection failed. Make sure the Xaman app is installed and open.");
         }
     }
 
     function initiateFusion() {
         if (!currentWalletAddress) {
-            alert("Please connect Xaman wallet first");
+            alert("Please connect your Xaman wallet first.");
             connectXaman();
             return;
         }
         alert(`Fusion initiated for ${shortenAddress(currentWalletAddress)}`);
     }
 
+    // === INIT ===
     window.addEventListener('load', () => {
         switchTab(0);
         runTicker();
 
-        const saved = localStorage.getItem('grossbros:xaman-session');
+        const saved = localStorage.getItem(XAMANSESSIONKEY);
         if (saved) {
-            const session = JSON.parse(saved);
-            if (session.connected && session.address) setWalletUI(true, session.address);
+            try {
+                const session = JSON.parse(saved);
+                if (session.connected && session.address) {
+                    setWalletUI(true, session.address);
+                }
+            } catch (e) {}
         }
     });
 </script>
