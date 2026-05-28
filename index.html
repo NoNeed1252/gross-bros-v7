@@ -139,7 +139,7 @@
 
         runtimeConfigPromise = (async () => {
             try {
-                // STATIC CONFIG FOR PLAIN HTML SITE
+                // Hard-coded for static HTML site
                 runtimeConfig.xamanApiKey = "5f30fcbe-a810-490b-8fd5-500a37568a49";
                 runtimeConfig.fusionTreasuryAddress = "rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX";
 
@@ -147,7 +147,7 @@
                 window.FUSION_TREASURY_ADDRESS = runtimeConfig.fusionTreasuryAddress;
 
                 updateFusionTreasuryDisplay();
-                console.log("✅ Static config loaded successfully");
+                console.log("✅ Static config loaded");
             } catch (error) {
                 console.warn('Config load failed', error);
             } finally {
@@ -158,25 +158,6 @@
         })();
 
         return runtimeConfigPromise;
-    }
-
-    async function getRuntimeXamanApiKey() {
-        if (!runtimeConfig.xamanApiKey) {
-            await loadRuntimeConfig();
-        }
-        const apiKey = runtimeConfig.xamanApiKey || String(window.XAMANAPIKEY || '').trim();
-        if (!apiKey) throw new Error('Missing Xaman API key');
-        return apiKey;
-    }
-
-    async function getRuntimeFusionTreasuryAddress() {
-        if (!runtimeConfig.fusionTreasuryAddress) {
-            await loadRuntimeConfig();
-        }
-        const treasury = runtimeConfig.fusionTreasuryAddress || String(window.FUSION_TREASURY_ADDRESS || '').trim();
-        if (!treasury) throw new Error('Missing fusion treasury address');
-        updateFusionTreasuryDisplay();
-        return treasury;
     }
 
     loadRuntimeConfig();
