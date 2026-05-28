@@ -203,21 +203,30 @@
 
     // Xaman functions (simplified)
     async function createXamanSigninPayload() {
-        const response = await fetch(`${XAMANAPIBASE}/payload`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-API-Key': XAMANAPIKEY
-            },
-            body: JSON.stringify({
-                txjson: { TransactionType: 'SignIn' },
-                options: { submit: false, expire: 5 }
-            })
-        });
+        try {
+            const response = await fetch(`${XAMANAPIBASE}/payload`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': XAMANAPIKEY
+                },
+                body: JSON.stringify({
+                    txjson: { TransactionType: 'SignIn' },
+                    options: { submit: false, expire: 5 }
+                })
+            });
 
-        const data = await response.json();
-        if (!response.ok || !data?.uuid) throw new Error(data?.message || 'Failed to create Xaman request');
-        return data;
+            const data = await response.json();
+            if (!response.ok) {
+                console.error("Xaman API error:", data);
+                throw new Error(data?.message || `HTTP Error ${response.status}`);
+            }
+            if (!data?.uuid) throw new Error('No payload UUID returned');
+            return data;
+        } catch (err) {
+            console.error("Create payload failed:", err);
+            throw new Error("Xaman connection failed. Try again or check console.");
+        }
     }
 
     async function fetchPayloadStatus(uuid) {
@@ -247,6 +256,7 @@
     }
 
     async function connectXaman() {
+        console.log("Connect Xaman clicked");
         const existing = getWalletSession();
         if (existing?.connected && existing.address) {
             setWalletUI(true, existing.address);
@@ -269,6 +279,10 @@
         }
     }
 
+    function testXaman() {
+        console.log("Testing Xaman API key...");
+        createXamanSigninPayload().then(console.log).catch(console.error);
+    }
     async function initiateFusion() {
         if (!currentWalletAddress) {
             alert("Please connect Xaman first");
