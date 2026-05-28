@@ -200,124 +200,183 @@
         <p>© 2026 GROSS BROS DEFENSE INITIATIVE • XRPL POWERED</p>
     </footer>
 
-    <script>
-        // ==================== CONFIG ====================
-        const ISSUER = "rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY";
-        const TAXON = 1;
+        <script>
+        const ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
+        const TAXON = '1';
         const FUSION_USD = 50;
-        
-        // Reliable IPFS Gateways (fallback chain)
         const IPFS_GATEWAYS = [
-            "https://ipfs.io/ipfs/",
-            "https://gateway.pinata.cloud/ipfs/",
-            "https://cloudflare-ipfs.com/ipfs/",
-            "https://nftstorage.link/ipfs/"
+            'https://ipfs.io/ipfs/',
+            'https://gateway.pinata.cloud/ipfs/',
+            'https://cloudflare-ipfs.com/ipfs/',
+            'https://nftstorage.link/ipfs/'
         ];
 
-        let currentXrpPrice = 1.32; // fallback
+        let currentXrpPrice = 1.32;
         let connectedAddress = null;
-        let xamanWallet = null;
+        let loadNonce = 0;
+        let tickerTimer = null;
 
-        // ==================== IPFS HELPER ====================
-        function hexToString(hex) {
-            if (!hex) return '';
-            let str = '';
-            for (let i = 0; i < hex.length; i += 2) {
-                const char = String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-                str += char;
-            }
-            return str;
+        const enemyMessages = [
+            'WARNING: BTC MINERS BREACHING SECTOR 7',
+            'STRICT GROSS BROS FILTER ACTIVE • ISSUER LOCKED',
+            'FUSION PROTOCOL v0.8 ONLINE • $50 USD EQUIVALENT',
+            'THE LEDGER MUST BE PROTECTED',
+            'XRP-7 SURVIVORS REPORT ANOMALIES',
+            'NEURAL LINK ESTABLISHED • FUSE WITH US',
+            'GROSS BROS ARE WATCHING'
+        ];
+
+        function shortenAddress(addr) {
+            if (!addr) return 'Unknown';
+            return addr.slice(0, 6) + '…' + addr.slice(-6);
         }
 
-        function getIPFSUrl(uri) {
-            if (!uri) return 'https://via.placeholder.com/400x400/111111/00ffc8?text=NO+IMAGE';
-            
-            let cleanUri = uri.trim();
-            
-            // Handle hex encoded URI
-            if (/^[0-9A-Fa-f]+$/.test(cleanUri)) {
-                cleanUri = hexToString(cleanUri);
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, function (ch) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+            });
+        }
+
+        function hexToUtf8(hex) {
+            if (!hex) return '';
+            let clean = String(hex).trim();
+            if (clean.startsWith('0x')) clean = clean.slice(2);
+            if (clean.length % 2 !== 0 || /[^0-9a-f]/i.test(clean)) return String(hex);
+            try {
+                const bytes = [];
+                for (let i = 0; i < clean.length; i += 2) bytes.push(parseInt(clean.slice(i, i + 2), 16));
+                return new TextDecoder().decode(new Uint8Array(bytes));
+            } catch (e) {
+                return String(hex);
             }
-            
-            // Normalize IPFS URIs
-            if (cleanUri.startsWith('ipfs://')) {
-                cleanUri = cleanUri.replace('ipfs://', '');
+        }
+
+        function decodeTokenUri(uriHex) {
+            return hexToUtf8(uriHex || '');
+        }
+
+        function getIPFSUrl(raw) {
+            if (!raw) return '';
+            let url = String(raw).trim();
+            if (!url) return '';
+
+            if (/^[0-9A-Fa-f]+$/.test(url) && url.length % 2 === 0) {
+                url = decodeTokenUri(url);
             }
-            if (cleanUri.startsWith('https://ipfs.io/ipfs/')) {
-                return cleanUri;
+
+            if (url.startsWith('ipfs://')) {
+                let suffix = url.slice(7);
+                if (suffix.toLowerCase().startsWith('ipfs/')) suffix = suffix.slice(5);
+                return IPFS_GATEWAYS[0] + suffix;
             }
-            
-            // If it looks like a CID
-            if (cleanUri.length > 40 && (cleanUri.startsWith('Qm') || cleanUri.startsWith('bafy'))) {
-                // Try gateways in order
-                for (let gateway of IPFS_GATEWAYS) {
-                    const url = gateway + cleanUri;
-                    // Test first gateway immediately
+
+            if (url.startsWith('ipns://')) {
+                let suffix = url.slice(7);
+                if (suffix.toLowerCase().startsWith('ipns/')) suffix = suffix.slice(5);
+                return 'https://ipfs.io/ipns/' + suffix;
+            }
+
+            if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+            return url.length > 40 && (url.startsWith('Qm') || url.startsWith('bafy'))
+                ? IPFS_GATEWAYS[0] + url
+                : '';
+        }
+
+        function normalizeIpfsUrl(raw) {
+            return getIPFSUrl(raw);
+        }
+
+        async function resolveNftImage(nft) {
+            const rawUri = decodeTokenUri(nft.URI || nft.Uri || nft.uri || '');
+            if (!rawUri) return '';
+
+            const candidates = [];
+            const base = getIPFSUrl(rawUri);
+            if (base) candidates.push(base);
+
+            if (/\.json(?:$|[?#])/i.test(base)) {
+                try {
+                    const res = await fetch(base);
+                    if (res.ok) {
+                        const meta = await res.json();
+                        const image = meta.image || meta.image_url || meta.imageUrl || meta.animation_url || '';
+                        const normalized = getIPFSUrl(image);
+                        if (normalized) candidates.unshift(normalized);
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+
+            const gatewayFallbacks = [];
+            for (const candidate of candidates) {
+                if (candidate.startsWith('https://ipfs.io/ipfs/')) {
+                    const suffix = candidate.slice('https://ipfs.io/ipfs/'.length);
+                    gatewayFallbacks.push(candidate, 'https://cloudflare-ipfs.com/ipfs/' + suffix, 'https://gateway.pinata.cloud/ipfs/' + suffix);
+                } else {
+                    gatewayFallbacks.push(candidate);
+                }
+            }
+
+            for (const url of gatewayFallbacks) {
+                if (/\.(png|jpg|jpeg|gif|webp|svg|avif)(?:$|[?#])/i.test(url) || url.startsWith('data:image/')) {
                     return url;
                 }
             }
-            
-            // If it's already a full URL
-            if (cleanUri.startsWith('http')) {
-                return cleanUri;
-            }
-            
-            return 'https://via.placeholder.com/400x400/111111/00ffc8?text=LOADING';
+
+            return '';
         }
 
-        // ==================== PRICE FETCH ====================
+        function isStrictMatch(nft) {
+            const issuer = String(nft.Issuer || nft.issuer || '').toLowerCase();
+            const taxon = String(nft.NFTokenTaxon ?? nft.nft_taxon ?? nft.NFTTaxon ?? nft.taxon ?? '').trim();
+            return issuer === ISSUER.toLowerCase() && taxon === TAXON;
+        }
+
         async function fetchXrpPrice() {
             try {
-                // Multiple fallback APIs
                 const apis = [
                     'https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd',
                     'https://min-api.cryptocompare.com/data/price?fsym=XRP&tsyms=USD'
                 ];
-                
-                for (let api of apis) {
+
+                for (const api of apis) {
                     const res = await fetch(api);
                     if (res.ok) {
                         const data = await res.json();
-                        if (data.ripple) currentXrpPrice = data.ripple.usd;
-                        else if (data.USD) currentXrpPrice = data.USD;
-                        break;
+                        if (data.ripple && data.ripple.usd) {
+                            currentXrpPrice = Number(data.ripple.usd);
+                            break;
+                        }
+                        if (data.USD) {
+                            currentXrpPrice = Number(data.USD);
+                            break;
+                        }
                     }
                 }
             } catch (e) {
-                console.warn("Price fetch failed, using fallback", e);
+                console.warn('Price fetch failed, using fallback', e);
             }
-            
+
             updateFusionPrice();
         }
 
         function updateFusionPrice() {
+            const el = document.getElementById('xrpAmount');
+            if (!el) return;
             const xrpNeeded = (FUSION_USD / currentXrpPrice).toFixed(2);
             const drops = Math.ceil((FUSION_USD / currentXrpPrice) * 1000000);
-            
-            document.getElementById('xrpAmount').innerHTML = `
-                ≈ ${xrpNeeded} XRP (${drops.toLocaleString()} drops)
-            `;
+            el.innerHTML = '≈ ' + xrpNeeded + ' XRP (' + drops.toLocaleString() + ' drops)';
         }
-
-        // ==================== TICKER ====================
-        const enemyMessages = [
-            "WARNING: BTC MINERS BREACHING SECTOR 7",
-            "STRICT GROSS BROS FILTER ACTIVE • ISSUER LOCKED",
-            "FUSION PROTOCOL v0.8 ONLINE • $50 USD EQUIVALENT",
-            "THE LEDGER MUST BE PROTECTED",
-            "XRP-7 SURVIVORS REPORT ANOMALIES",
-            "NEURAL LINK ESTABLISHED • FUSE WITH US",
-            "GROSS BROS ARE WATCHING"
-        ];
 
         function startTicker() {
             const tickerEl = document.getElementById('ticker');
+            if (!tickerEl) return;
             let index = 0;
-            
-            setInterval(() => {
+            if (tickerTimer) clearInterval(tickerTimer);
+            tickerTimer = setInterval(() => {
                 tickerEl.style.transition = 'opacity 0.4s';
                 tickerEl.style.opacity = '0';
-                
                 setTimeout(() => {
                     tickerEl.textContent = enemyMessages[index % enemyMessages.length];
                     tickerEl.style.opacity = '1';
@@ -326,121 +385,246 @@
             }, 3500);
         }
 
-        // ==================== WALLET ====================
-        async function connectXaman() {
-            try {
-                // Xaman deep link / Web
-                if (window.Xaman) {
-                    // Placeholder for actual Xaman integration
-                    alert("Xaman integration ready. In production, use Xaman SDK.");
-                    // Simulate connection for demo
-                    connectedAddress = "rTestAddress1234567890TestWalletDemo";
-                    setWalletUI(true);
-                } else {
-                    // Fallback demo connection
-                    connectedAddress = "rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY";
-                    setWalletUI(true);
-                }
-            } catch (err) {
-                console.error(err);
-                alert("Failed to connect Xaman. Please try again.");
-            }
-        }
-
-        function setWalletUI(connected) {
+        function setWalletUI(connected, address = '') {
+            connectedAddress = address || null;
             const statusEl = document.getElementById('walletStatus');
             const addressEl = document.getElementById('walletAddress');
             const btnText = document.getElementById('connectText');
-            
+            const btn = document.getElementById('connectBtn');
+
             if (connected && connectedAddress) {
-                statusEl.innerHTML = `
-                    <div>Wallet: <span class="text-emerald-400">CONNECTED</span></div>
-                `;
-                addressEl.textContent = connectedAddress;
-                btnText.textContent = "CONNECTED";
-                document.getElementById('connectBtn').classList.add('!bg-emerald-400', '!text-black');
-                
-                loadUserNFTs();
+                if (statusEl) {
+                    statusEl.innerHTML = '<div>Wallet: <span class="text-emerald-400">CONNECTED</span></div>';
+                }
+                if (addressEl) addressEl.textContent = connectedAddress;
+                if (btnText) btnText.textContent = 'CONNECTED';
+                if (btn) btn.classList.add('!bg-emerald-400', '!text-black');
+                const monitor = document.getElementById('main-monitor');
+                if (monitor) monitor.classList.add('connected-glow');
+                loadNFTs();
             } else {
-                statusEl.innerHTML = `<div>Wallet: <span class="text-red-400">DISCONNECTED</span></div>`;
-                addressEl.textContent = '';
-                btnText.textContent = "CONNECT XAMAN";
+                if (statusEl) statusEl.innerHTML = '<div>Wallet: <span class="text-red-400">DISCONNECTED</span></div>';
+                if (addressEl) addressEl.textContent = '';
+                if (btnText) btnText.textContent = 'CONNECT XAMAN';
+                if (btn) btn.classList.remove('!bg-emerald-400', '!text-black');
+                const monitor = document.getElementById('main-monitor');
+                if (monitor) monitor.classList.remove('connected-glow');
             }
         }
 
-        // ==================== NFT LOADING ====================
-        async function loadUserNFTs() {
-            const grid = document.getElementById('nftGrid');
-            grid.innerHTML = `<div class="col-span-3 text-center py-12 text-[#00ffc8]/50">SCANNING LEDGER FOR GROSS BROS...</div>`;
-            
+        async function connectXaman() {
             try {
-                // In real app you would use xrpl.js + account_nfts
-                // This is a demo with mock data
-                const mockNFTs = [
-                    { NFTokenID: "0000...", URI: "bafkreigrossbros1" },
-                    { NFTokenID: "0001...", URI: "QmGrossBrosExample2" },
-                    { NFTokenID: "0002...", URI: "ipfs://bafyGrossBros3" }
-                ];
-                
-                grid.innerHTML = '';
-                
-                mockNFTs.forEach(nft => {
-                    const url = getIPFSUrl(nft.URI);
-                    const div = document.createElement('div');
-                    div.className = "nft-card border border-[#00ffc8]/30 bg-black/60 overflow-hidden";
-                    div.innerHTML = `
-                        <img src="${url}" 
-                             onerror="this.src='https://via.placeholder.com/400x400/111111/00ffc8?text=ERROR'"
-                             class="w-full aspect-square object-cover">
-                        <div class="p-3 text-xs font-mono truncate">${nft.NFTokenID}</div>
-                    `;
-                    grid.appendChild(div);
-                });
-                
+                const btnText = document.getElementById('connectText');
+                if (btnText) btnText.textContent = 'CONNECTING...';
+
+                const res = await fetch('/api/xaman?action=create-payload', { method: 'POST' });
+                if (!res.ok) throw new Error('Failed to create Xaman payload');
+                const payload = await res.json();
+
+                if (payload.next && payload.next.always) window.open(payload.next.always, '_blank');
+
+                let attempts = 0;
+                const interval = setInterval(async function () {
+                    attempts++;
+                    if (attempts > 35) {
+                        clearInterval(interval);
+                        setWalletUI(false);
+                        return;
+                    }
+
+                    const check = await fetch('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(payload.uuid));
+                    const status = await check.json();
+
+                    if ((status.meta && status.meta.signed) || status.signed) {
+                        clearInterval(interval);
+                        const address = (status.response && status.response.account) || status.account || status.address || '';
+                        if (address) {
+                            localStorage.setItem('grossbros:xaman-session', JSON.stringify({ connected: true, address: address }));
+                            setWalletUI(true, address);
+                            alert('Wallet connected successfully!');
+                        } else {
+                            setWalletUI(false);
+                        }
+                    } else if ((status.meta && status.meta.expired) || status.expired) {
+                        clearInterval(interval);
+                        setWalletUI(false);
+                    }
+                }, 2500);
             } catch (e) {
                 console.error(e);
-                grid.innerHTML = `<div class="col-span-3 text-red-400 text-center">LEDGER CONNECTION FAILED</div>`;
+                alert('Connection failed');
+                setWalletUI(false);
             }
         }
 
-        // ==================== FUSION ====================
-        async function initiateFusion() {
+        async function loadNFTs() {
+            const grid = document.getElementById('nftGrid');
+            const summary = document.getElementById('nft-summary');
+            if (!grid) return;
+
             if (!connectedAddress) {
-                alert("CONNECT XAMAN WALLET FIRST");
+                try {
+                    const saved = localStorage.getItem('grossbros:xaman-session');
+                    if (saved) {
+                        const session = JSON.parse(saved);
+                        if (session && session.connected && session.address) {
+                            connectedAddress = session.address;
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            grid.innerHTML = '<div class="col-span-full text-center py-8 text-[#00ffc8]/60">SCANNING VALIDATED LEDGER FOR GROSS BROS...</div>';
+
+            if (!connectedAddress) {
+                grid.innerHTML = '<div class="col-span-full text-center py-8 text-yellow-400">Please connect your Xaman wallet first.</div>';
+                if (summary) summary.textContent = 'Connect a wallet to load matching NFTs.';
                 return;
             }
-            
-            const drops = Math.ceil((FUSION_USD / currentXrpPrice) * 1000000);
-            
-            alert(`Initiating fusion payment of ${drops} drops (~$${FUSION_USD} USD).\n\nXaman payload ready in production build.`);
-            // In real implementation: create Payment transaction with Destination set to fusion address
+
+            const requestId = ++loadNonce;
+
+            try {
+                const response = await fetch('https://xrplcluster.com/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        method: 'account_nfts',
+                        params: [{
+                            account: connectedAddress,
+                            ledger_index: 'validated',
+                            limit: 200
+                        }]
+                    })
+                });
+
+                if (!response.ok) throw new Error('XRPL request failed');
+                const data = await response.json();
+                const rawNfts = data.result && Array.isArray(data.result.account_nfts) ? data.result.account_nfts : [];
+                const filtered = rawNfts.filter(isStrictMatch);
+
+                if (requestId !== loadNonce) return;
+
+                if (summary) {
+                    summary.textContent = 'Showing ' + filtered.length + ' matching NFTs from the validated ledger for issuer ' + ISSUER + ' and taxon ' + TAXON + '.';
+                }
+
+                if (!filtered.length) {
+                    grid.innerHTML = '<div class="col-span-full text-center py-8 text-[#00ffc8]/60">No NFTs match the strict Gross Bros filter.</div>';
+                    return;
+                }
+
+                const rendered = await Promise.all(filtered.map(async function (nft) {
+                    return { nft: nft, image: await resolveNftImage(nft) };
+                }));
+
+                if (requestId !== loadNonce) return;
+                grid.innerHTML = '';
+
+                rendered.forEach(function (item) {
+                    const nft = item.nft;
+                    const image = item.image;
+                    const issuer = nft.Issuer || nft.issuer || 'Unknown';
+                    const taxon = String(nft.NFTokenTaxon ?? nft.nft_taxon ?? nft.NFTTaxon ?? nft.taxon ?? 'Unknown');
+                    const div = document.createElement('div');
+                    div.className = 'nft-card border border-[#00ffc8]/30 bg-black/60 rounded-2xl overflow-hidden';
+
+                    const artWrap = document.createElement('div');
+                    artWrap.className = 'fallback-art';
+                    const placeholder = document.createElement('div');
+                    placeholder.className = image ? 'hidden fallback-art text-5xl' : 'flex fallback-art text-5xl';
+                    placeholder.textContent = '🃏';
+                    artWrap.appendChild(placeholder);
+
+                    if (image) {
+                        const img = document.createElement('img');
+                        img.src = image;
+                        img.alt = 'NFT image';
+                        img.loading = 'lazy';
+                        img.onerror = function () {
+                            img.style.display = 'none';
+                            placeholder.style.display = 'flex';
+                        };
+                        artWrap.insertBefore(img, placeholder);
+                    }
+
+                    const meta = document.createElement('div');
+                    meta.className = 'p-3 space-y-1';
+                    meta.innerHTML =
+                        '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50">NFTokenID</p>' +
+                        '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(nft.NFTokenID || '') + '</p>' +
+                        '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Issuer</p>' +
+                        '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(issuer) + '</p>' +
+                        '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Taxon</p>' +
+                        '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(taxon) + '</p>';
+                    grid.appendChild(div);
+                });
+            } catch (e) {
+                console.error(e);
+                if (requestId !== loadNonce) return;
+                grid.innerHTML = '<div class="col-span-full text-center py-8 text-red-400">Could not load NFTs from the ledger.</div>';
+                if (summary) summary.textContent = 'Unable to load NFTs right now.';
+            }
         }
 
-        // ==================== INIT ====================
-        async function init() {
-            // Tailwind script already loaded
+        async function initiateFusion() {
+            if (!connectedAddress) {
+                alert('Please connect your Xaman wallet first.');
+                connectXaman();
+                return;
+            }
+
+            const drops = Math.ceil((FUSION_USD / currentXrpPrice) * 1000000);
+            try {
+                const res = await fetch('/api/xaman?action=create-payload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        txjson: {
+                            TransactionType: 'Payment',
+                            Destination: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
+                            Amount: String(drops)
+                        }
+                    })
+                });
+                if (!res.ok) throw new Error('Unable to create payload');
+                const payload = await res.json();
+                if (payload.next && payload.next.always) window.open(payload.next.always, '_blank');
+                alert('Fusion payload created for ' + drops + ' drops (~$' + FUSION_USD + ' USD).');
+            } catch (e) {
+                console.error(e);
+                alert('Unable to create the fusion payload');
+            }
+        }
+
+        function init() {
             fetchXrpPrice();
-            setInterval(fetchXrpPrice, 45000); // refresh price every 45s
-            
+            setInterval(fetchXrpPrice, 45000);
             startTicker();
-            
-            // Demo: auto show some NFTs
+
+            try {
+                const saved = localStorage.getItem('grossbros:xaman-session');
+                if (saved) {
+                    const session = JSON.parse(saved);
+                    if (session && session.connected && session.address) {
+                        setWalletUI(true, session.address);
+                    } else {
+                        setWalletUI(false);
+                    }
+                } else {
+                    setWalletUI(false);
+                }
+            } catch (e) {
+                setWalletUI(false);
+            }
+
             setTimeout(() => {
-                const grid = document.getElementById('nftGrid');
-                if (grid.children.length < 2) {
-                    loadUserNFTs();
-                }
+                if (!connectedAddress) loadNFTs();
             }, 800);
-            
-            // Keyboard easter egg
-            document.addEventListener('keydown', (e) => {
-                if (e.key === '/' && document.getElementById('fusionLab')) {
-                    document.getElementById('fusionLab').scrollIntoView({ behavior: 'smooth' });
-                }
-            });
         }
 
         window.onload = init;
     </script>
+
 </body>
 </html>
