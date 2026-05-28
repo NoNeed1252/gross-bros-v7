@@ -193,7 +193,7 @@
     function decodeTokenUri(uriHex) {
         const decoded = hexToUtf8(uriHex);
         if (!decoded) return '';
-        return decoded.replace(/^ipfs:///i, 'ipfs://');
+        return decoded.replace(/^ipfs:\/\//i, 'ipfs://');
     }
 
     function normalizeIpfsUrl(raw) {
