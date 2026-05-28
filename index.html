@@ -103,7 +103,7 @@
             <h1 class="header-font text-5xl text-[#00ffc8] mb-8">FUSION LAB</h1>
             <div class="max-w-2xl mx-auto border-4 border-[#00ffc8] bg-black rounded-3xl p-10 text-center">
                 <div class="h-64 border-4 border-[#00ffc8] rounded-2xl flex items-center justify-center mb-8 text-8xl">⚡</div>
-                <div id="xrp-amount" class="text-3xl font-bold mb-6 text-[#00ffc8]"></div>
+                <div id="xrp-amount" class="text-3xl font-bold mb-6 text-[#00ffc8]">$50 USD</div>
                 <button id="fusion-button" type="button" onclick="initiateFusion()" class="w-full py-7 text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
                     INITIATE FUSION • $50 USD
                 </button>
@@ -142,15 +142,14 @@
 
         runtimeConfigPromise = (async () => {
             try {
-                // STATIC CONFIG FOR PLAIN HTML SITE
-                runtimeConfig.xamanApiKey = "5f30fcbe-a810-490b-8fd5-500a37568a49";
-                runtimeConfig.fusionTreasuryAddress = "rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX";
+                runtimeConfig.xamanApiKey = '5f30fcbe-a810-490b-8fd5-500a37568a49';
+                runtimeConfig.fusionTreasuryAddress = 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX';
 
                 window.XAMANAPIKEY = runtimeConfig.xamanApiKey;
                 window.FUSION_TREASURY_ADDRESS = runtimeConfig.fusionTreasuryAddress;
 
                 updateFusionTreasuryDisplay();
-                console.log("✅ Static config loaded successfully");
+                console.log('✅ Static config loaded successfully');
             } catch (error) {
                 console.warn('Config load failed', error);
             } finally {
@@ -182,7 +181,7 @@
         return treasury;
     }
 
-    function updateFusionTreasuryDisplay(treasuryAddress = "") {
+    function updateFusionTreasuryDisplay(treasuryAddress = '') {
         const xrpAmount = document.getElementById('xrp-amount');
         if (!xrpAmount) return;
         const treasury = treasuryAddress || runtimeConfig.fusionTreasuryAddress || String(window.FUSION_TREASURY_ADDRESS || '').trim();
@@ -219,7 +218,7 @@
     function switchTab(n) {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
         document.getElementById('content-' + n).classList.remove('hidden');
-        document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('tab-active', i === n));
+        document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('tab-active', i === n));
     }
 
     function runTicker() {
@@ -307,17 +306,16 @@
     function shortenAddress(address) {
         if (!address) return 'Wallet disconnected.';
         if (address.length <= 12) return address;
-        return `${address.slice(0, 6)}…${address.slice(-6)}`;
+        return address.slice(0, 6) + '…' + address.slice(-6);
     }
 
     function setWalletUI({ connected, address, message }) {
         const walletButton = document.getElementById('wallet-button');
         const walletText = document.getElementById('wallet-text');
         const status = document.getElementById('xaman-status');
-        const xrpAmount = document.getElementById('xrp-amount');
         const isConnected = Boolean(connected && address);
-        const connectedLabel = address ? `XAMAN CONNECTED • ${shortenAddress(address)}` : 'XAMAN CONNECTED';
-        const connectedStatus = address ? `Connected: ${shortenAddress(address)}` : 'Connected to Xaman.';
+        const connectedLabel = address ? 'XAMAN CONNECTED • ' + shortenAddress(address) : 'XAMAN CONNECTED';
+        const connectedStatus = address ? 'Connected: ' + shortenAddress(address) : 'Connected to Xaman.';
 
         if (walletButton) {
             walletButton.setAttribute('aria-pressed', String(isConnected));
@@ -335,10 +333,6 @@
 
         if (status) {
             status.textContent = isConnected ? connectedStatus : (message || 'Wallet disconnected.');
-        }
-
-        if (xrpAmount) {
-            xrpAmount.textContent = isConnected ? ('CONNECTED BRO: ' + shortenAddress(address)) : (xrpAmount.dataset.treasury ? ('FUSION TREASURY: ' + shortenAddress(xrpAmount.dataset.treasury)) : '');
         }
     }
 
@@ -359,9 +353,10 @@
     }
 
     async function fetchPayloadStatus(uuid) {
+        const apiKey = await getRuntimeXamanApiKey();
         const response = await fetch(XAMAN_API_BASE + '/payload/' + encodeURIComponent(uuid), {
             headers: {
-                'X-API-Key': XAMAN_API_KEY
+                'X-API-Key': apiKey
             }
         });
 
@@ -374,16 +369,38 @@
     }
 
     async function fetchXrpUsdRate() {
-        try {
-            const response = await fetch('/api/xrp-price', { cache: 'no-store' });
-            const data = await response.json().catch(() => null);
-            if (!response.ok || !data || !Number.isFinite(Number(data.xrpUsd)) || Number(data.xrpUsd) <= 0) {
-                return null;
+        const sources = [
+            async () => {
+                const response = await fetch('/api/xrp-price', { cache: 'no-store' });
+                const data = await response.json().catch(() => null);
+                if (!response.ok || !data) return null;
+                const price = Number(data.xrpUsd ?? data.price ?? data.last ?? data.usd);
+                return Number.isFinite(price) && price > 0 ? price : null;
+            },
+            async () => {
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd', { cache: 'no-store' });
+                const data = await response.json().catch(() => null);
+                const price = Number(data?.ripple?.usd);
+                return Number.isFinite(price) && price > 0 ? price : null;
+            },
+            async () => {
+                const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=XRPUSDT', { cache: 'no-store' });
+                const data = await response.json().catch(() => null);
+                const price = Number(data?.price);
+                return Number.isFinite(price) && price > 0 ? price : null;
             }
-            return Number(data.xrpUsd);
-        } catch {
-            return null;
+        ];
+
+        for (const source of sources) {
+            try {
+                const price = await source();
+                if (price) return price;
+            } catch {
+                // try next source
+            }
         }
+
+        return null;
     }
 
     function dropsFromXrpAmount(xrpAmount) {
@@ -391,27 +408,20 @@
         return String(Math.max(1, Math.round(xrpAmount * 1000000)));
     }
 
-    async function createFusionPayload() {
-        const treasuryAddress = await getRuntimeFusionTreasuryAddress();
+    async function getFusionAmountDetails() {
         const xrpUsd = await fetchXrpUsdRate();
-        const xrpAmount = xrpUsd ? (FUSION_USD_TARGET / xrpUsd) : null;
-        const amountDrops = xrpAmount ? dropsFromXrpAmount(xrpAmount) : null;
-
-        if (!amountDrops) {
-            throw new Error('Unable to create the fusion payload.');
+        if (!xrpUsd) {
+            throw new Error('Unable to fetch the live XRP price.');
         }
 
-        return await createXamanProxyPayload({
-            txjson: {
-                TransactionType: 'Payment',
-                Destination: treasuryAddress,
-                Amount: amountDrops
-            },
-            options: {
-                submit: false,
-                expire: 10
-            }
-        });
+        const xrpAmount = FUSION_USD_TARGET / xrpUsd;
+        const amountDrops = dropsFromXrpAmount(xrpAmount);
+
+        if (!amountDrops) {
+            throw new Error('Unable to calculate the fusion amount.');
+        }
+
+        return { xrpUsd, xrpAmount, amountDrops };
     }
 
     function getXamanPayloadUrl(payload) {
@@ -457,7 +467,7 @@
     async function connectXaman() {
         const existing = await verifyWalletSession(getWalletSession());
         if (existing?.connected && existing.address) {
-            setWalletUI({ connected: true, address: existing.address, message: `Connected: ${shortenAddress(existing.address)}` });
+            setWalletUI({ connected: true, address: existing.address, message: 'Connected: ' + shortenAddress(existing.address) });
             return existing;
         }
 
@@ -480,7 +490,7 @@
                 signedAt: new Date().toISOString()
             };
             saveWalletSession(session);
-            setWalletUI({ connected: true, address: session.address, message: `Connected: ${shortenAddress(session.address)}` });
+            setWalletUI({ connected: true, address: session.address, message: 'Connected: ' + shortenAddress(session.address) });
             return session;
         } catch (error) {
             clearWalletSession();
@@ -506,8 +516,20 @@
                 throw new Error('Connect Xaman before starting fusion.');
             }
 
-            setWalletUI({ connected: true, address: session.address, message: 'Creating fusion payload…' });
-            const payload = await createFusionPayload();
+            setWalletUI({ connected: true, address: session.address, message: 'Calculating live XRP amount…' });
+            const treasuryAddress = await getRuntimeFusionTreasuryAddress();
+            const amountDetails = await getFusionAmountDetails();
+            const payload = await createXamanProxyPayload({
+                txjson: {
+                    TransactionType: 'Payment',
+                    Destination: treasuryAddress,
+                    Amount: amountDetails.amountDrops
+                },
+                options: {
+                    submit: false,
+                    expire: 10
+                }
+            });
             const payloadUrl = getXamanPayloadUrl(payload);
 
             if (!payloadUrl) {
@@ -515,7 +537,7 @@
             }
 
             openSigninUrl(payload, fusionWindow);
-            setWalletUI({ connected: true, address: session.address, message: 'Fusion payload ready for ' + shortenAddress(session.address) });
+            setWalletUI({ connected: true, address: session.address, message: 'Fusion payload ready • $50 USD ≈ ' + amountDetails.xrpAmount.toFixed(6) + ' XRP at $' + amountDetails.xrpUsd.toFixed(4) });
         } catch (error) {
             if (fusionWindow && !fusionWindow.closed) {
                 fusionWindow.close();
@@ -528,12 +550,17 @@
         switchTab(0);
         runTicker();
 
+        const fusionAmount = document.getElementById('xrp-amount');
+        if (fusionAmount && !fusionAmount.textContent.trim()) {
+            fusionAmount.textContent = '$50 USD';
+        }
+
         document.getElementById('wallet-button')?.addEventListener('click', connectXaman);
         document.getElementById('fusion-button')?.addEventListener('click', initiateFusion);
 
         const session = await verifyWalletSession(getWalletSession());
         if (session?.connected && session.address) {
-            setWalletUI({ connected: true, address: session.address, message: `Connected: ${shortenAddress(session.address)}` });
+            setWalletUI({ connected: true, address: session.address, message: 'Connected: ' + shortenAddress(session.address) });
         } else {
             setWalletUI({ connected: false, address: '', message: 'Wallet disconnected.' });
         }
