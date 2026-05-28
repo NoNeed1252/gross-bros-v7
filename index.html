@@ -10,7 +10,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap');
         :root { --cyan: #00ffc8; }
-        body { font-family: 'Share Tech Mono', monospace; background: #000; }
+        body { font-family: 'Share Tech Mono', monospace; background: #000; color: #00ffc8; }
         .header-font { font-family: 'Orbitron', sans-serif; }
 
         .alien-monitor {
@@ -22,72 +22,95 @@
             max-width: 1480px;
             margin: 20px auto;
         }
-
         .crt::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: repeating-linear-gradient(transparent 0px, transparent 4px, rgba(0,255,200,0.12) 4px, rgba(0,255,200,0.12) 8px);
-            animation: scanline 7s linear infinite;
+            background: repeating-linear-gradient(transparent 0px, transparent 5px, rgba(0,255,200,0.15) 5px, rgba(0,255,200,0.15) 10px);
+            animation: scanline 8s linear infinite;
             pointer-events: none;
             z-index: 1;
         }
         @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
-
-        .tab-active { border-bottom: 4px solid var(--cyan); color: var(--cyan); }
+        .tab-active { border-bottom: 5px solid var(--cyan); color: var(--cyan); background: #1a1a1a; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
     </style>
 </head>
-<body class="bg-black text-[#00ffc8] min-h-screen p-4">
+<body class="bg-black min-h-screen p-4">
 
-<div class="alien-monitor h-[92vh] flex flex-col relative crt">
+<div class="alien-monitor h-[94vh] flex flex-col relative crt shadow-2xl">
 
     <!-- HEADER -->
     <div class="bg-[#0a0a0a] border-b-4 border-[#00ffc8]/30 px-8 py-6 flex items-center justify-between">
         <div class="flex items-center gap-4">
-            <div class="w-5 h-5 bg-red-500 rounded-full animate-pulse"></div>
+            <div class="w-6 h-6 bg-red-600 rounded-full animate-pulse"></div>
             <div class="header-font text-2xl tracking-widest">GUARDIAN BROADCAST OS v7.2.1</div>
         </div>
         
-        <div onclick="connectXaman()" class="cursor-pointer px-8 py-4 border-2 border-[#00ffc8]/70 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-lg font-medium hover:bg-[#00ffc8]/10 transition-all">
+        <div onclick="connectXaman()" class="cursor-pointer px-8 py-4 border-2 border-[#00ffc8]/70 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-lg hover:bg-[#00ffc8]/10 transition-all">
             <i class="fa-solid fa-wallet"></i>
             <span id="wallet-text">CONNECT XAMAN</span>
         </div>
+        
+        <p id="xaman-status" class="text-sm text-[#00ffc8]/60">Wallet disconnected.</p>
     </div>
 
     <!-- TABS -->
-    <div class="tabs-container flex border-b border-[#00ffc8]/20 text-sm">
+    <div class="bg-[#111] border-b border-[#00ffc8]/20 flex text-sm overflow-x-auto">
         <div onclick="switchTab(0)" id="tab-0" class="tab px-8 py-5 cursor-pointer tab-active">MAIN CONSOLE</div>
         <div onclick="switchTab(1)" id="tab-1" class="tab px-8 py-5 cursor-pointer">STORYLINE</div>
         <div onclick="switchTab(2)" id="tab-2" class="tab px-8 py-5 cursor-pointer">FUSION LAB</div>
-        <div onclick="switchTab(3)" id="tab-3" class="tab px-8 py-5 cursor-pointer">REWARDS</div>
+        <div onclick="switchTab(3)" id="tab-3" class="tab px-8 py-5 cursor-pointer">GROSS REWARDS</div>
     </div>
 
     <!-- CONTENT -->
-    <div class="flex-1 overflow-auto p-8 relative z-10" id="main-content">
-        <!-- Default content loaded by JS -->
+    <div class="flex-1 overflow-auto p-8 relative z-10 bg-[#050505]" id="content-area">
+        <!-- Tab contents loaded here -->
     </div>
 
 </div>
 
 <script>
-    const XAMANAPIKEY = '5f30fcbe-a810-490b-8fd5-500a37568a49';
-    const XAMANAPIBASE = 'https://xumm.app/api/v1/platform';
-    let currentAddress = null;
+    let currentWalletAddress = null;
+
+    function shortenAddress(address) {
+        if (!address) return 'Unknown';
+        return address.slice(0, 6) + '…' + address.slice(-6);
+    }
+
+    function setWalletUI(connected, address = '') {
+        currentWalletAddress = address;
+        const walletText = document.getElementById('wallet-text');
+        const status = document.getElementById('xaman-status');
+        
+        if (walletText) walletText.textContent = connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
+        if (status) status.textContent = connected ? `Connected: ${shortenAddress(address)}` : 'Wallet disconnected.';
+    }
 
     function switchTab(n) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('tab-active'));
-        document.getElementById('tab-' + n).classList.add('tab-active');
-        
-        const content = document.getElementById('main-content');
-        content.innerHTML = `<div class=\"text-center py-20\"><p class=\"text-2xl\">Tab ${n} content coming soon...</p></div>`;
+        document.querySelectorAll('.tab').forEach((t, i) => {
+            t.classList.toggle('tab-active', i === n);
+        });
+
+        const area = document.getElementById('content-area');
+        area.innerHTML = `
+            <div class="tab-content active">
+                <h1 class="header-font text-5xl mb-6">TAB ${n} - ${['MAIN CONSOLE','STORYLINE','FUSION LAB','GROSS REWARDS'][n]}</h1>
+                <p class="text-[#00ffc8]/70">Content for this tab will be expanded later.</p>
+            </div>
+        `;
     }
 
     async function connectXaman() {
         try {
-            setWalletUI(false);
-            document.getElementById('wallet-text').textContent = "CONNECTING...";
+            const walletText = document.getElementById('wallet-text');
+            walletText.textContent = "CONNECTING...";
 
-            const createRes = await fetch('/api/xaman?action=create-payload', { method: 'POST' });
+            // Create payload via proxy
+            const createRes = await fetch('/api/xaman?action=create-payload', { 
+                method: 'POST' 
+            });
             const payload = await createRes.json();
 
             if (!payload.next?.always) {
@@ -96,14 +119,14 @@
 
             window.open(payload.next.always, '_blank');
 
+            // Poll for result
             let attempts = 0;
-            const maxAttempts = 40;
-
+            const maxAttempts = 35;
             const pollInterval = setInterval(async () => {
                 attempts++;
                 if (attempts > maxAttempts) {
                     clearInterval(pollInterval);
-                    alert("Timed out waiting for Xaman approval.");
+                    alert("Timed out waiting for approval.");
                     setWalletUI(false);
                     return;
                 }
@@ -119,11 +142,11 @@
                             const session = { connected: true, address };
                             localStorage.setItem('grossbros:xaman-session', JSON.stringify(session));
                             setWalletUI(true, address);
-                            alert("✅ Successfully connected!");
+                            alert("✅ Wallet connected successfully!");
                         }
-                    } else if (status.meta?.expired) {
+                    } else if (status.meta?.expired || status.expired) {
                         clearInterval(pollInterval);
-                        alert("Request expired.");
+                        alert("Request expired. Please try again.");
                         setWalletUI(false);
                     }
                 } catch (e) {
@@ -133,16 +156,29 @@
 
         } catch (err) {
             console.error(err);
-            alert("Failed to connect to Xaman. Try again.");
+            alert("Xaman connection failed. Please try again.");
             setWalletUI(false);
         }
     }
 
+    // Load saved session
+    function loadSavedSession() {
+        const saved = localStorage.getItem('grossbros:xaman-session');
+        if (saved) {
+            try {
+                const session = JSON.parse(saved);
+                if (session.connected && session.address) {
+                    setWalletUI(true, session.address);
+                }
+            } catch (e) {}
+        }
+    }
 
     // Initialize
     window.onload = () => {
         switchTab(0);
-        console.log("✅ Gross Bros OS loaded cleanly");
+        loadSavedSession();
+        console.log("✅ Gross Bros OS v7.2.1 loaded");
     };
 </script>
 </body>
