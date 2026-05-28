@@ -1,10 +1,10 @@
-<!-- v7.2.3-force -->
+<!-- v7.2.4-force -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GROSS BROS • GUARDIAN BROADCAST OS v7.2.3</title>
+    <title>GROSS BROS • GUARDIAN BROADCAST OS v7.2.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -53,17 +53,18 @@
         @media (max-width: 640px) {
             .tab { white-space: nowrap; }
         }
+        .fusion-panel { border-color: rgba(0,255,200,0.22); }
     </style>
 </head>
-<body class="bg-black min-h-screen p-2 sm:p-4">
+<body class="bg-black min-h-screen p-1 sm:p-4">
 
 <div id="main-monitor" class="alien-monitor flex flex-col relative crt">
 
     <!-- HEADER -->
-    <div class="bg-[#0a0a0a] border-b-4 border-[#00ffc8]/30 px-4 sm:px-6 py-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div class="bg-[#0a0a0a] border-b-4 border-[#00ffc8]/30 px-3 sm:px-6 py-3 sm:py-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div class="flex items-center gap-3">
             <div class="w-5 h-5 bg-red-600 rounded-full animate-pulse"></div>
-            <div class="header-font text-xl sm:text-2xl tracking-widest">GUARDIAN BROADCAST OS v7.2.3</div>
+            <div class="header-font text-xl sm:text-2xl tracking-widest">GUARDIAN BROADCAST OS v7.2.4</div>
         </div>
 
         <div onclick="connectXaman()" class="w-full md:w-auto justify-center cursor-pointer px-5 py-3 border-2 border-[#00ffc8]/70 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-base hover:bg-[#00ffc8]/10 transition-all">
@@ -75,7 +76,7 @@
     </div>
 
     <!-- TABS -->
-    <div class="bg-[#111] border-b border-[#00ffc8]/20 flex flex-wrap md:flex-nowrap text-xs sm:text-sm overflow-x-auto">
+    <div class="bg-[#111] border-b border-[#00ffc8]/20 flex flex-wrap md:flex-nowrap text-xs sm:text-sm overflow-x-auto px-1 sm:px-0">
         <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-4 cursor-pointer tab-active">MAIN CONSOLE</div>
         <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-4 cursor-pointer">STORYLINE</div>
         <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-4 cursor-pointer">FUSION LAB</div>
@@ -83,7 +84,7 @@
     </div>
 
     <!-- CONTENT -->
-    <div class="flex-1 overflow-auto p-4 sm:p-6 relative z-10 bg-[#050505]" id="content-area">
+    <div class="flex-1 overflow-auto p-3 sm:p-6 relative z-10 bg-[#050505]" id="content-area">
 
         <!-- TAB 0 -->
         <div id="content-0" class="tab-content active">
@@ -112,22 +113,23 @@
 
         <!-- TAB 2: FUSION LAB -->
         <div id="content-2" class="tab-content">
-            <h1 class="header-font text-3xl sm:text-4xl mb-8">FUSION LAB</h1>
+            <h1 class="header-font text-3xl sm:text-4xl mb-6 sm:mb-8">FUSION LAB</h1>
             <div class="max-w-5xl mx-auto">
-                <div class="border border-[#00ffc8]/30 bg-black/60 rounded-3xl p-4 sm:p-6 mb-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <input id="issuer-filter" oninput="applyNftFilters()" class="w-full bg-black border border-[#00ffc8]/30 rounded-2xl px-4 py-3 text-sm text-[#00ffc8] placeholder:text-[#00ffc8]/40 focus:outline-none focus:border-[#00ffc8]" placeholder="Filter by Issuer" />
-                        <input id="taxon-filter" oninput="applyNftFilters()" class="w-full bg-black border border-[#00ffc8]/30 rounded-2xl px-4 py-3 text-sm text-[#00ffc8] placeholder:text-[#00ffc8]/40 focus:outline-none focus:border-[#00ffc8]" placeholder="Filter by Taxon" />
-                        <button onclick="clearNftFilters()" class="w-full py-3 px-4 border-2 border-[#00ffc8]/70 hover:border-[#00ffc8] rounded-2xl text-sm hover:bg-[#00ffc8]/10 transition-all">CLEAR FILTERS</button>
+                <div class="fusion-panel border bg-black/60 rounded-3xl p-4 sm:p-6 mb-5 sm:mb-6">
+                    <div class="flex flex-col gap-2 sm:gap-3">
+                        <div class="flex items-center gap-2 text-xs sm:text-sm text-[#00ffc8]/80">
+                            <span class="inline-block w-2 h-2 rounded-full bg-[#00ffc8]"></span>
+                            Strict NFT filter active: Issuer rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY • Taxon 1
+                        </div>
+                        <div id="nft-summary" class="text-xs text-[#00ffc8]/60"></div>
                     </div>
-                    <div id="nft-summary" class="mt-3 text-xs text-[#00ffc8]/60"></div>
                 </div>
-                <div id="nft-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8"></div>
+                <div id="nft-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8"></div>
                 
-                <div class="border-4 border-[#00ffc8] bg-black rounded-3xl p-6 sm:p-8 text-center">
-                    <div id="xrp-amount" class="text-2xl sm:text-3xl font-bold mb-6"></div>
+                <div class="border-4 border-[#00ffc8] bg-black rounded-3xl p-5 sm:p-8 text-center">
+                    <div id="xrp-amount" class="text-xl sm:text-3xl font-bold mb-5 sm:mb-6"></div>
                     <button onclick="initiateFusion()" 
-                            class="w-full py-5 sm:py-7 text-base sm:text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
+                            class="w-full py-4 sm:py-7 text-base sm:text-xl border-4 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
                         INITIATE FUSION • $50 USD
                     </button>
                 </div>
@@ -158,9 +160,10 @@
 </div>
 
 <script>
+    const STRICT_ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
+    const STRICT_TAXON = '1';
     let currentWalletAddress = null;
     let selectedNFT = null;
-    let nftFilters = { issuer: '', taxon: '' };
 
     function shortenAddress(addr) {
         if (!addr) return 'Unknown';
@@ -180,9 +183,7 @@
         if (clean.length % 2 !== 0 || /[^0-9a-f]/i.test(clean)) return String(hex);
         try {
             const bytes = [];
-            for (let i = 0; i < clean.length; i += 2) {
-                bytes.push(parseInt(clean.slice(i, i + 2), 16));
-            }
+            for (let i = 0; i < clean.length; i += 2) bytes.push(parseInt(clean.slice(i, i + 2), 16));
             return new TextDecoder().decode(new Uint8Array(bytes));
         } catch (e) {
             return String(hex);
@@ -192,17 +193,14 @@
     function decodeTokenUri(uriHex) {
         const decoded = hexToUtf8(uriHex);
         if (!decoded) return '';
-        return decoded.replace(/^ipfs:\/\//i, 'ipfs://');
+        return decoded.replace(/^ipfs:///i, 'ipfs://');
     }
 
     function normalizeIpfsUrl(raw) {
         if (!raw) return '';
         let url = String(raw).trim();
-        if (url.startsWith('ipfs://ipfs/')) {
-            url = url.slice('ipfs://ipfs/'.length);
-        } else if (url.startsWith('ipfs://')) {
-            url = url.slice('ipfs://'.length);
-        }
+        if (url.startsWith('ipfs://ipfs/')) url = url.slice('ipfs://ipfs/'.length);
+        else if (url.startsWith('ipfs://')) url = url.slice('ipfs://'.length);
         if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
         return url ? 'https://ipfs.io/ipfs/' + url : '';
     }
@@ -214,12 +212,12 @@
         const gatewayUrl = normalizeIpfsUrl(rawUri);
         if (!gatewayUrl) return '';
 
-        if (/\.json(?:$|[?#])/i.test(gatewayUrl)) {
+        if (/.json(?:$|[?#])/i.test(gatewayUrl)) {
             try {
                 const res = await fetch(gatewayUrl);
                 if (res.ok) {
                     const meta = await res.json();
-                    const image = meta.image || meta.image_url || meta.imageUrl || '';
+                    const image = meta.image || meta.image_url || meta.imageUrl || meta.animation_url || '';
                     return normalizeIpfsUrl(image);
                 }
             } catch (e) {
@@ -228,35 +226,17 @@
             return '';
         }
 
-        if (/\.(png|jpg|jpeg|gif|webp|svg)(?:$|[?#])/i.test(gatewayUrl) || gatewayUrl.startsWith('data:image/')) {
+        if (/.(png|jpg|jpeg|gif|webp|svg|avif)(?:$|[?#])/i.test(gatewayUrl) || gatewayUrl.startsWith('data:image/')) {
             return gatewayUrl;
         }
 
         return '';
     }
 
-    function matchesFilters(nft) {
+    function isStrictMatch(nft) {
         const issuer = String(nft.Issuer || nft.issuer || '').toLowerCase();
-        const taxon = String(nft.NFTokenTaxon ?? nft.nft_taxon ?? nft.NFTTaxon ?? nft.taxon ?? '').toLowerCase();
-        const issuerQuery = String(nftFilters.issuer || '').trim().toLowerCase();
-        const taxonQuery = String(nftFilters.taxon || '').trim().toLowerCase();
-
-        return (!issuerQuery || issuer.includes(issuerQuery)) && (!taxonQuery || taxon.includes(taxonQuery));
-    }
-
-    function applyNftFilters() {
-        nftFilters.issuer = document.getElementById('issuer-filter').value || '';
-        nftFilters.taxon = document.getElementById('taxon-filter').value || '';
-        loadNFTs();
-    }
-
-    function clearNftFilters() {
-        nftFilters = { issuer: '', taxon: '' };
-        const issuerEl = document.getElementById('issuer-filter');
-        const taxonEl = document.getElementById('taxon-filter');
-        if (issuerEl) issuerEl.value = '';
-        if (taxonEl) taxonEl.value = '';
-        loadNFTs();
+        const taxon = String(nft.NFTokenTaxon ?? nft.nft_taxon ?? nft.NFTTaxon ?? nft.taxon ?? '').trim();
+        return issuer === STRICT_ISSUER.toLowerCase() && taxon === STRICT_TAXON;
     }
 
     function setWalletUI(connected, address = '') {
@@ -329,11 +309,11 @@
     async function loadNFTs() {
         const grid = document.getElementById('nft-grid');
         const summary = document.getElementById('nft-summary');
-        grid.innerHTML = '<p class="col-span-full text-center py-8">Loading your Gross Bros NFTs...</p>';
+        grid.innerHTML = '<p class="col-span-full text-center py-8">Loading matching Gross Bros NFTs...</p>';
 
         if (!currentWalletAddress) {
             grid.innerHTML = '<p class="col-span-full text-center py-8 text-yellow-400">Please connect your wallet first.</p>';
-            if (summary) summary.textContent = 'Connect a wallet to load NFTs.';
+            if (summary) summary.textContent = 'Connect a wallet to load matching NFTs.';
             return;
         }
 
@@ -353,10 +333,10 @@
 
             const data = await response.json();
             const rawNfts = data.result && data.result.account_nfts ? data.result.account_nfts : [];
-            const filtered = rawNfts.filter(matchesFilters);
+            const filtered = rawNfts.filter(isStrictMatch);
 
             if (summary) {
-                summary.textContent = 'Showing ' + filtered.length + ' of ' + rawNfts.length + ' NFTs';
+                summary.textContent = 'Showing ' + filtered.length + ' matching NFTs for issuer ' + STRICT_ISSUER + ' and taxon ' + STRICT_TAXON + '.';
             }
 
             grid.innerHTML = '';
@@ -374,7 +354,7 @@
                     const isSelected = selectedNFT === nft.NFTokenID;
 
                     const div = document.createElement('div');
-                    div.className = 'nft-card border ' + (isSelected ? 'border-[#00ffc8] bg-[#00ffc8]/10' : 'border-[#00ffc8]/30') + ' rounded-2xl p-3 cursor-pointer hover:border-[#00ffc8] transition-all overflow-hidden';
+                    div.className = 'nft-card border ' + (isSelected ? 'border-[#00ffc8] bg-[#00ffc8]/10' : 'border-[#00ffc8]/20') + ' rounded-2xl p-3 cursor-pointer hover:border-[#00ffc8] transition-all overflow-hidden';
                     div.innerHTML = '<div class="fallback-art rounded-xl overflow-hidden mb-3">' + (image ? '<img src="' + escapeHtml(image) + '" alt="NFT image" loading="lazy" />' : '<div class="text-5xl">🃏</div>') + '</div>' + '<div class="space-y-1">' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50">NFTokenID</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(nft.NFTokenID) + '</p>' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Issuer</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(issuer) + '</p>' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Taxon</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(taxon) + '</p>' + '</div>';
                     div.onclick = function () {
                         selectedNFT = nft.NFTokenID;
@@ -383,7 +363,7 @@
                     grid.appendChild(div);
                 });
             } else {
-                grid.innerHTML = '<p class="col-span-full text-center py-8 text-[#00ffc8]/60">No NFTs match the active filters.</p>';
+                grid.innerHTML = '<p class="col-span-full text-center py-8 text-[#00ffc8]/60">No NFTs match the strict filter.</p>';
             }
         } catch (e) {
             console.error(e);
