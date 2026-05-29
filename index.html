@@ -125,41 +125,40 @@
         <!-- TAB 0 -->
         <div id="content-0" class="tab-content active">
             <h1 class="header-font text-4xl sm:text-5xl text-center mb-8">BRO OF THE DAY</h1>
-            <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/80 mt-12">
-                In the aftermath of the XRP-7 disaster, the Gross Bros were shattered across dimensions.<br>
-                Now fused with machine intelligence, they defend the Ledger from the BTC miners.
-            </div>
             <div id="bro-of-the-day" class="max-w-3xl mx-auto mt-12">
                 <div class="border border-[#00ffc8]/30 rounded-3xl p-5 sm:p-8 text-center bg-black/70">
-                    <div class="grid gap-6 md:grid-cols-[220px_1fr] items-center">
-                        <div class="w-full max-w-[220px] mx-auto">
-                            <div class="aspect-square rounded-3xl border border-[#00ffc8]/20 overflow-hidden bg-[#00ffc8]/5 flex items-center justify-center">
-                                <img id="daily-bro-image" class="w-full h-full object-cover hidden" alt="Daily Gross Bro">
-                                <div id="daily-bro-placeholder" class="text-sm text-[#00ffc8]/50 px-4">Loading BRO OF THE DAY…</div>
+                    <div class="text-xs uppercase tracking-[0.35em] text-[#00ffc8]/60">BRO OF THE DAY</div>
+                    <div class="text-3xl sm:text-4xl font-bold mt-3" id="daily-bro-name">XRPL BRO READY</div>
+                    <div class="mt-4 text-sm sm:text-base text-[#00ffc8]/80 leading-7">
+                        In the aftermath of the XRP-7 disaster, the Gross Bros were shattered across dimensions.<br>
+                        Now fused with machine intelligence, they defend the Ledger from the BTC miners.
+                    </div>
+                    <button onclick="switchTab(2)" class="inline-flex mt-5 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm hover:bg-[#00ffc8] hover:text-black transition-all">
+                        READ FULL STORY
+                    </button>
+                    <div class="w-full max-w-[220px] mx-auto mt-8">
+                        <div class="aspect-square rounded-3xl border border-[#00ffc8]/20 overflow-hidden bg-[#00ffc8]/5 flex items-center justify-center">
+                            <img id="daily-bro-image" class="w-full h-full object-cover hidden" alt="Daily Gross Bro">
+                            <div id="daily-bro-placeholder" class="text-sm text-[#00ffc8]/50 px-4">Loading BRO OF THE DAY…</div>
+                        </div>
+                    </div>
+                    <div class="mt-8 text-left">
+                        <div class="text-xs uppercase tracking-[0.35em] text-[#00ffc8]/60">Backstory</div>
+                        <div id="daily-bro-description" class="backstory text-[#00ffc8]/85 mt-3">Fetching live TokenURI and metadata from the Ledger…</div>
+                        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-[#00ffc8]/65">
+                            <div class="border border-[#00ffc8]/15 rounded-2xl p-3">
+                                <span class="block uppercase tracking-[0.25em] text-[#00ffc8]/45 mb-1">Issuer</span>
+                                <span id="daily-bro-issuer">PENDING</span>
+                            </div>
+                            <div class="border border-[#00ffc8]/15 rounded-2xl p-3">
+                                <span class="block uppercase tracking-[0.25em] text-[#00ffc8]/45 mb-1">Token ID</span>
+                                <span id="daily-bro-tokenid">PENDING</span>
                             </div>
                         </div>
-                        <div class="text-left">
-                            <div class="text-xs uppercase tracking-[0.35em] text-[#00ffc8]/60">BRO OF THE DAY</div>
-                            <div id="daily-bro-name" class="text-3xl sm:text-4xl font-bold mt-3">XRPL BRO READY</div>
-                            <div class="mt-5 text-sm sm:text-base text-[#00ffc8]/70 leading-7">
-                                <div class="uppercase tracking-[0.25em] text-[#00ffc8]/45 text-xs mb-2">Backstory</div>
-                                <div id="daily-bro-description" class="backstory text-[#00ffc8]/85">Fetching live TokenURI and metadata from the Ledger…</div>
-                            </div>
-                            <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-[#00ffc8]/65">
-                                <div class="border border-[#00ffc8]/15 rounded-2xl p-3">
-                                    <span class="block uppercase tracking-[0.25em] text-[#00ffc8]/45 mb-1">Issuer</span>
-                                    <span id="daily-bro-issuer">PENDING</span>
-                                </div>
-                                <div class="border border-[#00ffc8]/15 rounded-2xl p-3">
-                                    <span class="block uppercase tracking-[0.25em] text-[#00ffc8]/45 mb-1">Token ID</span>
-                                    <span id="daily-bro-tokenid">PENDING</span>
-                                </div>
-                            </div>
-                            <a id="daily-bro-link" href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank"
-                               class="inline-flex mt-5 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm hover:bg-[#00ffc8] hover:text-black transition-all">
-                                VIEW ON XRP.CAFE
-                            </a>
-                        </div>
+                        <a id="daily-bro-link" href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank"
+                           class="inline-flex mt-5 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm hover:bg-[#00ffc8] hover:text-black transition-all">
+                            BUY A BRO
+                        </a>
                     </div>
                 </div>
             </div>
@@ -189,7 +188,7 @@
                     <div class="flex flex-col gap-2 sm:gap-3">
                         <div class="flex items-center gap-2 text-xs sm:text-sm text-[#00ffc8]/80">
                             <span class="inline-block w-2 h-2 rounded-full bg-[#00ffc8]"></span>
-                            Strict NFT filter active: Issuer ${STRICT_ISSUER} • Taxon ${STRICT_TAXON}
+                            Strict NFT filter active: Issuer rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY • Taxon 1
                         </div>
                         <div id="nft-summary" class="text-xs text-[#00ffc8]/60"></div>
                     </div>
@@ -490,7 +489,7 @@
         if (descriptionEl) descriptionEl.textContent = 'Fetching live TokenURI and metadata from the Ledger…';
         if (issuerEl) issuerEl.textContent = 'PENDING';
         if (tokenIdEl) tokenIdEl.textContent = 'PENDING';
-        if (linkEl) linkEl.href = 'https://xrp.cafe/collection/galactic-gross-bros';
+        if (linkEl) { linkEl.href = 'https://xrp.cafe/collection/galactic-gross-bros'; linkEl.textContent = 'BUY A BRO'; }
         if (imageEl) {
             imageEl.src = '';
             imageEl.classList.add('hidden');
@@ -509,13 +508,13 @@
             const name = findDeepString(metadata, ['name', 'title']) || selected.name || 'Gross Bro #' + (getNftSerial(selected) === Number.MAX_SAFE_INTEGER ? '—' : getNftSerial(selected));
             const tokenId = getNftTokenId(selected);
             const browseUrl = tokenId ? 'https://xrp.cafe/nft/' + tokenId : 'https://xrp.cafe/collection/galactic-gross-bros';
-            const backstory = hexToString(BACKSTORIES[dailyBroId] || BACKSTORIES.default || '');
+            const backstory = BACKSTORIES[dailyBroId] || BACKSTORIES.default || '';
 
             if (nameEl) nameEl.textContent = name;
             if (descriptionEl) descriptionEl.textContent = backstory;
             if (issuerEl) issuerEl.textContent = STRICT_ISSUER;
             if (tokenIdEl) tokenIdEl.textContent = tokenId || 'UNAVAILABLE';
-            if (linkEl) linkEl.href = browseUrl;
+            if (linkEl) { linkEl.href = browseUrl; linkEl.textContent = 'BUY A BRO'; }
 
             if (imageEl && image) {
                 imageEl.src = image;
