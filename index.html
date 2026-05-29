@@ -261,7 +261,7 @@
             console.warn("Hex decode error", e);
         }
     }
-    cleanUri = cleanUri.replace(/^ipfs:\/\//i, '');
+    cleanUri = cleanUri.replace(/^ipfs:///i, '');
     if (cleanUri.includes('/ipfs/')) {
         cleanUri = cleanUri.split('/ipfs/').pop();
     }
@@ -279,6 +279,38 @@
     }
     return 'https://via.placeholder.com/400x400/111111/00ffc8?text=INVALID';
 }
+
+    async function getNFTImageUrl(nft) {
+        let uri = nft.URI || nft.image || '';
+        if (!uri) return 'https://via.placeholder.com/400x400/111111/00ffc8?text=NO+URI';
+        let cleanUri = uri.toString().trim();
+        if (/^[0-9A-Fa-f]+$/.test(cleanUri)) {
+            try {
+                let decoded = '';
+                for (let i = 0; i < cleanUri.length; i += 2) {
+                    decoded += String.fromCharCode(parseInt(cleanUri.substr(i, 2), 16));
+                }
+                cleanUri = decoded.trim();
+            } catch (e) { console.warn("Hex decode failed for", uri); }
+        }
+        if (cleanUri.startsWith('ipfs://')) cleanUri = cleanUri.replace('ipfs://', '');
+        if (cleanUri.includes('/ipfs/')) cleanUri = cleanUri.split('/ipfs/').pop();
+        const gateways = ["https://ipfs.io/ipfs/", "https://gateway.pinata.cloud/ipfs/", "https://cloudflare-ipfs.com/ipfs/"];
+        let metadataUrl = cleanUri.startsWith('http') ? cleanUri : gateways[0] + cleanUri;
+        try {
+            const response = await fetch(metadataUrl);
+            if (!response.ok) throw new Error("Metadata fetch failed");
+            const metadata = await response.json();
+            let imageUri = metadata.image || metadata.image_url || metadata.img || '';
+            if (!imageUri) return 'https://via.placeholder.com/400x400/111111/00ffc8?text=NO+IMAGE+IN+METADATA';
+            if (imageUri.startsWith('ipfs://')) imageUri = imageUri.replace('ipfs://', '');
+            if (imageUri.includes('/ipfs/')) imageUri = imageUri.split('/ipfs/').pop();
+            return imageUri.startsWith('http') ? imageUri : gateways[0] + imageUri;
+        } catch (error) {
+            console.error("Metadata fetch error for NFT", nft.NFTokenID, error);
+            return 'https://via.placeholder.com/400x400/111111/00ffc8?text=METADATA+ERROR';
+        }
+    }
 
     async function resolveNftImage(nft) {
         const rawUri = decodeTokenUri(nft.URI || nft.Uri || nft.uri || '');
@@ -442,8 +474,8 @@
             grid.innerHTML = '';
 
             if (filtered.length > 0) {
-                filtered.forEach(function (nft, index) {
-                    const imageUrl = getIPFSUrl(nft.URI || nft.image);
+                for (const [index, nft] of filtered.entries()) {
+                    const imageUrl = await getNFTImageUrl(nft);
                     if (index < 3) debugNFTURI(nft);
                     const issuer = nft.Issuer || nft.issuer || 'Unknown';
                     const taxon = String(nft.NFTokenTaxon ?? nft.nft_taxon ?? nft.NFTTaxon ?? nft.taxon ?? 'Unknown');
@@ -457,7 +489,7 @@
                         loadNFTs();
                     };
                     grid.appendChild(div);
-                });
+                }
             } else {
                 grid.innerHTML = '<p class="col-span-full text-center py-8 text-[#00ffc8]/60">No NFTs match the strict filter.</p>';
             }
