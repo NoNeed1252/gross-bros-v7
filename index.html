@@ -376,11 +376,14 @@
 
         if (raw.startsWith('ipfs://')) {
             const path = raw.slice(7).replace(/^ipfs\//, '');
-            return 'https://ipfs.io/ipfs/' + path;
+            const safePath = path.split('/').map((segment) => encodeURIComponent(segment)).join('/');
+            return 'https://ipfs.io/ipfs/' + safePath;
         }
 
         if (raw.startsWith('ipns://')) {
-            return 'https://ipfs.io/ipns/' + raw.slice(7).replace(/^ipns\//, '');
+            const path = raw.slice(7).replace(/^ipns\//, '');
+            const safePath = path.split('/').map((segment) => encodeURIComponent(segment)).join('/');
+            return 'https://ipfs.io/ipns/' + safePath;
         }
 
         if (/^https?:\/\//i.test(raw) || raw.startsWith('data:image/')) {
