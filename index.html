@@ -286,13 +286,34 @@
 
                 <div id="content-2" class="tab-content">
             <div class="max-w-6xl mx-auto space-y-5">
-                <div class="rounded-[2rem] bg-[#06110f] p-4 sm:p-6">
+                <div class="rounded-[2rem] bg-[#06110f] p-4 sm:p-6 space-y-4">
                     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between portrait-stack">
                         <div class="flex items-center gap-2 text-xs sm:text-sm text-[#00ffc8]/80">
                             <span class="inline-block w-2 h-2 rounded-full bg-[#00ffc8]"></span>
                             Strict NFT filter active: Issuer rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY • Taxon 1
                         </div>
                         <div id="nft-summary" class="text-xs text-[#00ffc8]/60"></div>
+                    </div>
+                    <div class="inner-panel rounded-[2rem] p-4 sm:p-5">
+                        <div class="flex items-start justify-between gap-4 portrait-stack">
+                            <div>
+                                <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Console feature</div>
+                                <h3 class="header-font text-2xl sm:text-4xl mt-2">BRO OF THE DAY</h3>
+                            </div>
+                            <a id="daily-bro-link" href="#" target="_blank" class="button-aura rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">View NFT</a>
+                        </div>
+                        <div class="mt-4 grid gap-4 lg:grid-cols-[0.9fr_1.1fr] items-start">
+                            <div class="hero-frame hero-image-shell rounded-[26px] border border-[#00ffc8]/15 bg-black/35 overflow-hidden flex items-center justify-center">
+                                <img id="daily-bro-image" class="hero-image hidden" alt="Bro of the Day" />
+                                <div id="daily-bro-placeholder" class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/50 px-4 text-center">Loading featured operative…</div>
+                            </div>
+                            <div class="space-y-3">
+                                <div id="daily-bro-issuer" class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55"></div>
+                                <div id="daily-bro-name" class="header-font text-2xl sm:text-3xl text-[#effffb]">Booting…</div>
+                                <div id="daily-bro-tokenid" class="text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/60"></div>
+                                <div id="daily-bro-description" class="text-sm sm:text-base leading-7 text-[#d9fff8]/82"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -964,7 +985,7 @@
             return `
                 <button class="text-left rounded-[18px] overflow-hidden border ${active ? 'border-[#00ffc8] shadow-[0_0_0_1px_rgba(0,255,200,0.22),0_0_26px_rgba(0,255,200,0.14)]' : 'border-[#00ffc8]/15'} bg-black/35 transition-transform hover:-translate-y-0.5" onclick="selectNft('${escapeHtml(tokenId)}')">
                     <div class="flex gap-2 p-2 sm:p-3 items-start">
-                        <div class="shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-black/45 border border-[#00ffc8]/12 flex items-center justify-center">
+                        <div class="shrink-0 w-18 h-18 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-black/45 border border-[#00ffc8]/12 flex items-center justify-center">
                             ${img ? `<img src="${escapeHtml(img)}" class="nft-thumb" alt="${escapeHtml(name)}" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden')" />` : ''}
                             <div class="hidden text-[10px] text-[#00ffc8]/55 px-2 text-center">NO IMAGE</div>
                         </div>
@@ -1301,15 +1322,14 @@
     window.connectXaman = connectXaman;
 
     async function startFusionPayment() {
-        if (!state.wallet || !state.selectedTokenId) return false;
+        if (!state.selectedTokenId) return false;
         try {
-            const xrpUsd = await getLiveXrpUsdRate();
             const response = await fetch('/api/xaman/create-payment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     destinationAddress: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
-                    xrpUsd,
+                    xrpUsd: 1,
                     usdAmount: FUSION_FEE_USD,
                     memoText: FUSION_MEMO,
                 })
@@ -1318,14 +1338,22 @@
             if (!response.ok || !data?.ok) {
                 throw new Error(data?.error || 'Unable to build fusion payment request.');
             }
-            const nextUrl = getPaymentNextUrl(data);
+            const request = data.request || data.payload || {};
+            const payment = request.txjson || request;
+            const amount = Number(payment.Amount);
+            const destination = String(payment.Destination || '');
+            const txType = String(payment.TransactionType || '');
+            if (txType !== 'Payment' || destination !== 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX' || amount !== 50000000) {
+                throw new Error('Xaman payment payload did not match the required Payment transaction.');
+            }
+            const nextUrl = getPaymentNextUrl(data) || data.deeplink || '';
             if (!nextUrl) {
                 throw new Error('Unable to open Xaman payment request.');
             }
-            window.open(nextUrl, '_blank');
+            window.open(nextUrl, '_blank', 'noopener,noreferrer');
 
             let attempts = 0;
-            const payloadUuid = typeof data?.request?.uuid === 'string' ? data.request.uuid : typeof data?.payload?.uuid === 'string' ? data.payload.uuid : '';
+            const payloadUuid = typeof request.uuid === 'string' ? request.uuid : typeof data.uuid === 'string' ? data.uuid : '';
             if (!payloadUuid) {
                 throw new Error('Xaman payment payload did not return a UUID.');
             }
@@ -1364,10 +1392,6 @@
         if (!state.selectedTokenId) {
             renderOperativePanel();
             return;
-        }
-        if (!state.wallet) {
-            const connected = await connectXaman();
-            if (!connected) return;
         }
         await startFusionPayment();
     }
