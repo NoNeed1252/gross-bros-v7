@@ -97,14 +97,14 @@
         <div class="news-track">
             <span class="news-item">NEWS //</span>
             <span class="news-item">Strict Gross Bros NFT filter enabled</span>
-            <span class="news-item">Issuer locked: ${STRICT_ISSUER}</span>
-            <span class="news-item">Taxon locked: ${STRICT_TAXON}</span>
+            <span class="news-item">Issuer locked: rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY</span>
+            <span class="news-item">Taxon locked: 1</span>
             <span class="news-item">Improved IPFS image loading</span>
             <span class="news-item">UI and mobile spacing fixes</span>
             <span class="news-item">NEWS //</span>
             <span class="news-item">Strict Gross Bros NFT filter enabled</span>
-            <span class="news-item">Issuer locked: ${STRICT_ISSUER}</span>
-            <span class="news-item">Taxon locked: ${STRICT_TAXON}</span>
+            <span class="news-item">Issuer locked: rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY</span>
+            <span class="news-item">Taxon locked: 1</span>
             <span class="news-item">Improved IPFS image loading</span>
             <span class="news-item">UI and mobile spacing fixes</span>
         </div>
@@ -501,7 +501,8 @@
             if (!records.length) throw new Error('No Gross Bros returned from XRPL.');
 
             const dailyBroId = getDailyBroId();
-            const selected = records[(dailyBroId - 1) % records.length] || records[0];
+            const dailyBroIndex = (dailyBroId - 1) % records.length;
+            const selected = records[dailyBroIndex] || records[0];
             const tokenUri = getNftTokenUri(selected);
             const metadata = await fetchMetadataFromTokenUri(tokenUri);
             const image = await resolveNftImage(selected) || getIPFSUrl(findDeepString(metadata, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || '') || getIPFSUrl(tokenUri) || '';
