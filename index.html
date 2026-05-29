@@ -291,6 +291,85 @@
         }
     }
 
+    function hexToUtf8(hex) {
+        if (!hex) return '';
+        let clean = String(hex).trim();
+        if (clean.startsWith('0x')) clean = clean.slice(2);
+        if (clean.length % 2 !== 0 || /[^0-9a-f]/i.test(clean)) return String(hex);
+        try {
+            const bytes = [];
+            for (let i = 0; i < clean.length; i += 2) bytes.push(parseInt(clean.slice(i, i + 2), 16));
+            return new TextDecoder().decode(new Uint8Array(bytes));
+        } catch (e) {
+            return String(hex);
+        }
+    }
+
+    function decodeTokenUri(uriHex) {
+        const decoded = hexToUtf8(uriHex);
+        if (!decoded) return '';
+        return decoded.replace(/^ipfs:///i, 'ipfs://');
+    }
+
+    function hexToString(value) {
+        return hexToUtf8(value);
+    }
+
+    function getIPFSUrl(value, fallback = '') {
+        const raw = typeof value === 'string' ? value.trim() : '';
+        if (!raw) return fallback;
+
+        if (raw.startsWith('ipfs://')) {
+            const path = raw.slice(7).replace(/^ipfs//, '');
+            return 'https://ipfs.io/ipfs/' + path;
+        }
+
+        if (raw.startsWith('ipns://')) {
+            return 'https://ipfs.io/ipns/' + raw.slice(7).replace(/^ipns//, '');
+        }
+
+        if (/^https?:///i.test(raw) || raw.startsWith('data:image/')) {
+            return raw;
+        }
+
+        if (raw.startsWith('Qm') || raw.startsWith('bafy')) {
+            return 'https://ipfs.io/ipfs/' + raw;
+        }
+
+        return fallback;
+    }
+
+    function findDeepString(value, keys) {
+        if (!value || typeof value !== 'object') return null;
+
+        const record = value;
+        for (const key of keys) {
+            const candidate = record[key];
+            if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
+        }
+
+        for (const nested of Object.values(record)) {
+            const found = findDeepString(nested, keys);
+            if (found) return found;
+        }
+
+        return null;
+    }
+
+    function getNftSerial(nft) {
+        const raw = nft.nft_serial ?? nft.serial ?? nft.NFTokenSerial ?? nft.NFTokenSequence;
+        const numeric = Number(raw);
+        return Number.isFinite(numeric) ? numeric : Number.MAX_SAFE_INTEGER;
+    }
+
+    function getNftTokenId(nft) {
+        return String(nft.nft_id || nft.nftoken_id || nft.NFTokenID || nft.id || '').trim();
+    }
+
+    function getNftTokenUri(nft) {
+        return decodeTokenUri(nft.URI || nft.Uri || nft.uri || '');
+    }
+
     function getNftSerial(nft) {
         const raw = nft.nft_serial ?? nft.serial ?? nft.NFTokenSerial ?? nft.NFTokenSequence;
         const numeric = Number(raw);
@@ -307,46 +386,58 @@
 
     async function fetchXrplNftsByIssuer() {
         let lastError = null;
-        const body = {
-            method: 'nfts_by_issuer',
-            params: [{
-                issuer: STRICT_ISSUER,
-                taxon: Number(STRICT_TAXON),
-                ledger_index: 'validated',
-                limit: 400
-            }]
-        };
+        const requests = [
+            {
+                method: 'nfts_by_issuer',
+                params: [{
+                    issuer: STRICT_ISSUER,
+                    taxon: Number(STRICT_TAXON),
+                    ledger_index: 'validated',
+                    limit: 400
+                }]
+            },
+            {
+                method: 'account_nfts',
+                params: [{
+                    account: STRICT_ISSUER,
+                    ledger_index: 'validated',
+                    limit: 400
+                }]
+            }
+        ];
 
         for (const rpcUrl of XRPL_RPC_URLS) {
-            try {
-                const response = await fetch(rpcUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                        'User-Agent': 'gross-bros-daily-loader'
-                    },
-                    body: JSON.stringify(body),
-                    cache: 'no-store'
-                });
+            for (const body of requests) {
+                try {
+                    const response = await fetch(rpcUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                            'User-Agent': 'gross-bros-daily-loader'
+                        },
+                        body: JSON.stringify(body),
+                        cache: 'no-store'
+                    });
 
-                if (!response.ok) {
-                    lastError = new Error('XRPL RPC HTTP ' + response.status);
-                    continue;
+                    if (!response.ok) {
+                        lastError = new Error('XRPL RPC HTTP ' + response.status);
+                        continue;
+                    }
+
+                    const payload = await response.json().catch(() => null);
+                    const result = payload?.result || payload || null;
+                    const records = Array.isArray(result?.nfts) ? result.nfts : Array.isArray(result?.account_nfts) ? result.account_nfts : [];
+                    const filtered = records.filter((entry) => {
+                        const issuer = String(entry.Issuer || entry.issuer || '').trim();
+                        const taxon = Number(entry.NFTokenTaxon ?? entry.nft_taxon ?? entry.taxon);
+                        return issuer === STRICT_ISSUER && Number.isFinite(taxon) && taxon === Number(STRICT_TAXON);
+                    }).sort((a, b) => getNftSerial(a) - getNftSerial(b) || getNftTokenId(a).localeCompare(getNftTokenId(b)));
+
+                    if (filtered.length) return filtered;
+                } catch (error) {
+                    lastError = error;
                 }
-
-                const payload = await response.json().catch(() => null);
-                const result = payload?.result || payload || null;
-                const records = Array.isArray(result?.nfts) ? result.nfts : Array.isArray(result?.account_nfts) ? result.account_nfts : [];
-                const filtered = records.filter((entry) => {
-                    const issuer = String(entry.Issuer || entry.issuer || '').trim();
-                    const taxon = Number(entry.NFTokenTaxon ?? entry.nft_taxon ?? entry.taxon);
-                    return issuer === STRICT_ISSUER && Number.isFinite(taxon) && taxon === Number(STRICT_TAXON);
-                }).sort((a, b) => getNftSerial(a) - getNftSerial(b) || getNftTokenId(a).localeCompare(getNftTokenId(b)));
-
-                return filtered;
-            } catch (error) {
-                lastError = error;
             }
         }
 
@@ -413,7 +504,7 @@
             const selected = records[(dailyBroId - 1) % records.length] || records[0];
             const tokenUri = getNftTokenUri(selected);
             const metadata = await fetchMetadataFromTokenUri(tokenUri);
-            const image = await resolveNftImage(selected) || getIPFSUrl(findDeepString(metadata, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || '');
+            const image = await resolveNftImage(selected) || getIPFSUrl(findDeepString(metadata, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || '') || getIPFSUrl(tokenUri) || '';
             const name = findDeepString(metadata, ['name', 'title']) || selected.name || 'Gross Bro #' + (getNftSerial(selected) === Number.MAX_SAFE_INTEGER ? '—' : getNftSerial(selected));
             const tokenId = getNftTokenId(selected);
             const browseUrl = tokenId ? 'https://xrp.cafe/nft/' + tokenId : 'https://xrp.cafe/collection/galactic-gross-bros';
@@ -549,7 +640,8 @@
 
             if (filtered.length > 0) {
                 filtered.forEach(function (nft, index) {
-                    const imageUrl = getIPFSUrl(nft.URI || nft.image);
+                    const directImage = findDeepString(nft, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']);
+                    const imageUrl = getIPFSUrl(directImage || nft.URI || nft.image || '');
                     if (index < 3) debugNFTURI(nft);
                     const issuer = nft.Issuer || nft.issuer || 'Unknown';
                     const taxon = String(nft.NFTokenTaxon ?? nft.nft_taxon ?? nft.NFTTaxon ?? nft.taxon ?? 'Unknown');
