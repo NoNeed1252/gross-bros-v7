@@ -674,6 +674,42 @@
         return true;
     }
 
+    const OPERATOR_POINTS_BASE_ACTIVITY = 8;
+    const OPERATOR_POINTS_BASE_CHAT = 12;
+    const OPERATOR_POINTS_FUSED_MULTIPLIER = 3;
+
+    function operatorPointsMultiplier() {
+        return state.fusedTokenId ? OPERATOR_POINTS_FUSED_MULTIPLIER : 1;
+    }
+
+    function operatorPointsCacheKey() {
+        return `points:${state.wallet || 'anonymous'}`;
+    }
+
+    async function awardOperatorPoints(kind, basePoints) {
+        const active = currentEntry();
+        if (!SUPABASE_URL || !SUPABASE_KEY || !state.wallet || !active) return false;
+        const key = operatorPointsCacheKey();
+        const amount = Math.max(1, Math.round(basePoints * operatorPointsMultiplier()));
+        try {
+            let current = 0;
+            const rows = await supabaseSelect(STATS_TABLE, `select=cache_key,holder,points,chat_time,win_loss&cache_key=eq.${encodeURIComponent(key)}&limit=1`).catch(() => null);
+            if (Array.isArray(rows) && rows[0]) current = Number(rows[0].points || 0);
+            const nextPoints = current + amount;
+            await supabaseUpsert(STATS_TABLE, {
+                cache_key: key,
+                holder: shortAddress(state.wallet),
+                points: nextPoints,
+                chat_time: `${kind}:${todayKey()}`,
+                win_loss: state.fusedTokenId ? `Fused x${OPERATOR_POINTS_FUSED_MULTIPLIER}` : 'Base rate'
+            }).catch(() => null);
+            return true;
+        } catch (error) {
+            console.error(error);
+            return false;
+        }
+    }
+
     async function fetchRpc(url, body) {
         const res = await fetch(url, {
             method: 'POST',
@@ -822,14 +858,14 @@
                 <div class="space-y-4">
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Fusion / Buy Protocol</div>
+                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Trading / Buy Protocol</div>
                             <div class="mt-2 header-font text-xl sm:text-3xl">Token-gated selection</div>
-                            <div class="mt-2 text-sm leading-7 text-[#d9fff8]/78">Select a matching NFT, then fuse it to unlock the comms terminal.</div>
+                            <div class="mt-2 text-sm leading-7 text-[#d9fff8]/78">Select a matching NFT to chat immediately. Fuse only if you want to enable trading on XRP or other XRPL assets.</div>
                         </div>
                         <div class="alien-chip rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Locked</div>
                     </div>
                     <div class="flex flex-col gap-3 sm:flex-row">
-                        <button onclick="fuseSelectedNft()" class="button-aura rounded-2xl px-5 py-4 text-sm uppercase tracking-[0.35em]">Fuse Selected NFT</button>
+                        <button onclick="fuseSelectedNft()" class="button-aura rounded-2xl px-5 py-4 text-sm uppercase tracking-[0.35em]">Enable Trading</button>
                         <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" rel="noreferrer" class="button-aura rounded-2xl px-5 py-4 text-sm uppercase tracking-[0.35em] text-center">Buy a Bro</a>
                     </div>
                 </div>
@@ -978,6 +1014,7 @@
             renderOperativePanel();
             renderChatHistory();
             loadFieldReport();
+            bindChatInput();
             if (state.currentTab === 2) renderFusionLabState();
         } catch (error) {
             console.error(error);
@@ -1060,7 +1097,7 @@
         const active = currentEntry();
         if (!panel) return;
         if (!state.wallet || !active) {
-            panel.innerHTML = '<div class="text-[#00ffc8]/60">Select and fuse an operative to generate the intelligence briefing.</div>';
+            panel.innerHTML = '<div class="text-[#00ffc8]/60">Select an operative to generate the intelligence briefing.</div>';
             return;
         }
         const dayKey = todayKey();
@@ -1076,6 +1113,7 @@
         }
         const report = generateFieldReport(buildOperativeFromMetadata(active.nft, active.metadata || {}), dayKey);
         state.report = report;
+        awardOperatorPoints('daily-activity', OPERATOR_POINTS_BASE_ACTIVITY).catch(() => null);
         panel.innerHTML = `<div class="space-y-3"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Briefing ${dayKey}</div><div>${escapeHtml(report).replace(/\n/g, '<br>')}</div></div>`;
         if (dayEl) dayEl.textContent = `Day ${dayKey} • Token ${active.tokenId}`;
         store(key, { report, day_key: dayKey, updated_at: new Date().toISOString() });
@@ -1134,7 +1172,7 @@
 
     function renderFusionLab() {
         renderOperativePanel();
-        if (state.fusedTokenId) renderChatTerminal();
+        if (state.operative?.tokenId) renderChatTerminal();
     }
 
     async function selectNft(tokenId) {
@@ -1144,7 +1182,7 @@
         store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
         renderNftGrid();
         renderOperativePanel();
-        if (state.fusedTokenId) renderChatTerminal();
+        if (state.operative?.tokenId) renderChatTerminal();
     }
     window.selectNft = selectNft;
 
@@ -1255,9 +1293,22 @@
         const reply = `${pick(CHAT_OPENERS, text + operative.tokenId, 'Directive acknowledged.')} ${operative.name} answers in a ${voice} voice shaped by ${operative.faction} and ${traitEcho}.`;
         await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
         await persistChat({ role: 'system', message: reply, created_at: new Date().toISOString() });
+        awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
         renderChatHistory();
     }
     window.sendChatMessage = sendChatMessage;
+    function bindChatInput() {
+        const input = document.getElementById('chat-input');
+        if (!input || input.dataset.boundEnter === '1') return;
+        input.dataset.boundEnter = '1';
+        input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendChatMessage();
+            }
+        });
+    }
+
 
     function switchTab(n) {
         state.currentTab = n;
@@ -1267,9 +1318,10 @@
         document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('tab-active', i === n));
         if (n === 2) {
             renderFusionLab();
-            if (state.wallet && state.operative?.tokenId && state.fusedTokenId) {
+            if (state.wallet && state.operative?.tokenId) {
                 loadChatHistory();
                 loadFieldReport();
+                bindChatInput();
             }
         }
     }
@@ -1352,6 +1404,7 @@
         renderOperativePanel();
         renderChatHistory();
         loadFieldReport();
+        bindChatInput();
         switchTab(0);
     }
 
