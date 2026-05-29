@@ -232,50 +232,52 @@
         return decoded.replace(/^ipfs:\/\//i, 'ipfs://');
     }
 
+    function debugNFTURI(nft) {
+    console.group("🔍 NFT DEBUG");
+    console.log("Raw URI from XRPL:", nft.URI);
+    console.log("Raw type:", typeof nft.URI);
+    const processed = getIPFSUrl(nft.URI);
+    console.log("Final processed URL:", processed);
+    const testImg = new Image();
+    testImg.onload = () => console.log("✅ IMAGE LOADS SUCCESSFULLY");
+    testImg.onerror = () => console.log("❌ IMAGE FAILED TO LOAD");
+    testImg.src = processed;
+    console.groupEnd();
+}
+
     function getIPFSUrl(uri) {
-    if (!uri) {
-        return 'https://via.placeholder.com/400x400/111111/00ffc8?text=NO+URI';
-    }
-
+    if (!uri) return 'https://via.placeholder.com/400x400/111111/00ffc8?text=NO+URI';
     let cleanUri = uri.toString().trim();
-
-    if (/^[0-9A-Fa-f]{2,}$/.test(cleanUri)) {
+    if (/^[0-9A-Fa-f]+$/.test(cleanUri)) {
         try {
-            let str = '';
+            let decoded = '';
             for (let i = 0; i < cleanUri.length; i += 2) {
-                const charCode = parseInt(cleanUri.substr(i, 2), 16);
-                if (charCode) str += String.fromCharCode(charCode);
+                const char = String.fromCharCode(parseInt(cleanUri.substr(i, 2), 16));
+                decoded += char;
             }
-            cleanUri = str.trim();
+            cleanUri = decoded.trim();
+            console.log("Hex decoded to:", cleanUri);
         } catch (e) {
-            console.warn("Hex decode failed", e);
+            console.warn("Hex decode error", e);
         }
     }
-
-    if (cleanUri.startsWith('ipfs://')) {
-        cleanUri = cleanUri.replace('ipfs://', '');
-    }
+    cleanUri = cleanUri.replace(/^ipfs:\/\//i, '');
     if (cleanUri.includes('/ipfs/')) {
         cleanUri = cleanUri.split('/ipfs/').pop();
     }
-
     const gateways = [
         "https://ipfs.io/ipfs/",
         "https://gateway.pinata.cloud/ipfs/",
         "https://cloudflare-ipfs.com/ipfs/",
         "https://nftstorage.link/ipfs/"
     ];
-
-    if (cleanUri.length > 40 && 
-        (cleanUri.startsWith('Qm') || cleanUri.startsWith('bafy') || cleanUri.startsWith('bafk'))) {
+    if (cleanUri.length > 40 && (cleanUri.startsWith('Qm') || cleanUri.startsWith('bafy') || cleanUri.startsWith('bafk'))) {
         return gateways[0] + cleanUri;
     }
-
-    if (cleanUri.startsWith('http://') || cleanUri.startsWith('https://')) {
+    if (cleanUri.startsWith('http')) {
         return cleanUri;
     }
-
-    return 'https://via.placeholder.com/400x400/111111/00ffc8?text=INVALID+URI';
+    return 'https://via.placeholder.com/400x400/111111/00ffc8?text=INVALID';
 }
 
     async function resolveNftImage(nft) {
@@ -428,20 +430,16 @@
             grid.innerHTML = '';
 
             if (filtered.length > 0) {
-                const rendered = await Promise.all(filtered.map(async function (nft) {
-                    return { nft: nft, image: await resolveNftImage(nft) };
-                }));
-
-                rendered.forEach(function (item) {
-                    const nft = item.nft;
-                    const image = item.image;
+                filtered.forEach(function (nft, index) {
+                    const imageUrl = getIPFSUrl(nft.URI || nft.image);
+                    if (index < 3) debugNFTURI(nft);
                     const issuer = nft.Issuer || nft.issuer || 'Unknown';
                     const taxon = String(nft.NFTokenTaxon ?? nft.nft_taxon ?? nft.NFTTaxon ?? nft.taxon ?? 'Unknown');
                     const isSelected = selectedNFT === nft.NFTokenID;
 
                     const div = document.createElement('div');
                     div.className = 'nft-card border ' + (isSelected ? 'border-[#00ffc8] bg-[#00ffc8]/10' : 'border-[#00ffc8]/20') + ' rounded-2xl p-3 cursor-pointer hover:border-[#00ffc8] transition-all overflow-hidden';
-                    div.innerHTML = '<div class="fallback-art rounded-xl overflow-hidden mb-3">' + (image ? '<img src="' + escapeHtml(image) + '" alt="NFT image" loading="lazy" />' : '<div class="text-5xl">🃏</div>') + '</div>' + '<div class="space-y-1">' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50">NFTokenID</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(nft.NFTokenID) + '</p>' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Issuer</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(issuer) + '</p>' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Taxon</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(taxon) + '</p>' + '</div>';
+                    div.innerHTML = '<div class="fallback-art rounded-xl overflow-hidden mb-3">' + '<img src="' + escapeHtml(imageUrl) + '" alt="NFT image" loading="lazy" onload="console.log(\'✅ NFT IMAGE LOADED\', this.src)" onerror="console.log(\'❌ NFT IMAGE FAILED\', this.src); this.src=\'https://via.placeholder.com/400x400/111111/00ffc8?text=ERROR\';" />' + '</div>' + '<div class="space-y-1">' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50">NFTokenID</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(nft.NFTokenID) + '</p>' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Issuer</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(issuer) + '</p>' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Taxon</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(taxon) + '</p>' + '</div>';
                     div.onclick = function () {
                         selectedNFT = nft.NFTokenID;
                         loadNFTs();
