@@ -140,16 +140,59 @@
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
         }
+    
+        .soft-wrap { overflow-wrap: anywhere; word-break: break-word; }
+        .tab { position: relative; transition: background-color .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease; }
+        .tab-active {
+            border-bottom: 5px solid var(--cyan);
+            color: var(--cyan);
+            background: linear-gradient(180deg, rgba(0,255,200,0.12), rgba(0,255,200,0.03));
+            box-shadow: inset 0 -1px 0 rgba(0,255,200,0.35), 0 0 18px rgba(0,255,200,0.12);
+            transform: translateY(-1px);
+        }
+        .tab-active::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 1px solid rgba(0,255,200,0.12);
+            border-radius: 2px;
+            pointer-events: none;
+        }
+        .hero-frame { aspect-ratio: 4 / 5; max-height: min(58vh, 34rem); }
+        .hero-image, .nft-thumb { width: 100%; height: 100%; object-fit: contain; padding: .5rem; }
+        .hero-image-shell { min-height: 18rem; }
+        .mobile-tight { line-height: 1.6; }
+        .leaderboard-row { transition: background-color .16s ease, box-shadow .16s ease; }
+        @media (max-width: 640px) {
+            .tab { min-width: 92px; }
+            .tab-active { box-shadow: inset 0 -1px 0 rgba(0,255,200,0.35), 0 0 22px rgba(0,255,200,0.18); }
+            .hero-frame { max-height: 44vh; }
+            .hero-image-shell { min-height: 14rem; }
+            .leaderboard-row { display: grid !important; grid-template-columns: 1fr !important; gap: .5rem; }
+            .leaderboard-row > div { min-width: 0; }
+        }
     </style>
 </head>
 
 
 <body class="bg-black min-h-screen p-2 sm:p-4 text-[#00ffc8]">
-<div id="boot-overlay" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 backdrop-blur-sm">
-  <div class="inner-panel ring-lid relative w-[min(92vw,720px)] rounded-[30px] p-8 sm:p-10">
-    <div class="orbitron text-xs sm:text-sm tracking-[0.6em] text-[#00ffc8] opacity-80 text-center">BOOT SEQUENCE</div>
-    <div id="boot-lines" class="mt-6 space-y-2 text-center text-lg sm:text-2xl text-[#00ffc8] terminal-glow"></div>
-    <div class="mt-6 text-center text-[11px] sm:text-xs tracking-[0.45em] text-[#00ffc8]/60">AWAKENING ALIEN BROADCAST OS</div>
+<div id="boot-overlay" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 backdrop-blur-sm px-4">
+  <div class="inner-panel ring-lid relative w-[min(94vw,760px)] overflow-hidden rounded-[30px] p-5 sm:p-8">
+    <div class="flex items-center justify-between gap-4">
+      <div class="orbitron text-xs sm:text-sm tracking-[0.6em] text-[#00ffc8] opacity-80">BOOT SEQUENCE</div>
+      <div id="boot-progress-label" class="text-[11px] sm:text-xs tracking-[0.35em] text-[#00ffc8]/60">0%</div>
+    </div>
+    <div class="mt-4 rounded-[22px] border border-[#00ffc8]/12 bg-black/35 p-4 sm:p-5">
+      <div id="boot-stream" class="h-28 overflow-hidden text-xs sm:text-sm leading-6 text-[#00ffc8]/78 soft-wrap"></div>
+    </div>
+    <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div id="boot-status-line" class="text-sm sm:text-base text-[#d9fff8]/80 soft-wrap">Initializing alien terminal…</div>
+      <div class="text-[10px] uppercase tracking-[0.4em] text-[#00ffc8]/55">Live checks</div>
+    </div>
+    <div class="mt-3 h-3 overflow-hidden rounded-full border border-[#00ffc8]/18 bg-black/55">
+      <div id="boot-progress" class="h-full w-0 rounded-full bg-[#00ffc8] shadow-[0_0_20px_rgba(0,255,200,0.45)]"></div>
+    </div>
+    <div id="boot-checks" class="mt-4 grid gap-2 text-[11px] sm:text-xs text-[#00ffc8]/70"></div>
   </div>
 </div>
 <div id="main-monitor" class="alien-monitor flex flex-col relative crt overflow-hidden">
@@ -187,10 +230,10 @@
 
         <div id="content-0" class="tab-content active">
             <div class="max-w-6xl mx-auto space-y-6">
-                <div class="rounded-[2rem] bg-[#05110f] p-5 sm:p-7 lg:p-9 shadow-[0_18px_60px_-35px_rgba(0,255,200,0.55)]">
+                <div class="rounded-[2rem] bg-[#05110f] p-4 sm:p-6 lg:p-8 shadow-[0_18px_60px_-35px_rgba(0,255,200,0.55)]">
                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Alien lore // transmission open</div>
                     <h1 class="header-font text-4xl sm:text-6xl mt-3 leading-none">BRO OF THE DAY</h1>
-                    <p class="mt-4 text-sm sm:text-base text-[#00ffc8]/75 leading-7 max-w-2xl">
+                    <p class="mt-4 text-sm sm:text-base text-[#00ffc8]/75 leading-7 max-w-3xl soft-wrap">
                         One bro, one ledger, one live transmission. Tap through the storyline to see how the Gross Bros survived the rift.
                     </p>
                     <button onclick="switchTab(1)" class="inline-flex mt-5 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm sm:text-base hover:bg-[#00ffc8] hover:text-black transition-all">
@@ -201,9 +244,9 @@
                 <div id="bro-of-the-day" class="rounded-[2rem] bg-[#06110f] p-4 sm:p-6 lg:p-7">
                     <div class="grid gap-6 lg:grid-cols-1">
                         <div class="rounded-3xl bg-black/40 p-4 sm:p-5">
-                            <div class="aspect-square rounded-3xl overflow-hidden bg-[#00ffc8]/5 flex items-center justify-center">
-                                <img id="daily-bro-image" class="w-full h-full object-cover hidden" alt="Daily Gross Bro">
-                                <div id="daily-bro-placeholder" class="text-sm text-[#00ffc8]/50 px-4">Loading BRO OF THE DAY…</div>
+                            <div class="hero-image-shell hero-frame rounded-3xl overflow-hidden bg-[#00ffc8]/5 flex items-center justify-center mx-auto">
+                                <img id="daily-bro-image" class="hero-image hidden" alt="Daily Gross Bro">
+                                <div id="daily-bro-placeholder" class="text-sm text-[#00ffc8]/50 px-4 text-center soft-wrap">Loading BRO OF THE DAY…</div>
                             </div>
                         </div>
 
@@ -278,11 +321,11 @@
                             </div>
                             <div class="mt-5 grid gap-3 sm:grid-cols-2">
                                 <div class="data-card rounded-[22px] p-4">
-                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Selected Token</div>
+                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Selected Operative</div>
                                     <div id="selected-token" class="mt-2 break-all text-sm text-[#d9fff8]/82">None selected</div>
                                 </div>
                                 <div class="data-card rounded-[22px] p-4">
-                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative Token</div>
+                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Fusion State</div>
                                     <div id="operative-token" class="mt-2 break-all text-sm text-[#d9fff8]/82">Not fused</div>
                                 </div>
                             </div>
@@ -340,7 +383,7 @@
                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural standings</div>
                     <h2 class="header-font text-3xl sm:text-5xl mt-3">LEADERBOARD</h2>
                     <div class="mt-6 overflow-hidden rounded-[24px] border border-[#00ffc8]/15">
-                        <div class="grid grid-cols-[72px,1.4fr,110px,120px,120px] gap-2 bg-black/65 px-4 py-3 text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">
+                        <div class="hidden sm:grid grid-cols-[72px,1.4fr,110px,120px,120px] gap-2 bg-black/65 px-4 py-3 text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">
                             <div>Rank</div><div>Holder</div><div>Points</div><div>Chat Time</div><div>Win/Loss %</div>
                         </div>
                         <div id="leaderboard-body" class="divide-y divide-[#00ffc8]/10 bg-black/35"></div>
@@ -796,8 +839,8 @@
         const activeEntry = fusedEntry || selectedEntry || null;
         state.operative = activeEntry ? buildOperativeFromMetadata(activeEntry.nft, activeEntry.metadata || {}) : null;
 
-        selectedTokenEl.textContent = state.selectedTokenId || 'None selected';
-        operativeTokenEl.textContent = state.fusedTokenId || 'Not fused';
+        selectedTokenEl.textContent = state.selectedTokenId ? 'Selection ready' : 'None selected';
+        operativeTokenEl.textContent = state.fusedTokenId ? 'Fusion active' : 'Not fused';
         badge.textContent = state.operative ? (state.fusedTokenId ? 'Fused' : 'Selected') : 'Locked';
 
         if (!state.wallet) {
@@ -908,38 +951,58 @@
         const tokenIdEl = document.getElementById('daily-bro-tokenid');
         const linkEl = document.getElementById('daily-bro-link');
         if (!imageEl || !placeholderEl || !nameEl || !descriptionEl || !issuerEl || !tokenIdEl || !linkEl) return;
+        const localFallback = state.nfts.find((entry) => entry && isStrictMatch(entry.nft || entry)) || state.nfts[0] || null;
         try {
             const records = await fetchXrplNftsByIssuer();
             const dailyBroId = getDailyBroId();
-            const selected = records[(dailyBroId - 1) % records.length] || records[0];
+            const selected = records[(dailyBroId - 1) % records.length] || records[0] || localFallback?.nft || localFallback;
             const tokenUri = getTokenUri(selected);
             const metadata = await fetchMetadataFromTokenUri(tokenUri);
-            const image = resolveNftImage(selected) || getIPFSUrl(findDeepString(metadata, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || '') || getIPFSUrl(tokenUri) || '';
-            const name = findDeepString(metadata, ['name', 'title']) || selected.name || 'Gross Bro #' + (getNftSerial(selected) === 999999999 ? '—' : getNftSerial(selected));
-            const tokenId = getNftId(selected);
+            let image = resolveNftImage(selected) || getIPFSUrl(findDeepString(metadata, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || '') || getIPFSUrl(tokenUri) || '';
+            if (!image && localFallback) {
+                image = resolveNftImage(localFallback.metadata || localFallback.nft || localFallback) || getIPFSUrl(findDeepString(localFallback.metadata, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || '') || '';
+            }
+            const name = findDeepString(metadata, ['name', 'title']) || selected?.name || localFallback?.metadata?.name || localFallback?.nft?.name || 'Gross Bro #' + (getNftSerial(selected) === 999999999 ? '—' : getNftSerial(selected));
+            const tokenId = getNftId(selected) || localFallback?.tokenId || '';
             if (name) nameEl.textContent = name;
             if (descriptionEl) descriptionEl.textContent = BACKSTORIES[dailyBroId] || BACKSTORIES.default;
             if (issuerEl) issuerEl.textContent = STRICT_ISSUER;
-            if (tokenIdEl) tokenIdEl.textContent = tokenId || 'UNAVAILABLE';
-            if (linkEl) linkEl.href = tokenId ? `https://xrp.cafe/nft/${tokenId}` : 'https://xrp.cafe/collection/galactic-gross-bros';
+            if (tokenIdEl) tokenIdEl.textContent = tokenId ? 'Ready' : 'Pending';
+            if (linkEl) linkEl.href = tokenId ? 'https://xrp.cafe/nft/' + tokenId : 'https://xrp.cafe/collection/galactic-gross-bros';
             if (image) {
                 imageEl.src = image;
                 imageEl.onload = () => imageEl.classList.remove('hidden');
                 imageEl.onerror = () => {
                     imageEl.classList.add('hidden');
-                    placeholderEl.textContent = 'IMAGE RELAY FAILED';
+                    placeholderEl.textContent = 'IMAGE RELAY RETRYING';
                 };
             } else {
-                placeholderEl.textContent = 'IMAGE RELAY FAILED';
+                placeholderEl.textContent = 'IMAGE RELAY RETRYING';
             }
             placeholderEl.textContent = '';
         } catch (error) {
             console.warn('Unable to load Bro of the Day', error);
-            placeholderEl.textContent = 'BRO OF THE DAY UNAVAILABLE';
+            if (localFallback) {
+                const fallbackImage = resolveNftImage(localFallback.metadata || localFallback.nft || localFallback) || '';
+                const fallbackName = localFallback.metadata?.name || localFallback.nft?.name || 'Gross Bro';
+                if (fallbackName) nameEl.textContent = fallbackName;
+                descriptionEl.textContent = BACKSTORIES[getDailyBroId()] || BACKSTORIES.default;
+                issuerEl.textContent = STRICT_ISSUER;
+                tokenIdEl.textContent = 'Ready';
+                if (fallbackImage) {
+                    imageEl.src = fallbackImage;
+                    imageEl.classList.remove('hidden');
+                } else {
+                    placeholderEl.textContent = 'IMAGE RELAY RETRYING';
+                }
+            } else {
+                placeholderEl.textContent = 'IMAGE RELAY RETRYING';
+            }
         }
     }
 
     async function loadNfts() {
+
         if (!state.wallet) return;
         state.loadingNfts = true;
         const grid = document.getElementById('nft-grid');
@@ -995,7 +1058,7 @@
                 }));
             }
             body.innerHTML = rows.slice(0, 10).map((row, i) => `
-                <div class="grid grid-cols-[72px,1.4fr,110px,120px,120px] gap-2 px-4 py-4 text-sm sm:text-base items-center">
+                <div class="leaderboard-row grid grid-cols-[72px,1.4fr,110px,120px,120px] gap-2 px-4 py-4 text-sm sm:text-base items-center">
                     <div class="text-[#00ffc8]/70">#${i + 1}</div>
                     <div class="font-medium text-[#f1fffd]">${escapeHtml(row.holder || row.name || `Holder ${i + 1}`)}</div>
                     <div class="text-[#00ffc8]">${escapeHtml(row.points ?? 0)}</div>
@@ -1281,22 +1344,53 @@
 
     function showBootSequence() {
         const overlay = document.getElementById('boot-overlay');
-        const lines = document.getElementById('boot-lines');
-        if (!overlay || !lines) return;
-        lines.innerHTML = [
-            '⟊⟟⟒⟊⟟⟒⟊⟟',
-            '⟒⟊⟟⟒⟊⟟⟒⟊',
-            '⟟⟒⟊⟟⟒⟊⟟⟒',
-            '⟊⟟⟒⟊⟒⟟⟒⟊',
-            '⟒⟊⟟⟒⟊⟟⟊⟒',
-            '⟟⟒⟊⟟⟒⟊⟒⟟'
-        ].map((line) => `<div>${line}</div>`).join('');
+        const stream = document.getElementById('boot-stream');
+        const checks = document.getElementById('boot-checks');
+        const progress = document.getElementById('boot-progress');
+        const progressLabel = document.getElementById('boot-progress-label');
+        const statusLine = document.getElementById('boot-status-line');
+        if (!overlay || !stream || !checks || !progress || !progressLabel || !statusLine) return;
+        const steps = [
+            'LOAD ALIEN BROADCAST OS CORE',
+            'MOUNT XRPL SIGNAL BUS',
+            'SCAN WALLET AND OPERATIVE ROUTES',
+            'VERIFY NFT RELAY STRUCTURE',
+            'SYNC FIELD REPORT CACHE',
+            'STABILIZE CHAT TERMINAL'
+        ];
+        const checksList = [
+            'POWER BUS .......... ONLINE',
+            'SCANLINES ......... CALIBRATED',
+            'XRPL LINK .......... READY',
+            'NFT GRID ........... STABLE',
+            'TERMINAL CACHE ..... ARMED'
+        ];
+        const streamLines = [];
+        let progressValue = 0;
+        let cursor = 0;
         overlay.classList.remove('hidden');
-        setTimeout(() => overlay.classList.add('hidden'), 1700);
-        setBootSeen();
+        checks.innerHTML = checksList.map((item) => '<div class="rounded-xl border border-[#00ffc8]/12 bg-black/25 px-3 py-2">' + item + '</div>').join('');
+        const timer = setInterval(() => {
+            progressValue = Math.min(100, progressValue + (cursor < 6 ? 9 : 15));
+            const phase = steps[Math.min(steps.length - 1, Math.floor(cursor / 2))];
+            const line = String(cursor + 1).padStart(2, '0') + ' :: ' + phase + ' :: OK';
+            streamLines.push(line);
+            if (streamLines.length > 6) streamLines.shift();
+            stream.innerHTML = streamLines.map((item) => '<div>' + item + '</div>').join('');
+            statusLine.textContent = phase;
+            progress.style.width = progressValue + '%';
+            progressLabel.textContent = progressValue + '%';
+            cursor += 1;
+            if (progressValue >= 100) {
+                clearInterval(timer);
+                setTimeout(() => overlay.classList.add('hidden'), 350);
+                setBootSeen();
+            }
+        }, 220);
     }
 
     async function init() {
+
         const savedSession = local(SESSION_KEY, null);
         const savedState = getStoredState();
         if (savedSession?.connected && savedSession?.address) {
@@ -1307,9 +1401,13 @@
         if (savedState?.fusedTokenId) state.fusedTokenId = savedState.fusedTokenId;
         renderWalletUI();
         if (shouldShowBoot()) showBootSequence(); else setBootSeen();
-        await loadDailyBro();
         await loadLeaderboard();
-        if (state.wallet) await loadNfts();
+        if (state.wallet) {
+            await loadNfts();
+            await loadDailyBro();
+        } else {
+            await loadDailyBro();
+        }
         renderOperativePanel();
         renderChatHistory();
         loadFieldReport();
