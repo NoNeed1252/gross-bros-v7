@@ -308,7 +308,7 @@
     function decodeTokenUri(uriHex) {
         const decoded = hexToUtf8(uriHex);
         if (!decoded) return '';
-        return decoded.replace(/^ipfs:///i, 'ipfs://');
+        return decoded.replace(/^ipfs:\/\//i, 'ipfs://');
     }
 
     function hexToString(value) {
@@ -320,15 +320,15 @@
         if (!raw) return fallback;
 
         if (raw.startsWith('ipfs://')) {
-            const path = raw.slice(7).replace(/^ipfs//, '');
+            const path = raw.slice(7).replace(/^ipfs\//, '');
             return 'https://ipfs.io/ipfs/' + path;
         }
 
         if (raw.startsWith('ipns://')) {
-            return 'https://ipfs.io/ipns/' + raw.slice(7).replace(/^ipns//, '');
+            return 'https://ipfs.io/ipns/' + raw.slice(7).replace(/^ipns\//, '');
         }
 
-        if (/^https?:///i.test(raw) || raw.startsWith('data:image/')) {
+        if (/^https?:\/\//i.test(raw) || raw.startsWith('data:image/')) {
             return raw;
         }
 
