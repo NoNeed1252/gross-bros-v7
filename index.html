@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.6</title>
+    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap');
         :root { --cyan: #00ffc8; }
-        body { font-family: 'Share Tech Mono', monospace; background: #000; color: #00ffc8; }
+        body { font-family: 'Share Tech Mono', monospace; background: #000; color: #00ffc8; border: none !important; outline: none !important; }
+        body, #main-monitor, .alien-monitor, #content-area, .mobile-wrapper, .container { border: none !important; outline: none !important; }
         .header-font { font-family: 'Orbitron', sans-serif; }
 
         .alien-monitor {
@@ -26,10 +27,11 @@
 
         @media (max-width: 768px) {
             body { background: #050505; }
+            body, #main-monitor, .alien-monitor, #content-area, .mobile-wrapper, .container { border: none !important; outline: none !important; box-shadow: none !important; }
             .alien-monitor {
-                border: none;
-                outline: none;
-                box-shadow: none;
+                border: none !important;
+                outline: none !important;
+                box-shadow: none !important;
                 background: #050505;
                 margin: 0;
                 height: auto;
@@ -100,7 +102,7 @@
         <div class="flex items-center gap-3 sm:gap-4">
             <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
             <div>
-                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.6</div>
+                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.7</div>
                 <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Ledger relay // XRPL survival interface</div>
             </div>
         </div>
@@ -127,7 +129,7 @@
 
     <div class="flex-1 overflow-auto p-3 sm:p-6 relative z-10 bg-black" id="content-area">
 
-        <div id="content-0" class="tab-content active">
+                <div id="content-0" class="tab-content active">
             <div class="max-w-6xl mx-auto space-y-6">
                 <div class="rounded-[2rem] bg-[#05110f] p-5 sm:p-7 lg:p-9 shadow-[0_18px_60px_-35px_rgba(0,255,200,0.55)]">
                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Alien lore // transmission open</div>
@@ -135,49 +137,14 @@
                     <p class="mt-4 text-sm sm:text-base text-[#00ffc8]/75 leading-7 max-w-2xl">
                         One bro, one ledger, one live transmission. Tap through the storyline to see how the Gross Bros survived the rift.
                     </p>
-                    <button onclick="switchTab(2)" class="inline-flex mt-5 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm sm:text-base hover:bg-[#00ffc8] hover:text-black transition-all">
+                    <button onclick="switchTab(1)" class="inline-flex mt-5 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm sm:text-base hover:bg-[#00ffc8] hover:text-black transition-all">
                         READ FULL TRANSMISSION
                     </button>
                 </div>
-
-                <div id="bro-of-the-day" class="rounded-[2rem] bg-[#06110f] p-4 sm:p-6 lg:p-7">
-                    <div class="grid gap-6 lg:grid-cols-1">
-                        <div class="rounded-3xl bg-black/40 p-4 sm:p-5">
-                            <div class="aspect-square rounded-3xl overflow-hidden bg-[#00ffc8]/5 flex items-center justify-center">
-                                <img id="daily-bro-image" class="w-full h-full object-cover hidden" alt="Daily Gross Bro">
-                                <div id="daily-bro-placeholder" class="text-sm text-[#00ffc8]/50 px-4">Loading BRO OF THE DAY…</div>
-                            </div>
-                        </div>
-
-                        <div class="rounded-3xl bg-black/35 p-4 sm:p-5">
-                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">Backstory</div>
-                            <div id="daily-bro-description" class="backstory mt-4 text-[#00ffc8]/85 text-sm sm:text-base leading-7">Fetching live TokenURI and metadata from the Ledger…</div>
-                        </div>
-
-                        <div class="rounded-3xl bg-black/35 p-4 sm:p-5">
-                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">Current bro</div>
-                            <div id="daily-bro-name" class="text-3xl sm:text-4xl font-bold mt-2">XRPL BRO READY</div>
-                            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-[#00ffc8]/65">
-                                <div class="rounded-2xl bg-black/45 p-3 sm:p-4">
-                                    <span class="block uppercase tracking-[0.25em] text-[#00ffc8]/45 mb-1">Issuer</span>
-                                    <span id="daily-bro-issuer">PENDING</span>
-                                </div>
-                                <div class="rounded-2xl bg-black/45 p-3 sm:p-4">
-                                    <span class="block uppercase tracking-[0.25em] text-[#00ffc8]/45 mb-1">Token ID</span>
-                                    <span id="daily-bro-tokenid">PENDING</span>
-                                </div>
-                            </div>
-                            <a id="daily-bro-link" href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" class="inline-flex mt-4 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm hover:bg-[#00ffc8] hover:text-black transition-all">
-                                BUY A BRO
-                            </a>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
-
         <div id="content-1" class="tab-content">
-            <div class="max-w-6xl mx-auto">
+            <div class="max-w-6xl mx-auto space-y-6">
                 <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Storyline archive</div>
                     <h2 class="header-font text-3xl sm:text-5xl mt-3">TRANSMISSION LOGS</h2>
@@ -193,9 +160,42 @@
                         </div>
                     </div>
                 </div>
+
+                <div id="bro-of-the-day" class="rounded-[2rem] bg-[#06110f] p-4 sm:p-6 lg:p-7">
+                    <div class="space-y-5">
+                        <div class="rounded-3xl bg-black/35 p-4 sm:p-5">
+                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">Teaser</div>
+                            <div id="daily-bro-name" class="text-3xl sm:text-4xl font-bold mt-2">XRPL BRO READY</div>
+                            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-[#00ffc8]/65">
+                                <div class="rounded-2xl bg-black/45 p-3 sm:p-4">
+                                    <span class="block uppercase tracking-[0.25em] text-[#00ffc8]/45 mb-1">Issuer</span>
+                                    <span id="daily-bro-issuer">PENDING</span>
+                                </div>
+                                <div class="rounded-2xl bg-black/45 p-3 sm:p-4">
+                                    <span class="block uppercase tracking-[0.25em] text-[#00ffc8]/45 mb-1">Token ID</span>
+                                    <span id="daily-bro-tokenid">PENDING</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-3xl bg-black/40 p-4 sm:p-5">
+                            <div class="aspect-square rounded-3xl overflow-hidden bg-[#00ffc8]/5 flex items-center justify-center">
+                                <img id="daily-bro-image" class="w-full h-full object-cover hidden" alt="Daily Gross Bro">
+                                <div id="daily-bro-placeholder" class="text-sm text-[#00ffc8]/50 px-4">Loading BRO OF THE DAY…</div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-3xl bg-black/35 p-4 sm:p-5">
+                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">Backstory</div>
+                            <div id="daily-bro-description" class="backstory mt-4 text-[#00ffc8]/85 text-sm sm:text-base leading-7">Fetching live TokenURI and metadata from the Ledger…</div>
+                            <a id="daily-bro-link" href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" class="inline-flex mt-5 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm hover:bg-[#00ffc8] hover:text-black transition-all">
+                                BUY A BRO
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-
         <div id="content-2" class="tab-content">
             <div class="max-w-6xl mx-auto">
                 <div class="rounded-[2rem] bg-[#06110f] p-4 sm:p-6 mb-5 sm:mb-6">
@@ -214,10 +214,12 @@
                     <button onclick="initiateFusion()" class="w-full py-4 sm:py-7 text-base sm:text-xl border border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl transition-all">
                         INITIATE FUSION • $50 USD
                     </button>
+                    <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" class="mt-4 inline-flex w-full items-center justify-center rounded-3xl border border-[#00ffc8]/40 bg-[#00ffc8]/5 px-5 py-4 text-sm sm:text-base text-[#00ffc8] hover:bg-[#00ffc8] hover:text-black transition-all shadow-[0_0_0_1px_rgba(0,255,200,0.08)]">
+                        BUY A BRO
+                    </a>
                 </div>
             </div>
         </div>
-
         <div id="content-3" class="tab-content">
             <div class="max-w-6xl mx-auto">
                 <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
@@ -248,38 +250,42 @@
                     </div>
                 </div>
             </div>
+        </div>
+
         <div id="content-4" class="tab-content">
             <div class="max-w-4xl mx-auto">
                 <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Socials</div>
                     <h2 class="header-font text-3xl sm:text-5xl mt-3">COMM LINKS</h2>
                     <div class="mt-6 grid gap-4 sm:grid-cols-2">
-                        <a href="https://discord.gg/fcZYk7UcB" target="_blank" class="rounded-3xl bg-black/45 px-5 py-5 text-center hover:bg-[#00ffc8] hover:text-black transition-all border border-transparent">
-                            <div class="text-xs uppercase tracking-[0.35em] opacity-70">Discord</div>
-                            <div class="mt-2 text-lg sm:text-xl font-bold">Join the server</div>
+                        <a href="https://x.com/thegrossbros?s=21" target="_blank" rel="noreferrer" class="group rounded-[1.6rem] border border-[#00ffc8]/25 bg-black/50 px-5 py-5 sm:px-6 sm:py-6 text-left shadow-[0_0_0_1px_rgba(0,255,200,0.08),0_20px_45px_-25px_rgba(0,255,200,0.45)] transition-all hover:-translate-y-0.5 hover:bg-[#00ffc8] hover:text-black hover:border-[#00ffc8]">
+                            <div class="flex items-center justify-between gap-4">
+                                <div>
+                                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.35em] opacity-70">X</div>
+                                    <div class="mt-2 text-lg sm:text-xl font-bold leading-tight">Gross Bros X</div>
+                                </div>
+                                <div class="text-2xl sm:text-3xl opacity-80 group-hover:opacity-100">↗</div>
+                            </div>
                         </a>
-                        <a href="https://x.com/thegrossbros?s=21" target="_blank" class="rounded-3xl bg-black/45 px-5 py-5 text-center hover:bg-[#00ffc8] hover:text-black transition-all border border-transparent">
-                            <div class="text-xs uppercase tracking-[0.35em] opacity-70">X</div>
-                            <div class="mt-2 text-lg sm:text-xl font-bold">Follow @thegrossbros</div>
+                        <a href="https://discord.gg/fcZYk7UcB" target="_blank" rel="noreferrer" class="group rounded-[1.6rem] border border-[#00ffc8]/25 bg-black/50 px-5 py-5 sm:px-6 sm:py-6 text-left shadow-[0_0_0_1px_rgba(0,255,200,0.08),0_20px_45px_-25px_rgba(0,255,200,0.45)] transition-all hover:-translate-y-0.5 hover:bg-[#00ffc8] hover:text-black hover:border-[#00ffc8]">
+                            <div class="flex items-center justify-between gap-4">
+                                <div>
+                                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.35em] opacity-70">Discord</div>
+                                    <div class="mt-2 text-lg sm:text-xl font-bold leading-tight">Gross Bros Discord</div>
+                                </div>
+                                <div class="text-2xl sm:text-3xl opacity-80 group-hover:opacity-100">↗</div>
+                            </div>
                         </a>
                     </div>
                 </div>
             </div>
         </div>
-
-        </div>
-
-    </div>
-
-    <div class="bg-black/95 border-t border-[#00ffc8]/20 px-4 sm:px-6 py-4 mt-auto sticky bottom-0 z-20 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between text-xs">
-        <div class="flex gap-6">
-            <a href="https://x.com/thegrossbros" target="_blank" class="hover:text-white transition-colors">𝕏</a>
-            <a href="https://discord.gg/fcZYk7UcB" target="_blank" class="hover:text-white transition-colors">Discord</a>
-        </div>
-        <div class="flex gap-6 items-center">
+<div class="bg-black/95 border-t border-[#00ffc8]/20 px-4 sm:px-6 py-4 mt-auto sticky bottom-0 z-20 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between text-xs">
+        <div></div>
+        <div class="flex gap-6 items-center justify-between w-full sm:w-auto">
             <a href="#" class="hover:text-white transition-colors">Privacy</a>
             <a href="#" class="hover:text-white transition-colors">Terms</a>
-            <span class="text-[#00ffc8]/55">v8.6</span>
+            <span class="text-[#00ffc8]/55">v8.7</span>
         </div>
     </div>
 </div>
@@ -396,13 +402,13 @@
 
         if (raw.startsWith('ipfs://')) {
             const path = raw.slice(7).replace(/^ipfs\//, '');
-            const safePath = path.split('/').map((segment) => encodeURIComponent(segment)).join('/');
+            const safePath = path.split('/').map((segment) => encodeURIComponent(segment.replace(/#/g, '%23'))).join('/');
             return 'https://ipfs.io/ipfs/' + safePath;
         }
 
         if (raw.startsWith('ipns://')) {
             const path = raw.slice(7).replace(/^ipns\//, '');
-            const safePath = path.split('/').map((segment) => encodeURIComponent(segment)).join('/');
+            const safePath = path.split('/').map((segment) => encodeURIComponent(segment.replace(/#/g, '%23'))).join('/');
             return 'https://ipfs.io/ipns/' + safePath;
         }
 
@@ -411,7 +417,7 @@
         }
 
         if (raw.startsWith('Qm') || raw.startsWith('bafy')) {
-            return 'https://ipfs.io/ipfs/' + encodeURIComponent(raw).replace(/%2F/g, '/');
+            return 'https://ipfs.io/ipfs/' + encodeURIComponent(raw).replace(/%2F/g, '/').replace(/%23/g, '%23');
         }
 
         return fallback;
@@ -582,7 +588,7 @@
             const selected = records[(dailyBroId - 1) % records.length] || records[0];
             const tokenUri = getNftTokenUri(selected);
             const metadata = await fetchMetadataFromTokenUri(tokenUri);
-            const image = await resolveNftImage(selected) || getIPFSUrl(findDeepString(metadata, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || '') || getIPFSUrl(tokenUri) || '';
+            const image = resolveNftImage(selected) || getIPFSUrl(findDeepString(metadata, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || '') || getIPFSUrl(tokenUri) || '';
             const name = findDeepString(metadata, ['name', 'title']) || selected.name || 'Gross Bro #' + (getNftSerial(selected) === Number.MAX_SAFE_INTEGER ? '—' : getNftSerial(selected));
             const tokenId = getNftTokenId(selected);
             const browseUrl = tokenId ? 'https://xrp.cafe/nft/' + tokenId : 'https://xrp.cafe/collection/galactic-gross-bros';
@@ -719,7 +725,7 @@
             if (filtered.length > 0) {
                 filtered.forEach(function (nft, index) {
                     const directImage = findDeepString(nft, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']);
-                    const imageUrl = getIPFSUrl(directImage || nft.URI || nft.image || '');
+                    const imageUrl = resolveNftImage(directImage || nft.URI || nft.image || nft);
                     if (index < 3) debugNFTURI(nft);
                     const issuer = nft.Issuer || nft.issuer || 'Unknown';
                     const taxon = String(nft.NFTokenTaxon ?? nft.nft_taxon ?? nft.NFTTaxon ?? nft.taxon ?? 'Unknown');
