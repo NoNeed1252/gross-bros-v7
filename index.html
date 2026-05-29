@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.7</title>
+    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap');
         :root { --cyan: #00ffc8; }
-        body { font-family: 'Share Tech Mono', monospace; background: #000; color: #00ffc8; border: none !important; outline: none !important; }
-        body, #main-monitor, .alien-monitor, #content-area, .mobile-wrapper, .container { border: none !important; outline: none !important; }
+        body { font-family: 'Share Tech Mono', monospace; background: #000; color: #00ffc8; border: none !important; box-shadow: none !important; outline: none !important; }
+        body, #main-monitor, .alien-monitor, #content-area, .mobile-wrapper, .container { border: none !important; box-shadow: none !important; outline: none !important; }
         .header-font { font-family: 'Orbitron', sans-serif; }
 
         .alien-monitor {
             background: #050505;
-            border: 24px solid #1f1f1f;
-            box-shadow: 0 0 0 14px #0a0a0a, 0 30px 70px -20px rgba(0,0,0,0.95), 0 0 100px -20px var(--cyan);
+            border: none !important;
+            box-shadow: none !important;
             border-radius: 24px;
             overflow: hidden;
             max-width: 1480px;
@@ -102,7 +102,7 @@
         <div class="flex items-center gap-3 sm:gap-4">
             <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
             <div>
-                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.7</div>
+                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.8</div>
                 <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Ledger relay // XRPL survival interface</div>
             </div>
         </div>
@@ -129,22 +129,39 @@
 
     <div class="flex-1 overflow-auto p-3 sm:p-6 relative z-10 bg-black" id="content-area">
 
-                <div id="content-0" class="tab-content active">
+        <div id="content-0" class="tab-content active">
             <div class="max-w-6xl mx-auto space-y-6">
                 <div class="rounded-[2rem] bg-[#05110f] p-5 sm:p-7 lg:p-9 shadow-[0_18px_60px_-35px_rgba(0,255,200,0.55)]">
-                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Alien lore // transmission open</div>
-                    <h1 class="header-font text-4xl sm:text-6xl mt-3 leading-none">BRO OF THE DAY</h1>
+                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Collective lore uplink</div>
+                    <h1 class="header-font text-4xl sm:text-6xl mt-3 leading-none">GROSS BROS COLLECTIVE</h1>
                     <p class="mt-4 text-sm sm:text-base text-[#00ffc8]/75 leading-7 max-w-2xl">
-                        One bro, one ledger, one live transmission. Tap through the storyline to see how the Gross Bros survived the rift.
+                        The Gross Bros ride the rift in weekly transmissions — neon, weird, and ledger-born.
                     </p>
-                    <button onclick="switchTab(1)" class="inline-flex mt-5 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm sm:text-base hover:bg-[#00ffc8] hover:text-black transition-all">
-                        READ FULL TRANSMISSION
+                    <button onclick="switchTab(2)" class="inline-flex mt-5 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm sm:text-base hover:bg-[#00ffc8] hover:text-black transition-all">
+                        ACCESS FULL TRANSMISSIONS
                     </button>
+                </div>
+
+                <div id="bro-of-the-day" class="rounded-[2rem] bg-[#06110f] p-4 sm:p-6 lg:p-7">
+                    <div class="space-y-5">
+                        <div class="rounded-3xl bg-black/40 p-4 sm:p-5">
+                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">Bro of the Day</div>
+                            <div class="aspect-square rounded-3xl overflow-hidden bg-[#00ffc8]/5 flex items-center justify-center mt-3">
+                                <img id="daily-bro-image" class="w-full h-full object-cover hidden" alt="Daily Gross Bro">
+                                <div id="daily-bro-placeholder" class="text-sm text-[#00ffc8]/50 px-4">Loading BRO OF THE DAY…</div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-3xl bg-black/35 p-4 sm:p-5">
+                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">Unique Backstory</div>
+                            <div id="daily-bro-description" class="backstory mt-4 text-[#00ffc8]/85 text-sm sm:text-base leading-7">Fetching live TokenURI and metadata from the Ledger…</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <div id="content-1" class="tab-content">
-            <div class="max-w-6xl mx-auto space-y-6">
+            <div class="max-w-6xl mx-auto">
                 <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Storyline archive</div>
                     <h2 class="header-font text-3xl sm:text-5xl mt-3">TRANSMISSION LOGS</h2>
@@ -157,40 +174,6 @@
                         <div class="rounded-3xl bg-black/45 p-4 sm:p-6">
                             <div class="text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Recovered note</div>
                             <div class="mt-3 text-sm sm:text-base text-[#00ffc8]/80 leading-7">The monitor only wakes when the wallet and NFT relay stay alive.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="bro-of-the-day" class="rounded-[2rem] bg-[#06110f] p-4 sm:p-6 lg:p-7">
-                    <div class="space-y-5">
-                        <div class="rounded-3xl bg-black/35 p-4 sm:p-5">
-                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">Teaser</div>
-                            <div id="daily-bro-name" class="text-3xl sm:text-4xl font-bold mt-2">XRPL BRO READY</div>
-                            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-[#00ffc8]/65">
-                                <div class="rounded-2xl bg-black/45 p-3 sm:p-4">
-                                    <span class="block uppercase tracking-[0.25em] text-[#00ffc8]/45 mb-1">Issuer</span>
-                                    <span id="daily-bro-issuer">PENDING</span>
-                                </div>
-                                <div class="rounded-2xl bg-black/45 p-3 sm:p-4">
-                                    <span class="block uppercase tracking-[0.25em] text-[#00ffc8]/45 mb-1">Token ID</span>
-                                    <span id="daily-bro-tokenid">PENDING</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="rounded-3xl bg-black/40 p-4 sm:p-5">
-                            <div class="aspect-square rounded-3xl overflow-hidden bg-[#00ffc8]/5 flex items-center justify-center">
-                                <img id="daily-bro-image" class="w-full h-full object-cover hidden" alt="Daily Gross Bro">
-                                <div id="daily-bro-placeholder" class="text-sm text-[#00ffc8]/50 px-4">Loading BRO OF THE DAY…</div>
-                            </div>
-                        </div>
-
-                        <div class="rounded-3xl bg-black/35 p-4 sm:p-5">
-                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">Backstory</div>
-                            <div id="daily-bro-description" class="backstory mt-4 text-[#00ffc8]/85 text-sm sm:text-base leading-7">Fetching live TokenURI and metadata from the Ledger…</div>
-                            <a id="daily-bro-link" href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" class="inline-flex mt-5 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm hover:bg-[#00ffc8] hover:text-black transition-all">
-                                BUY A BRO
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -285,7 +268,7 @@
         <div class="flex gap-6 items-center justify-between w-full sm:w-auto">
             <a href="#" class="hover:text-white transition-colors">Privacy</a>
             <a href="#" class="hover:text-white transition-colors">Terms</a>
-            <span class="text-[#00ffc8]/55">v8.7</span>
+            <span class="text-[#00ffc8]/55">v8.8</span>
         </div>
     </div>
 </div>
@@ -383,20 +366,22 @@
         if (!hex) return '';
         let clean = String(hex).trim();
         if (clean.startsWith('0x')) clean = clean.slice(2);
-        if (clean.length % 2 !== 0 || /[^0-9a-f]/i.test(clean)) return String(hex);
+        const normalized = clean.replace(/[^0-9a-f]/gi, '');
+        if (!normalized || normalized.length % 2 !== 0) return String(hex).trim();
         try {
             const bytes = [];
-            for (let i = 0; i < clean.length; i += 2) bytes.push(parseInt(clean.slice(i, i + 2), 16));
-            return new TextDecoder().decode(new Uint8Array(bytes));
+            for (let i = 0; i < normalized.length; i += 2) bytes.push(parseInt(normalized.slice(i, i + 2), 16));
+            const decoded = new TextDecoder().decode(new Uint8Array(bytes)).trim();
+            return decoded || String(hex).trim();
         } catch (e) {
-            return String(hex);
+            return String(hex).trim();
         }
     }
 
     function decodeTokenUri(uriHex) {
         const decoded = hexToUtf8(uriHex);
         if (!decoded) return '';
-        return decoded.replace(/^ipfs:\/\//i, 'ipfs://');
+        return decoded.replace(/^ipfs:\/\//i, 'ipfs://').replace(/^ipns:\/\//i, 'ipns://');
     }
 
     function hexToString(value) {
@@ -407,16 +392,16 @@
         const raw = typeof value === 'string' ? value.trim() : '';
         if (!raw) return fallback;
 
+        const encodePath = (path) => path.split('/').map((segment) => encodeURIComponent(segment)).join('/');
+
         if (raw.startsWith('ipfs://')) {
             const path = raw.slice(7).replace(/^ipfs\//, '');
-            const safePath = path.split('/').map((segment) => encodeURIComponent(segment.replace(/#/g, '%23'))).join('/');
-            return 'https://ipfs.io/ipfs/' + safePath;
+            return 'https://ipfs.io/ipfs/' + encodePath(path);
         }
 
         if (raw.startsWith('ipns://')) {
             const path = raw.slice(7).replace(/^ipns\//, '');
-            const safePath = path.split('/').map((segment) => encodeURIComponent(segment.replace(/#/g, '%23'))).join('/');
-            return 'https://ipfs.io/ipns/' + safePath;
+            return 'https://ipfs.io/ipns/' + encodePath(path);
         }
 
         if (/^https?:\/\//i.test(raw) || raw.startsWith('data:image/')) {
@@ -424,55 +409,38 @@
         }
 
         if (raw.startsWith('Qm') || raw.startsWith('bafy')) {
-            return 'https://ipfs.io/ipfs/' + encodeURIComponent(raw).replace(/%2F/g, '/').replace(/%23/g, '%23');
+            return 'https://ipfs.io/ipfs/' + encodePath(raw);
         }
 
         return fallback;
     }
 
-    function findDeepString(value, keys) {
-        if (!value || typeof value !== 'object') return null;
-
-        const record = value;
-        for (const key of keys) {
-            const candidate = record[key];
-            if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
-        }
-
-        for (const nested of Object.values(record)) {
-            const found = findDeepString(nested, keys);
-            if (found) return found;
-        }
-
-        return null;
-    }
-
     function getNftSerial(nft) {
-        const raw = nft.nft_serial ?? nft.serial ?? nft.NFTokenSerial ?? nft.NFTokenSequence;
+        const raw = nft?.nft_serial ?? nft?.serial ?? nft?.NFTokenSerial ?? nft?.NFTokenSequence;
         const numeric = Number(raw);
         return Number.isFinite(numeric) ? numeric : Number.MAX_SAFE_INTEGER;
     }
 
     function getNftTokenId(nft) {
-        return String(nft.nft_id || nft.nftoken_id || nft.NFTokenID || nft.id || '').trim();
+        return String(nft?.nft_id || nft?.nftoken_id || nft?.NFTokenID || nft?.id || '').trim();
     }
 
     function getNftTokenUri(nft) {
-        return decodeTokenUri(nft.URI || nft.Uri || nft.uri || '');
+        return decodeTokenUri(nft?.URI || nft?.Uri || nft?.uri || '');
     }
 
-    function getNftSerial(nft) {
-        const raw = nft.nft_serial ?? nft.serial ?? nft.NFTokenSerial ?? nft.NFTokenSequence;
+    function getNftIssuer(nft) {
+        return String(nft?.Issuer || nft?.issuer || nft?.Owner || nft?.owner || nft?.account || '').trim();
+    }
+
+    function getNftTaxon(nft) {
+        const raw = nft?.NFTokenTaxon ?? nft?.nft_taxon ?? nft?.NFTTokenTaxon ?? nft?.NFTTaxon ?? nft?.taxon;
         const numeric = Number(raw);
-        return Number.isFinite(numeric) ? numeric : Number.MAX_SAFE_INTEGER;
+        return Number.isFinite(numeric) ? numeric : NaN;
     }
 
-    function getNftTokenId(nft) {
-        return String(nft.nft_id || nft.nftoken_id || nft.NFTokenID || nft.id || '').trim();
-    }
-
-    function getNftTokenUri(nft) {
-        return decodeTokenUri(nft.URI || nft.Uri || nft.uri || '');
+    function isStrictMatch(nft) {
+        return getNftIssuer(nft) === STRICT_ISSUER && getNftTaxon(nft) === Number(STRICT_TAXON);
     }
 
     async function fetchXrplNftsByIssuer() {
@@ -697,9 +665,10 @@
     async function loadNFTs() {
         const grid = document.getElementById('nft-grid');
         const summary = document.getElementById('nft-summary');
+        const walletAddress = String(currentWalletAddress || '').trim();
         grid.innerHTML = '<p class="col-span-full text-center py-8">Loading matching Gross Bros NFTs...</p>';
 
-        if (!currentWalletAddress) {
+        if (!walletAddress) {
             grid.innerHTML = '<p class="col-span-full text-center py-8 text-yellow-400">Please connect your wallet first.</p>';
             if (summary) summary.textContent = 'Connect a wallet to load matching NFTs.';
             return;
@@ -712,37 +681,39 @@
                 body: JSON.stringify({
                     method: 'account_nfts',
                     params: [{
-                        account: currentWalletAddress,
+                        account: walletAddress,
                         ledger_index: 'validated',
                         limit: 200
                     }]
                 })
             });
 
-            const data = await response.json();
-            const rawNfts = data.result && data.result.account_nfts ? data.result.account_nfts : [];
+            const data = await response.json().catch(() => null);
+            const rawNfts = Array.isArray(data?.result?.account_nfts) ? data.result.account_nfts : [];
             const filtered = rawNfts.filter(isStrictMatch);
 
             if (summary) {
-                summary.textContent = 'Showing ' + filtered.length + ' matching NFTs for issuer ' + STRICT_ISSUER + ' and taxon ' + STRICT_TAXON + '.';
+                summary.textContent = filtered.length
+                    ? 'Showing ' + filtered.length + ' matching NFTs for issuer ' + STRICT_ISSUER + ' and taxon ' + STRICT_TAXON + '.'
+                    : 'No matching NFTs found for issuer ' + STRICT_ISSUER + ' and taxon ' + STRICT_TAXON + '.';
             }
 
             grid.innerHTML = '';
 
             if (filtered.length > 0) {
                 filtered.forEach(function (nft, index) {
-                    const directImage = findDeepString(nft, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']);
-                    const imageUrl = resolveNftImage(directImage || nft.URI || nft.image || nft);
-                    if (index < 3) debugNFTURI(nft);
-                    const issuer = nft.Issuer || nft.issuer || 'Unknown';
-                    const taxon = String(nft.NFTokenTaxon ?? nft.nft_taxon ?? nft.NFTTaxon ?? nft.taxon ?? 'Unknown');
-                    const isSelected = selectedNFT === nft.NFTokenID;
+                    const tokenId = getNftTokenId(nft);
+                    const imageUrl = resolveNftImage(nft);
+                    if (index < 3 && typeof debugNFTURI === 'function') debugNFTURI(nft);
+                    const issuer = getNftIssuer(nft) || 'Unknown';
+                    const taxon = String(getNftTaxon(nft) || 'Unknown');
+                    const isSelected = selectedNFT === tokenId;
 
                     const div = document.createElement('div');
                     div.className = 'nft-card border ' + (isSelected ? 'border-[#00ffc8] bg-[#00ffc8]/10' : 'border-[#00ffc8]/20') + ' rounded-2xl p-3 cursor-pointer hover:border-[#00ffc8] transition-all overflow-hidden';
-                    div.innerHTML = '<div class="fallback-art rounded-xl overflow-hidden mb-3">' + '<img src="' + escapeHtml(imageUrl) + '" alt="NFT image" loading="lazy" onload="console.log(\'✅ NFT IMAGE LOADED\', this.src)" onerror="console.log(\'❌ NFT IMAGE FAILED\', this.src); this.src=\'https://via.placeholder.com/400x400/111111/00ffc8?text=ERROR\';" />' + '</div>' + '<div class="space-y-1">' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50">NFTokenID</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(nft.NFTokenID) + '</p>' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Issuer</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(issuer) + '</p>' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Taxon</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(taxon) + '</p>' + '</div>';
+                    div.innerHTML = '<div class="fallback-art rounded-xl overflow-hidden mb-3">' + '<img src="' + escapeHtml(imageUrl) + '" alt="NFT image" loading="lazy" onload="console.log(\'✅ NFT IMAGE LOADED\', this.src)" onerror="console.log(\'❌ NFT IMAGE FAILED\', this.src); this.src=\'https://via.placeholder.com/400x400/111111/00ffc8?text=ERROR\';" />' + '</div>' + '<div class="space-y-1">' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50">NFTokenID</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(tokenId || nft.NFTokenID || '') + '</p>' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Issuer</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(issuer) + '</p>' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Taxon</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(taxon) + '</p>' + '</div>';
                     div.onclick = function () {
-                        selectedNFT = nft.NFTokenID;
+                        selectedNFT = tokenId;
                         loadNFTs();
                     };
                     grid.appendChild(div);
