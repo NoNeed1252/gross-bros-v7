@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.3</title>
+    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -59,15 +59,22 @@
             background: linear-gradient(90deg, rgba(0,255,200,0.08), rgba(0,255,200,0.03));
             overflow: hidden;
             white-space: nowrap;
+            height: 2rem;
+            display: flex;
+            align-items: center;
         }
         .news-track {
             display: inline-flex;
             gap: 2rem;
-            padding: 0.55rem 0;
+            padding: 0;
+            height: 2rem;
+            align-items: center;
             will-change: transform;
             animation: ticker 24s linear infinite;
+            font-size: 0.75rem;
+            line-height: 1rem;
         }
-        .news-item { color: rgba(0,255,200,0.9); }
+        .news-item { color: rgba(0,255,200,0.9); white-space: nowrap; }
         @keyframes ticker {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
@@ -83,7 +90,7 @@
         <div class="flex items-center gap-3 sm:gap-4">
             <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
             <div>
-                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.3</div>
+                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.4</div>
                 <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Ledger relay // XRPL survival interface</div>
             </div>
         </div>
@@ -242,7 +249,7 @@
         <div class="flex gap-6 items-center">
             <a href="#" class="hover:text-white transition-colors">PRIVACY</a>
             <a href="#" class="hover:text-white transition-colors">TERMS</a>
-            <span class="text-[#00ffc8]/55">v8.3</span>
+            <span class="text-[#00ffc8]/55">v8.4</span>
         </div>
     </div>
 </div>
@@ -292,7 +299,7 @@
         const track = document.getElementById('warning-ticker-track');
         if (!track) return;
 
-        const seed = Math.floor(Date.now() / 43200000);
+        const seed = Math.floor(Date.now() / (12 * 60 * 60 * 1000));
         const start = seed % WARNING_MESSAGES.length;
         const rotated = WARNING_MESSAGES.slice(start).concat(WARNING_MESSAGES.slice(0, start));
         const loop = rotated.concat(rotated);
