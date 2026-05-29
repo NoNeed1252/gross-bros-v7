@@ -434,7 +434,6 @@
 (function () {
     const STRICT_ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
     const STRICT_TAXON = '1';
-    const WHITELIST_WALLET = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
     const TOTAL_BROS = 214;
     const FUSION_XRP = 50;
     const XRPL_RPC_URLS = ['https://xrplcluster.com/', 'https://s2.ripple.com:51234/'];
@@ -1248,16 +1247,6 @@
         }
         if (!state.selectedTokenId) {
             renderOperativePanel();
-            return;
-        }
-        if (state.wallet === WHITELIST_WALLET) {
-            state.fusedTokenId = state.selectedTokenId;
-            const active = currentEntry();
-            if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
-            store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
-            store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
-            renderOperativePanel();
-            renderChatTerminal();
             return;
         }
         try {
