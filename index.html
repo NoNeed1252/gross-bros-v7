@@ -422,6 +422,9 @@
     const STRICT_ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
     const STRICT_TAXON = '1';
     const TOTAL_BROS = 214;
+    const FUSION_FEE_USD = 50;
+    const FUSION_MEMO = 'Gross Bros fusion fee';
+    const FALLBACK_XRP_USD = 0.5;
     const FUSION_XRP = 50;
     const XRPL_RPC_URLS = ['https://xrplcluster.com/', 'https://s2.ripple.com:51234/'];
     const SUPABASE_URL = window.SUPABASE_URL || window.__SUPABASE_URL || window.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -742,6 +745,32 @@
         return await res.json();
     }
 
+    async function getLiveXrpUsdRate() {
+        try {
+            const response = await fetch('/api/xrp-price', { cache: 'no-store' });
+            const data = await response.json().catch(() => null);
+            if (response.ok && data?.ok && typeof data.xrpUsd === 'number' && data.xrpUsd > 0) return data.xrpUsd;
+        } catch {}
+        return FALLBACK_XRP_USD;
+    }
+
+    function getPaymentNextUrl(data) {
+        const candidate = data?.next;
+        if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
+        if (candidate && typeof candidate === 'object' && !Array.isArray(candidate)) {
+            const nested = candidate.always || candidate.no_push_msg_received || candidate.web || candidate.app;
+            if (typeof nested === 'string' && nested.trim()) return nested.trim();
+        }
+        const request = data?.request;
+        if (request && typeof request === 'object' && !Array.isArray(request)) {
+            const next = request.next;
+            if (next && typeof next === 'object' && !Array.isArray(next) && typeof next.always === 'string' && next.always.trim()) {
+                return next.always.trim();
+            }
+        }
+        return '';
+    }
+
     async function fetchXrplNftsByWallet(wallet) {
         let lastError = null;
         for (const rpcUrl of XRPL_RPC_URLS) {
@@ -1018,8 +1047,17 @@
         try {
             const rawNfts = await fetchXrplNftsByWallet(state.wallet);
             const filtered = rawNfts.filter(isStrictMatch).sort((a, b) => getNftSerial(a) - getNftSerial(b));
-            state.nfts = [];
+            const seen = new Set();
+            const deduped = [];
             for (const nft of filtered) {
+                const tokenId = getNftId(nft);
+                const uniqueKey = tokenId || `${getNftIssuer(nft)}:${getNftSerial(nft)}:${getTokenUri(nft)}`;
+                if (seen.has(uniqueKey)) continue;
+                seen.add(uniqueKey);
+                deduped.push(nft);
+            }
+            state.nfts = [];
+            for (const nft of deduped) {
                 const tokenId = getNftId(nft);
                 const metadata = await fetchMetadataFromTokenUri(getTokenUri(nft));
                 state.nfts.push({ nft, metadata, tokenId });
@@ -1209,79 +1247,95 @@
 
     async function connectXaman() {
         const walletText = document.getElementById('wallet-text');
-        try {
-            if (walletText) walletText.textContent = 'CONNECTING...';
-            const res = await fetch('/api/xaman?action=create-payload', { method: 'POST' });
-            const payload = await res.json();
-            if (payload?.next?.always) window.open(payload.next.always, '_blank');
-            let attempts = 0;
+        return await new Promise(async (resolve) => {
+            try {
+                if (walletText) walletText.textContent = 'CONNECTING...';
+                const res = await fetch('/api/xaman?action=create-payload', { method: 'POST' });
+                const payload = await res.json();
+                if (payload?.next?.always) window.open(payload.next.always, '_blank');
+                let attempts = 0;
+                if (!payloadUuid) {
+                throw new Error('Xaman payment payload did not return a UUID.');
+            }
             const interval = setInterval(async () => {
-                attempts++;
-                if (attempts > 35) {
-                    clearInterval(interval);
-                    state.connected = false;
-                    renderWalletUI();
-                    return;
-                }
-                const check = await fetch('/api/xaman?action=check-payload&uuid=' + payload.uuid);
-                const status = await check.json();
-                if ((status.meta && status.meta.signed) || status.signed) {
-                    clearInterval(interval);
-                    const address = (status.response && status.response.account) || status.account || '';
-                    if (address) {
-                        state.wallet = address;
-                        state.connected = true;
-                        store(SESSION_KEY, { connected: true, address, wallet: address });
+                    attempts++;
+                    if (attempts > 35) {
+                        clearInterval(interval);
+                        state.connected = false;
                         renderWalletUI();
-                        await loadNfts();
-                        await loadLeaderboard();
-                        renderFusionLab();
+                        resolve(false);
+                        return;
                     }
-                } else if (status.meta && status.meta.expired) {
-                    clearInterval(interval);
-                    state.connected = false;
-                    renderWalletUI();
-                }
-            }, 2500);
-        } catch (error) {
-            console.error(error);
-            state.connected = false;
-            renderWalletUI();
-        }
+                    const check = await fetch('/api/xaman?action=check-payload&uuid=' + payload.uuid);
+                    const status = await check.json();
+                    if ((status.meta && status.meta.signed) || status.signed) {
+                        clearInterval(interval);
+                        const address = (status.response && status.response.account) || status.account || '';
+                        if (address) {
+                            state.wallet = address;
+                            state.connected = true;
+                            store(SESSION_KEY, { connected: true, address, wallet: address });
+                            renderWalletUI();
+                            await loadNfts();
+                            await loadLeaderboard();
+                            renderFusionLab();
+                            resolve(true);
+                        } else {
+                            resolve(false);
+                        }
+                    } else if (status.meta && status.meta.expired) {
+                        clearInterval(interval);
+                        state.connected = false;
+                        renderWalletUI();
+                        resolve(false);
+                    }
+                }, 2500);
+            } catch (error) {
+                console.error(error);
+                state.connected = false;
+                renderWalletUI();
+                resolve(false);
+            }
+        });
     }
     window.connectXaman = connectXaman;
 
-    async function fuseSelectedNft() {
-        if (!state.wallet) {
-            connectXaman();
-            return;
-        }
-        if (!state.selectedTokenId) {
-            renderOperativePanel();
-            return;
-        }
+    async function startFusionPayment() {
+        if (!state.wallet || !state.selectedTokenId) return false;
         try {
-            const res = await fetch('/api/xaman?action=create-payload', {
+            const xrpUsd = await getLiveXrpUsdRate();
+            const response = await fetch('/api/xaman/create-payment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    txjson: {
-                        TransactionType: 'Payment',
-                        Destination: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
-                        Amount: String(FUSION_XRP * 1000000)
-                    }
+                    destinationAddress: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
+                    xrpUsd,
+                    usdAmount: FUSION_FEE_USD,
+                    memoText: FUSION_MEMO,
                 })
             });
-            const payload = await res.json();
-            if (payload?.next?.always) window.open(payload.next.always, '_blank');
+            const data = await response.json();
+            if (!response.ok || !data?.ok) {
+                throw new Error(data?.error || 'Unable to build fusion payment request.');
+            }
+            const nextUrl = getPaymentNextUrl(data);
+            if (!nextUrl) {
+                throw new Error('Unable to open Xaman payment request.');
+            }
+            window.open(nextUrl, '_blank');
+
             let attempts = 0;
+            const payloadUuid = typeof data?.request?.uuid === 'string' ? data.request.uuid : typeof data?.payload?.uuid === 'string' ? data.payload.uuid : '';
+            if (!payloadUuid) {
+                throw new Error('Xaman payment payload did not return a UUID.');
+            }
             const interval = setInterval(async () => {
                 attempts++;
                 if (attempts > 35) {
                     clearInterval(interval);
                     return;
                 }
-                const check = await fetch('/api/xaman?action=check-payload&uuid=' + payload.uuid);
+                const check = await fetch('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(payloadUuid));
                 const status = await check.json();
                 if ((status.meta && status.meta.signed) || status.signed) {
                     clearInterval(interval);
@@ -1292,13 +1346,30 @@
                     store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
                     renderOperativePanel();
                     renderChatTerminal();
+                    return;
                 } else if (status.meta && status.meta.expired) {
                     clearInterval(interval);
+                    return;
                 }
             }, 2500);
+            return true;
         } catch (error) {
             console.error(error);
+            return false;
         }
+    }
+
+
+    async function fuseSelectedNft() {
+        if (!state.selectedTokenId) {
+            renderOperativePanel();
+            return;
+        }
+        if (!state.wallet) {
+            const connected = await connectXaman();
+            if (!connected) return;
+        }
+        await startFusionPayment();
     }
     window.fuseSelectedNft = fuseSelectedNft;
 
