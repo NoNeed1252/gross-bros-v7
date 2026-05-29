@@ -327,6 +327,18 @@
         return issuer === STRICT_ISSUER.toLowerCase() && taxon === STRICT_TAXON;
     }
 
+    function openSigninUrl(payload, targetWindow = null) {
+        const nextUrl = payload && payload.next && payload.next.always ? payload.next.always : '';
+        if (typeof nextUrl === 'string' && nextUrl) {
+            if (targetWindow && !targetWindow.closed) {
+                targetWindow.location.href = nextUrl;
+            } else {
+                // Use window.open to keep the current page alive for polling
+                window.open(nextUrl, '_blank');
+            }
+        }
+    }
+
     function setWalletUI(connected, address = '') {
         currentWalletAddress = address;
         const isConnected = connected && address;
@@ -360,7 +372,7 @@
             const res = await fetch('/api/xaman?action=create-payload', { method: 'POST' });
             const payload = await res.json();
 
-            if (payload.next && payload.next.always) window.open(payload.next.always, '_blank');
+            openSigninUrl(payload);
 
             let attempts = 0;
             const interval = setInterval(async function () {
