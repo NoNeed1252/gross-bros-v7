@@ -1,4 +1,3 @@
-<!-- v7.2.5-force -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -233,21 +232,58 @@
         return decoded.replace(/^ipfs:\/\//i, 'ipfs://');
     }
 
-    function normalizeIpfsUrl(raw) {
-        if (!raw) return '';
-        let url = String(raw).trim();
-        if (url.startsWith('ipfs://ipfs/')) url = url.slice('ipfs://ipfs/'.length);
-        else if (url.startsWith('ipfs://')) url = url.slice('ipfs://'.length);
-        if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
-        return url ? 'https://ipfs.io/ipfs/' + url : '';
+    function getIPFSUrl(uri) {
+    if (!uri) {
+        return 'https://via.placeholder.com/400x400/111111/00ffc8?text=NO+URI';
     }
+
+    let cleanUri = uri.toString().trim();
+
+    if (/^[0-9A-Fa-f]{2,}$/.test(cleanUri)) {
+        try {
+            let str = '';
+            for (let i = 0; i < cleanUri.length; i += 2) {
+                const charCode = parseInt(cleanUri.substr(i, 2), 16);
+                if (charCode) str += String.fromCharCode(charCode);
+            }
+            cleanUri = str.trim();
+        } catch (e) {
+            console.warn("Hex decode failed", e);
+        }
+    }
+
+    if (cleanUri.startsWith('ipfs://')) {
+        cleanUri = cleanUri.replace('ipfs://', '');
+    }
+    if (cleanUri.includes('/ipfs/')) {
+        cleanUri = cleanUri.split('/ipfs/').pop();
+    }
+
+    const gateways = [
+        "https://ipfs.io/ipfs/",
+        "https://gateway.pinata.cloud/ipfs/",
+        "https://cloudflare-ipfs.com/ipfs/",
+        "https://nftstorage.link/ipfs/"
+    ];
+
+    if (cleanUri.length > 40 && 
+        (cleanUri.startsWith('Qm') || cleanUri.startsWith('bafy') || cleanUri.startsWith('bafk'))) {
+        return gateways[0] + cleanUri;
+    }
+
+    if (cleanUri.startsWith('http://') || cleanUri.startsWith('https://')) {
+        return cleanUri;
+    }
+
+    return 'https://via.placeholder.com/400x400/111111/00ffc8?text=INVALID+URI';
+}
 
     async function resolveNftImage(nft) {
         const rawUri = decodeTokenUri(nft.URI || nft.Uri || nft.uri || '');
         if (!rawUri) return '';
 
         const candidates = [];
-        const base = normalizeIpfsUrl(rawUri);
+        const base = getIPFSUrl(rawUri);
         if (base) candidates.push(base);
 
         if (/\.json(?:$|[?#])/i.test(base)) {
@@ -256,7 +292,7 @@
                 if (res.ok) {
                     const meta = await res.json();
                     const image = meta.image || meta.image_url || meta.imageUrl || meta.animation_url || '';
-                    const normalized = normalizeIpfsUrl(image);
+                    const normalized = getIPFSUrl(image);
                     if (normalized) candidates.unshift(normalized);
                 }
             } catch (e) {
