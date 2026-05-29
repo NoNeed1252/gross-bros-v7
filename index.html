@@ -342,6 +342,13 @@
         track.innerHTML = loop.map((message) => '<span class="news-item">' + message + '</span>').join('');
     }
 
+    function resolveNftImage(input) {
+        const raw = typeof input === 'string'
+            ? input
+            : findDeepString(input, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || getNftTokenUri(input) || '';
+        return getIPFSUrl(raw, '');
+    }
+
     function findDeepString(value, keys) {
         if (!value || typeof value !== 'object') return null;
 
