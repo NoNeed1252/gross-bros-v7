@@ -1,778 +1,1443 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.8</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap');
-        :root { --cyan: #00ffc8; }
-        body { font-family: 'Share Tech Mono', monospace; background: #000; color: #00ffc8; border: none !important; box-shadow: none !important; outline: none !important; }
-        body, #main-monitor, .alien-monitor, #content-area, .mobile-wrapper, .container { border: none !important; box-shadow: none !important; outline: none !important; }
-        .header-font { font-family: 'Orbitron', sans-serif; }
-
-        .alien-monitor {
-            background: #050505;
-            border: none !important;
-            box-shadow: none !important;
-            border-radius: 24px;
-            overflow: hidden;
-            max-width: 1480px;
-            margin: 12px auto;
-            height: 92vh;
-        }
-
-        @media (max-width: 768px) {
-            body { background: #050505; }
-            body, #main-monitor, .alien-monitor, #content-area, .mobile-wrapper, .container { border: none !important; outline: none !important; box-shadow: none !important; }
-            .alien-monitor {
-                border: none !important;
-                outline: none !important;
-                box-shadow: none !important;
-                background: #050505;
-                margin: 0;
-                height: auto;
-                min-height: 100vh;
-                border-radius: 0;
-            }
-        }
-
-        .crt::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: repeating-linear-gradient(transparent 0px, transparent 5px, rgba(0,255,200,0.15) 5px, rgba(0,255,200,0.15) 10px);
-            animation: scanline 8s linear infinite;
-            pointer-events: none;
-            z-index: 1;
-        }
-        @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
-
-        .tab-active { border-bottom: 5px solid var(--cyan); color: var(--cyan); background: #1a1a1a; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .connected-glow { box-shadow: 0 0 30px var(--cyan); }
-        .nft-card { min-height: 100%; }
-        .nft-card img { width: 100%; height: 11rem; object-fit: cover; }
-        .fallback-art { width: 100%; height: 11rem; display: flex; align-items: center; justify-content: center; background: rgba(0,255,200,0.05); }
-        @media (max-width: 768px) {
-            .alien-monitor { height: auto; min-height: 96vh; }
-        }
-        @media (max-width: 640px) {
-            .tab { white-space: nowrap; }
-        }
-        .fusion-panel { border-color: rgba(0,255,200,0.20); }
-        .news-ticker {
-            border-top: 1px solid rgba(0,255,200,0.20);
-            border-bottom: 1px solid rgba(0,255,200,0.20);
-            background: linear-gradient(90deg, rgba(0,255,200,0.08), rgba(0,255,200,0.03));
-            overflow: hidden;
-            white-space: nowrap;
-            height: 1.5rem;
-            display: flex;
-            align-items: center;
-        }
-        .news-track {
-            display: inline-flex;
-            gap: 1rem;
-            padding: 0 0.5rem;
-            height: 1.5rem;
-            align-items: center;
-            will-change: transform;
-            animation: ticker 24s linear infinite;
-            font-size: 0.6875rem;
-            line-height: 1rem;
-        }
-        .news-item { color: rgba(0,255,200,0.9); white-space: nowrap; }
-        @keyframes ticker {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GROSS BROS • ALIEN COMMAND TERMINAL</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #020807;
+      --panel: rgba(5, 18, 16, 0.92);
+      --panel-2: rgba(3, 13, 12, 0.94);
+      --line: rgba(0, 255, 200, 0.2);
+      --line-strong: rgba(0, 255, 200, 0.55);
+      --text: #d4fff6;
+      --muted: rgba(0, 255, 200, 0.62);
+      --primary: #00ffc8;
+      --shadow: 0 0 0 1px rgba(0,255,200,0.12), 0 24px 90px rgba(0,0,0,0.58);
+    }
+    html, body { min-height: 100%; margin: 0; background: radial-gradient(circle at 50% 10%, rgba(0,255,200,0.12), transparent 28%), linear-gradient(180deg, #05110f 0%, #010404 100%); color: var(--text); }
+    body { font-family: 'Share Tech Mono', monospace; overflow-x: hidden; }
+    * { box-sizing: border-box; }
+    .orbitron { font-family: 'Orbitron', sans-serif; }
+    .terminal-glow { text-shadow: 0 0 10px rgba(0,255,200,0.3), 0 0 28px rgba(0,255,200,0.15); }
+    .scanlines::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(180deg, rgba(255,255,255,0.06) 0, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 4px);
+      opacity: .17;
+      mix-blend-mode: screen;
+    }
+    .metal-shell {
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.05), transparent 15%, transparent 85%, rgba(0,0,0,0.28)),
+        linear-gradient(135deg, rgba(255,255,255,0.05), transparent 16%, transparent 84%, rgba(255,255,255,0.03)),
+        linear-gradient(180deg, #081210, #030706);
+      border: 1px solid rgba(0,255,200,0.14);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .metal-shell::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.03), transparent 15%, transparent 85%, rgba(255,255,255,0.03)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 6px);
+      opacity: .42;
+    }
+    .inner-panel {
+      border: 1px solid rgba(0,255,200,0.14);
+      background: linear-gradient(180deg, rgba(7, 18, 17, 0.96), rgba(3, 10, 10, 0.96));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .data-card {
+      border: 1px solid rgba(0,255,200,0.16);
+      background: linear-gradient(180deg, rgba(7, 18, 17, 0.9), rgba(2, 8, 8, 0.95));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+    .nav-btn {
+      border: 1px solid rgba(0,255,200,0.16);
+      background: linear-gradient(180deg, rgba(9, 23, 21, 0.95), rgba(2, 7, 7, 0.98));
+      color: rgba(212,255,246,0.82);
+      letter-spacing: .34em;
+      text-transform: uppercase;
+      transition: transform .14s ease, border-color .14s ease, color .14s ease, box-shadow .14s ease, background .14s ease;
+    }
+    .nav-btn:hover, .nav-btn.active {
+      color: var(--primary);
+      border-color: rgba(0,255,200,0.56);
+      box-shadow: 0 0 0 1px rgba(0,255,200,0.1), 0 0 26px rgba(0,255,200,0.08);
+      transform: translateY(-1px);
+    }
+    .nav-btn.active {
+      background: linear-gradient(180deg, rgba(11, 35, 30, 0.98), rgba(2, 9, 9, 0.98));
+    }
+    .button-aura {
+      position: relative;
+      border: 1px solid rgba(0,255,200,0.45);
+      background: linear-gradient(180deg, rgba(0,255,200,0.12), rgba(0,255,200,0.04));
+      color: var(--primary);
+      box-shadow: 0 0 0 1px rgba(0,255,200,0.06), 0 18px 40px rgba(0,0,0,0.35);
+      transition: transform .14s ease, box-shadow .14s ease, background .14s ease, color .14s ease;
+    }
+    .button-aura:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(180deg, rgba(0,255,200,0.2), rgba(0,255,200,0.08));
+      box-shadow: 0 0 0 1px rgba(0,255,200,0.18), 0 0 34px rgba(0,255,200,0.16);
+    }
+    .alien-chip {
+      border: 1px solid rgba(0,255,200,0.22);
+      background: rgba(0,255,200,0.06);
+      color: #cbfff4;
+    }
+    .ring-lid {
+      position: relative;
+      background: radial-gradient(circle at 50% 35%, rgba(0,255,200,0.18), transparent 42%), linear-gradient(180deg, rgba(11, 19, 18, 0.95), rgba(2, 6, 6, 0.96));
+      border: 1px solid rgba(0,255,200,0.17);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 0 0 1px rgba(0,255,200,0.06);
+    }
+    .ring-lid::after {
+      content: '';
+      position: absolute;
+      inset: 12px;
+      border-radius: 24px;
+      border: 1px solid rgba(0,255,200,0.1);
+      pointer-events: none;
+    }
+    .grid-noise {
+      background-image: linear-gradient(rgba(0,255,200,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,200,0.06) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .slow-pulse { animation: pulseGlow 2.6s ease-in-out infinite; }
+    @keyframes pulseGlow { 0%,100% { opacity: .6 } 50% { opacity: 1 } }
+    .fade-panel { transition: opacity .18s ease, transform .18s ease; }
+    .hidden-tab { display: none; }
+    .chat-bubble-user { background: rgba(0,255,200,0.1); border: 1px solid rgba(0,255,200,0.2); }
+    .chat-bubble-system { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); }
+    .cmd-input { background: rgba(0,0,0,0.35); border: 1px solid rgba(0,255,200,0.2); color: var(--text); outline: none; }
+    .cmd-input:focus { border-color: rgba(0,255,200,0.56); box-shadow: 0 0 0 3px rgba(0,255,200,0.08); }
+    .nft-thumb { aspect-ratio: 1 / 1; object-fit: cover; }
+    .scrollbar-thin::-webkit-scrollbar { width: 10px; height: 10px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(0,255,200,0.18); border-radius: 999px; border: 2px solid rgba(2,6,6,0.95); }
+    .scrollbar-thin::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+  </style>
 </head>
+<body>
+  <div id="boot-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/88 backdrop-blur-sm hidden">
+    <div class="inner-panel ring-lid relative w-[min(92vw,720px)] rounded-[30px] p-8 sm:p-10">
+      <div class="orbitron text-xs sm:text-sm tracking-[0.6em] text-[#b8fff4] opacity-80">IRKEN BOOT SEQUENCE</div>
+      <div id="boot-lines" class="mt-6 space-y-2 text-center text-lg sm:text-2xl text-[#00ffc8] terminal-glow"></div>
+      <div class="mt-6 text-center text-[11px] sm:text-xs tracking-[0.45em] text-[#00ffc8]/60">OPERATIVE LINK ESTABLISHING</div>
+    </div>
+  </div>
 
-
-<body class="bg-black min-h-screen p-2 sm:p-4 text-[#00ffc8]">
-<div id="main-monitor" class="alien-monitor flex flex-col relative crt overflow-hidden">
-
-    <div class="bg-black/95 border-b border-[#00ffc8]/20 px-4 sm:px-6 py-4 sm:py-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div class="flex items-center gap-3 sm:gap-4">
-            <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
+  <div id="app-shell" class="min-h-screen p-2 sm:p-4 lg:p-6">
+    <div class="metal-shell scanlines mx-auto max-w-[1700px] rounded-[28px]">
+      <header class="relative z-10 border-b border-[#00ffc8]/15 bg-black/90 px-4 py-4 sm:px-6 lg:px-7">
+        <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div class="flex items-center gap-4">
+            <div class="h-3.5 w-3.5 rounded-full bg-[#00ffc8] shadow-[0_0_18px_rgba(0,255,200,0.85)] slow-pulse"></div>
             <div>
-                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.8</div>
-                <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Ledger relay // XRPL survival interface</div>
+              <div class="orbitron text-lg sm:text-2xl font-bold tracking-[0.38em] text-[#00ffc8]">ALIEN COMMAND TERMINAL</div>
+              <div class="mt-1 text-[10px] sm:text-xs uppercase tracking-[0.38em] text-[#00ffc8]/55">token-gated operative interface // xrpl relay // supabase persistence</div>
             </div>
-        </div>
+          </div>
 
-        <div onclick="connectXaman()" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
-            <i class="fa-solid fa-wallet"></i>
-            <span id="wallet-text">CONNECT XAMAN</span>
+          <div class="flex flex-col gap-3 xl:flex-row xl:items-center">
+            <div id="wallet-pill" class="alien-chip rounded-2xl px-4 py-3 text-xs sm:text-sm">Wallet disconnected.</div>
+            <button id="connect-btn" class="button-aura rounded-2xl px-5 py-3 text-xs sm:text-sm uppercase tracking-[0.35em]">Connect Xaman</button>
+          </div>
         </div>
+      </header>
 
-        <p id="xaman-status" class="text-[11px] sm:text-sm text-[#00ffc8]/60 text-center lg:text-right">Wallet disconnected.</p>
+      <div class="relative z-10 border-b border-[#00ffc8]/15 bg-black/80 px-4 py-3 sm:px-6">
+        <div class="flex flex-wrap items-center gap-3 text-[10px] sm:text-xs uppercase tracking-[0.35em] text-[#00ffc8]/70">
+          <span class="alien-chip rounded-full px-3 py-1">Whitelist bypass: rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY</span>
+          <span class="alien-chip rounded-full px-3 py-1">Primary: #00ffc8</span>
+          <span class="alien-chip rounded-full px-3 py-1">No purple protocol</span>
+        </div>
+      </div>
+
+      <nav class="relative z-10 grid grid-cols-4 gap-2 border-b border-[#00ffc8]/15 bg-black/90 p-2 sm:p-3">
+        <button class="nav-btn active rounded-2xl px-3 py-3 text-[10px] sm:text-xs" onclick="switchTab(0)">Console</button>
+        <button class="nav-btn rounded-2xl px-3 py-3 text-[10px] sm:text-xs" onclick="switchTab(1)">Neural Standings</button>
+        <button class="nav-btn rounded-2xl px-3 py-3 text-[10px] sm:text-xs" onclick="switchTab(2)">Comms / Logs</button>
+        <button class="nav-btn rounded-2xl px-3 py-3 text-[10px] sm:text-xs" onclick="switchTab(3)">Socials</button>
+      </nav>
+
+      <main class="relative z-10 p-3 sm:p-5 lg:p-6">
+        <section id="tab-0" class="tab-panel space-y-5">
+          <div class="grid gap-5 xl:grid-cols-[1.15fr,0.85fr]">
+            <div class="inner-panel rounded-[28px] p-5 sm:p-7 lg:p-8">
+              <div class="text-[10px] sm:text-xs uppercase tracking-[0.5em] text-[#00ffc8]/55">Lore teaser</div>
+              <h1 class="mt-3 orbitron text-3xl sm:text-5xl font-bold tracking-[0.12em] text-[#ecfffb]">GROSS BROS OPERATIVE STACK</h1>
+              <p class="mt-4 max-w-3xl text-sm sm:text-base leading-7 text-[#c7fff4]/80">
+                A polished alien command surface for the operative network. Wallet, NFT identity, chat terminal, daily intelligence, and the neural standings all converge inside one command frame.
+              </p>
+
+              <div class="mt-5 flex flex-col gap-3 sm:flex-row">
+                <button class="button-aura rounded-2xl px-6 py-4 text-sm sm:text-base uppercase tracking-[0.38em]" onclick="switchTab(2)">DECODE FULL LOGS</button>
+                <button class="button-aura rounded-2xl px-6 py-4 text-sm sm:text-base uppercase tracking-[0.34em]" onclick="loadFieldReport(true)">Refresh Briefing</button>
+              </div>
+
+              <div class="mt-6 grid gap-4 lg:grid-cols-[0.95fr,1.05fr]">
+                <div class="data-card rounded-[26px] p-4 sm:p-5">
+                  <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Selected Operative</div>
+                  <div id="console-operative-name" class="mt-3 orbitron text-2xl sm:text-3xl font-bold text-[#f2fffd]">No operative fused</div>
+                  <div id="console-operative-meta" class="mt-3 space-y-2 text-sm sm:text-base text-[#c7fff4]/80"></div>
+                </div>
+                <div class="data-card rounded-[26px] p-4 sm:p-5">
+                  <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Lore teaser</div>
+                  <div id="console-teaser" class="mt-3 text-sm sm:text-base leading-7 text-[#d5fff7]/84"></div>
+                  <div class="mt-4 text-[11px] uppercase tracking-[0.42em] text-[#00ffc8]/60">Unique backstory is driven by token metadata</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="inner-panel rounded-[28px] p-5 sm:p-7 lg:p-8 flex flex-col gap-4">
+              <div class="text-[10px] sm:text-xs uppercase tracking-[0.5em] text-[#00ffc8]/55">Bro image centered</div>
+              <div class="ring-lid rounded-[28px] p-4 sm:p-5 flex items-center justify-center min-h-[400px]">
+                <div class="w-full max-w-[430px]">
+                  <div class="mx-auto overflow-hidden rounded-[24px] border border-[#00ffc8]/20 bg-black/40 shadow-[0_0_0_1px_rgba(0,255,200,0.08),0_0_60px_rgba(0,255,200,0.06)]">
+                    <img id="featured-bro-image" class="w-full h-[360px] object-cover hidden" alt="Featured Gross Bro" />
+                    <div id="featured-bro-placeholder" class="grid h-[360px] place-items-center px-6 text-center text-sm text-[#00ffc8]/55">Loading bro relay…</div>
+                  </div>
+                </div>
+              </div>
+              <div class="data-card rounded-[26px] p-5">
+                <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Unique backstory</div>
+                <div id="featured-bro-backstory" class="mt-3 text-sm sm:text-base leading-7 text-[#d9fff8]/84">Awaiting live TokenURI and metadata resolution…</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-1" class="tab-panel hidden-tab space-y-5">
+          <div class="inner-panel rounded-[28px] p-5 sm:p-7 lg:p-8">
+            <div class="flex items-end justify-between gap-4">
+              <div>
+                <div class="text-[10px] sm:text-xs uppercase tracking-[0.5em] text-[#00ffc8]/55">Neural standings</div>
+                <h2 class="mt-3 orbitron text-3xl sm:text-5xl font-bold tracking-[0.1em] text-[#effffb]">Top 10 leaderboard</h2>
+              </div>
+              <div class="alien-chip rounded-2xl px-4 py-2 text-xs uppercase tracking-[0.34em]">Rank / Holder / Points / Chat Time / Win-Loss %</div>
+            </div>
+            <div class="mt-6 overflow-hidden rounded-[24px] border border-[#00ffc8]/15">
+              <div class="grid grid-cols-[72px,1.4fr,110px,120px,120px] gap-2 bg-black/65 px-4 py-3 text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">
+                <div>Rank</div><div>Holder</div><div>Points</div><div>Chat Time</div><div>Win/Loss %</div>
+              </div>
+              <div id="leaderboard-body" class="divide-y divide-[#00ffc8]/10 bg-black/35"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-2" class="tab-panel hidden-tab space-y-5">
+          <div class="grid gap-5 xl:grid-cols-[1.02fr,0.98fr]">
+            <div class="inner-panel rounded-[28px] p-5 sm:p-7 lg:p-8">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div class="text-[10px] uppercase tracking-[0.5em] text-[#00ffc8]/55">Operative Identity</div>
+                  <div id="operative-title" class="mt-3 orbitron text-2xl sm:text-4xl font-bold text-[#f4fffd]">Token-gated command required</div>
+                  <div id="operative-subtitle" class="mt-2 text-sm sm:text-base text-[#c5fff4]/75">Connect a wallet, select an NFT, and fuse it into the operative stack.</div>
+                </div>
+                <div id="operative-badge" class="alien-chip rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.35em]">Locked</div>
+              </div>
+
+              <div id="fusion-panel" class="mt-6 data-card rounded-[26px] p-5 sm:p-6"></div>
+
+              <div id="chat-panel" class="mt-5 data-card rounded-[26px] p-5 sm:p-6 hidden-tab"></div>
+
+              <div class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <div class="data-card rounded-[24px] p-4">
+                  <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Field report cache</div>
+                  <div id="report-day" class="mt-3 text-sm text-[#dbfff9]/80"></div>
+                </div>
+                <div class="data-card rounded-[24px] p-4">
+                  <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Persistence</div>
+                  <div id="persistence-status" class="mt-3 text-sm text-[#dbfff9]/80">Supabase-aware, local fallback enabled.</div>
+                </div>
+                <div class="data-card rounded-[24px] p-4">
+                  <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Command state</div>
+                  <div id="command-state" class="mt-3 text-sm text-[#dbfff9]/80">Awaiting operative fusion.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-5">
+              <div class="inner-panel rounded-[28px] p-5 sm:p-7 lg:p-8">
+                <div class="flex items-center justify-between gap-3">
+                  <div>
+                    <div class="text-[10px] uppercase tracking-[0.5em] text-[#00ffc8]/55">Daily intelligence briefing</div>
+                    <h3 class="mt-3 orbitron text-2xl font-bold text-[#f4fffd]">Field Report</h3>
+                  </div>
+                  <button class="button-aura rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]" onclick="loadFieldReport(true)">Refresh</button>
+                </div>
+                <div id="field-report" class="mt-5 rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-4 sm:p-5 text-sm sm:text-base leading-7 text-[#ddfff9]/85 min-h-[220px]"></div>
+              </div>
+
+              <div class="inner-panel rounded-[28px] p-5 sm:p-7 lg:p-8">
+                <div class="text-[10px] uppercase tracking-[0.5em] text-[#00ffc8]/55">NFT roster</div>
+                <div id="nft-grid" class="mt-5 grid gap-4 sm:grid-cols-2"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-3" class="tab-panel hidden-tab space-y-5">
+          <div class="inner-panel rounded-[28px] p-5 sm:p-7 lg:p-8">
+            <div class="text-[10px] uppercase tracking-[0.5em] text-[#00ffc8]/55">Social links</div>
+            <h2 class="mt-3 orbitron text-3xl sm:text-5xl font-bold tracking-[0.1em] text-[#effffb]">Alien comms network</h2>
+            <div class="mt-6 grid gap-4 md:grid-cols-2">
+              <a href="https://x.com/thegrossbros?s=21" target="_blank" rel="noreferrer" class="group block rounded-[30px] border border-[#00ffc8]/18 bg-black/45 p-6 sm:p-7 transition-transform hover:-translate-y-1 hover:bg-[#00ffc8] hover:text-black">
+                <div class="text-[10px] uppercase tracking-[0.45em] opacity-70">X Network</div>
+                <div class="mt-3 orbitron text-2xl sm:text-3xl font-bold">Broadcast on X</div>
+                <div class="mt-4 text-sm sm:text-base leading-7 opacity-80 group-hover:opacity-100">Signal the collective, publish relays, and keep the alien terminal alive.</div>
+              </a>
+              <a href="https://discord.gg/fcZYk7UcB" target="_blank" rel="noreferrer" class="group block rounded-[30px] border border-[#00ffc8]/18 bg-black/45 p-6 sm:p-7 transition-transform hover:-translate-y-1 hover:bg-[#00ffc8] hover:text-black">
+                <div class="text-[10px] uppercase tracking-[0.45em] opacity-70">Discord</div>
+                <div class="mt-3 orbitron text-2xl sm:text-3xl font-bold">Join Discord</div>
+                <div class="mt-4 text-sm sm:text-base leading-7 opacity-80 group-hover:opacity-100">Enter the comms deck for live experiments, drops, and operative coordination.</div>
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="relative z-10 border-t border-[#00ffc8]/15 bg-black/90 px-4 py-3 sm:px-6">
+        <div class="flex flex-col gap-2 text-[10px] sm:flex-row sm:items-center sm:justify-between sm:text-xs uppercase tracking-[0.35em] text-[#00ffc8]/55">
+          <div>Alien Command Terminal online</div>
+          <div>Gross Bros V7 root index.html only</div>
+        </div>
+      </footer>
     </div>
+  </div>
 
-    <div class="border-b border-[#00ffc8]/20 bg-gradient-to-r from-[#00ffc8]/10 via-transparent to-[#7c3aed]/10 overflow-hidden">
-        <div id="warning-ticker-track" class="news-track px-4 sm:px-6"></div>
-    </div>
-
-    <div class="bg-black/90 border-b border-[#00ffc8]/20 flex flex-row flex-nowrap overflow-x-auto text-[10px] sm:text-sm px-1 sm:px-0">
-        <div onclick="switchTab(0)" id="tab-0" class="tab flex-1 min-w-[92px] px-3 sm:px-5 py-4 cursor-pointer text-center tab-active">CONSOLE</div>
-        <div onclick="switchTab(1)" id="tab-1" class="tab flex-1 min-w-[120px] px-3 sm:px-5 py-4 cursor-pointer text-center whitespace-nowrap">TRANSMISSION LOGS</div>
-        <div onclick="switchTab(2)" id="tab-2" class="tab flex-1 min-w-[96px] px-3 sm:px-5 py-4 cursor-pointer text-center">FUSION LAB</div>
-        <div onclick="switchTab(3)" id="tab-3" class="tab flex-1 min-w-[118px] px-3 sm:px-5 py-4 cursor-pointer text-center whitespace-nowrap">NEURAL STANDINGS</div>
-        <div onclick="switchTab(4)" id="tab-4" class="tab flex-1 min-w-[90px] px-3 sm:px-5 py-4 cursor-pointer text-center">SOCIALS</div>
-    </div>
-
-    <div class="flex-1 overflow-auto p-3 sm:p-6 relative z-10 bg-black" id="content-area">
-
-        <div id="content-0" class="tab-content active">
-            <div class="max-w-6xl mx-auto space-y-6">
-                <div class="rounded-[2rem] bg-[#05110f] p-5 sm:p-7 lg:p-9 shadow-[0_18px_60px_-35px_rgba(0,255,200,0.55)]">
-                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Collective lore uplink</div>
-                    <h1 class="header-font text-4xl sm:text-6xl mt-3 leading-none">GROSS BROS COLLECTIVE</h1>
-                    <p class="mt-4 text-sm sm:text-base text-[#00ffc8]/75 leading-7 max-w-2xl">
-                        The Gross Bros ride the rift in weekly transmissions — neon, weird, and ledger-born.
-                    </p>
-                    <button onclick="switchTab(2)" class="inline-flex mt-5 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm sm:text-base hover:bg-[#00ffc8] hover:text-black transition-all">
-                        ACCESS FULL TRANSMISSIONS
-                    </button>
-                </div>
-
-                <div id="bro-of-the-day" class="rounded-[2rem] bg-[#06110f] p-4 sm:p-6 lg:p-7">
-                    <div class="space-y-5">
-                        <div class="rounded-3xl bg-black/40 p-4 sm:p-5">
-                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">Bro of the Day</div>
-                            <div class="aspect-square rounded-3xl overflow-hidden bg-[#00ffc8]/5 flex items-center justify-center mt-3">
-                                <img id="daily-bro-image" class="w-full h-full object-cover hidden" alt="Daily Gross Bro">
-                                <div id="daily-bro-placeholder" class="text-sm text-[#00ffc8]/50 px-4">Loading BRO OF THE DAY…</div>
-                            </div>
-                        </div>
-
-                        <div class="rounded-3xl bg-black/35 p-4 sm:p-5">
-                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">Unique Backstory</div>
-                            <div id="daily-bro-description" class="backstory mt-4 text-[#00ffc8]/85 text-sm sm:text-base leading-7">Fetching live TokenURI and metadata from the Ledger…</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="content-1" class="tab-content">
-            <div class="max-w-6xl mx-auto">
-                <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
-                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Storyline archive</div>
-                    <h2 class="header-font text-3xl sm:text-5xl mt-3">TRANSMISSION LOGS</h2>
-                    <div class="grid gap-6 lg:grid-cols-[1fr_0.9fr] mt-6 items-start">
-                        <div class="space-y-4 text-[#00ffc8]/78 leading-7 text-sm sm:text-base">
-                            <p>Before the collapse, the Gross Bros chased a fracture of light across the ledger.</p>
-                            <p>When the BTC miners breached the perimeter, the survivors fused into machine-linked guardians.</p>
-                            <p>Each bro carries a distinct signal, and the daily transmission locks onto one of them.</p>
-                        </div>
-                        <div class="rounded-3xl bg-black/45 p-4 sm:p-6">
-                            <div class="text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Recovered note</div>
-                            <div class="mt-3 text-sm sm:text-base text-[#00ffc8]/80 leading-7">The monitor only wakes when the wallet and NFT relay stay alive.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="content-2" class="tab-content">
-            <div class="max-w-6xl mx-auto">
-                <div class="rounded-[2rem] bg-[#06110f] p-4 sm:p-6 mb-5 sm:mb-6">
-                    <div class="flex flex-col gap-2 sm:gap-3">
-                        <div class="flex items-center gap-2 text-xs sm:text-sm text-[#00ffc8]/80">
-                            <span class="inline-block w-2 h-2 rounded-full bg-[#00ffc8]"></span>
-                            Strict NFT filter active: Issuer rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY • Taxon 1
-                        </div>
-                        <div id="nft-summary" class="text-xs text-[#00ffc8]/60"></div>
-                    </div>
-                </div>
-                <div id="nft-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8"></div>
-
-                <div class="rounded-[2rem] bg-black/80 p-5 sm:p-8 text-center">
-                    <div id="xrp-amount" class="text-xl sm:text-3xl font-bold mb-5 sm:mb-6"></div>
-                    <button onclick="initiateFusion()" class="w-full py-4 sm:py-7 text-base sm:text-xl border border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl transition-all">
-                        INITIATE FUSION • $50 USD
-                    </button>
-                    <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" class="mt-4 inline-flex w-full items-center justify-center rounded-3xl border border-[#00ffc8]/40 bg-[#00ffc8]/5 px-5 py-4 text-sm sm:text-base text-[#00ffc8] hover:bg-[#00ffc8] hover:text-black transition-all shadow-[0_0_0_1px_rgba(0,255,200,0.08)]">
-                        BUY A BRO
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div id="content-3" class="tab-content">
-            <div class="max-w-6xl mx-auto">
-                <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
-                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural standings</div>
-                    <h2 class="header-font text-3xl sm:text-5xl mt-3">LEADERBOARD</h2>
-                    <div class="mt-6 space-y-3">
-                        <div class="rounded-2xl bg-black/45 p-4 flex items-center justify-between gap-4">
-                            <div>
-                                <div class="text-xs uppercase tracking-[0.35em] text-[#00ffc8]/45">Rank 01</div>
-                                <div class="text-lg sm:text-xl font-bold">Bro-Prime</div>
-                            </div>
-                            <div class="text-right text-sm sm:text-base text-[#00ffc8]/75">Signal integrity 99%</div>
-                        </div>
-                        <div class="rounded-2xl bg-black/45 p-4 flex items-center justify-between gap-4">
-                            <div>
-                                <div class="text-xs uppercase tracking-[0.35em] text-[#00ffc8]/45">Rank 02</div>
-                                <div class="text-lg sm:text-xl font-bold">Relay Runner</div>
-                            </div>
-                            <div class="text-right text-sm sm:text-base text-[#00ffc8]/75">Chain sync 96%</div>
-                        </div>
-                        <div class="rounded-2xl bg-black/45 p-4 flex items-center justify-between gap-4">
-                            <div>
-                                <div class="text-xs uppercase tracking-[0.35em] text-[#00ffc8]/45">Rank 03</div>
-                                <div class="text-lg sm:text-xl font-bold">Ledger Warden</div>
-                            </div>
-                            <div class="text-right text-sm sm:text-base text-[#00ffc8]/75">Fusion readiness 94%</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="content-4" class="tab-content">
-            <div class="max-w-4xl mx-auto">
-                <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
-                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Socials</div>
-                    <h2 class="header-font text-3xl sm:text-5xl mt-3">COMM LINKS</h2>
-                    <div class="mt-6 grid gap-4 sm:grid-cols-2">
-                        <a href="https://x.com/thegrossbros?s=21" target="_blank" rel="noreferrer" class="group rounded-[1.6rem] border border-[#00ffc8]/25 bg-black/50 px-5 py-5 sm:px-6 sm:py-6 text-left shadow-[0_0_0_1px_rgba(0,255,200,0.08),0_20px_45px_-25px_rgba(0,255,200,0.45)] transition-all hover:-translate-y-0.5 hover:bg-[#00ffc8] hover:text-black hover:border-[#00ffc8]">
-                            <div class="flex items-center justify-between gap-4">
-                                <div>
-                                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.35em] opacity-70">X</div>
-                                    <div class="mt-2 text-lg sm:text-xl font-bold leading-tight">Gross Bros X</div>
-                                </div>
-                                <div class="text-2xl sm:text-3xl opacity-80 group-hover:opacity-100">↗</div>
-                            </div>
-                        </a>
-                        <a href="https://discord.gg/fcZYk7UcB" target="_blank" rel="noreferrer" class="group rounded-[1.6rem] border border-[#00ffc8]/25 bg-black/50 px-5 py-5 sm:px-6 sm:py-6 text-left shadow-[0_0_0_1px_rgba(0,255,200,0.08),0_20px_45px_-25px_rgba(0,255,200,0.45)] transition-all hover:-translate-y-0.5 hover:bg-[#00ffc8] hover:text-black hover:border-[#00ffc8]">
-                            <div class="flex items-center justify-between gap-4">
-                                <div>
-                                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.35em] opacity-70">Discord</div>
-                                    <div class="mt-2 text-lg sm:text-xl font-bold leading-tight">Gross Bros Discord</div>
-                                </div>
-                                <div class="text-2xl sm:text-3xl opacity-80 group-hover:opacity-100">↗</div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-<div class="bg-black/95 border-t border-[#00ffc8]/20 px-4 sm:px-6 py-4 mt-auto sticky bottom-0 z-20 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between text-xs">
-        <div></div>
-        <div class="flex gap-6 items-center justify-between w-full sm:w-auto">
-            <a href="#" class="hover:text-white transition-colors">Privacy</a>
-            <a href="#" class="hover:text-white transition-colors">Terms</a>
-            <span class="text-[#00ffc8]/55">v8.8</span>
-        </div>
-    </div>
-</div>
-</body>
 <script>
-    const STRICT_ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
-    const STRICT_TAXON = '1';
-    const TOTAL_BROS = 214;
-    const BACKSTORIES = Object.fromEntries(Array.from({ length: TOTAL_BROS }, (_, index) => {
-        const id = index + 1;
-        const templates = [
-            'The first crack in the Ledger turned this bro into a listener for miner static.',
-            'Built in the shadow of XRP-7, this bro survived by decoding the void before it spoke.',
-            'When the BTC miners breached the perimeter, this bro carried the relay core to safety.',
-            'A relic of the dim dimension war, this bro still hums with ledger fire.',
-            'Born from a broken block, this bro learned to survive on signal and instinct alone.',
-            'This bro patrols the rift edges and keeps the Ledger calm when the static rises.',
-            'Forged from chrome and consequence, this bro never blinks when the chain trembles.',
-            'A scanline myth in a neon shell, this bro watches over the survivors of XRP-7.'
-        ];
-        return [id, 'Bro ' + id + ': ' + templates[index % templates.length]];
-    }));
-    BACKSTORIES.default = 'A legend still forming inside the neon fog.';
-    const XRPL_RPC_URLS = ['https://xrplcluster.com/', 'https://s2.ripple.com:51234/'];
+(function () {
+  const STRICT_ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
+  const STRICT_TAXON = '1';
+  const WHITELIST_WALLET = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
+  const FUSION_XRP = 50;
+  const XRPL_RPC_URLS = ['https://xrplcluster.com/', 'https://s2.ripple.com:51234/'];
+  const SUPABASE_URL = window.SUPABASE_URL || window.__SUPABASE_URL || window.NEXT_PUBLIC_SUPABASE_URL || '';
+  const SUPABASE_KEY = window.SUPABASE_ANON_KEY || window.__SUPABASE_ANON_KEY || window.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  const CHAT_TABLE = window.SUPABASE_CHAT_TABLE || 'chat_history';
+  const REPORT_TABLE = window.SUPABASE_REPORT_TABLE || 'field_reports';
+  const STATS_TABLE = window.SUPABASE_LEADERBOARD_TABLE || 'leaderboard';
+  const BOOT_KEY = 'gross-bros-v7:boot-seen';
+  const SESSION_KEY = 'gross-bros-v7:session';
+  const STATE_KEY = 'gross-bros-v7:state';
+  const CACHE_PREFIX = 'gross-bros-v7';
+  const BRO_COUNT = 214;
+  const TAB_IDS = ['tab-0', 'tab-1', 'tab-2', 'tab-3'];
+  const NOISY_PHRASES = [
+    'The terminal remembers every breach as a pulse of light.',
+    'The collective reads the void through a neon lattice of disciplined data.',
+    'A fused operative is not a user state. It is a command authority.',
+    'Every report is rewritten from the day, the token, and the signal geometry.',
+    'The Gross Bros do not hide in the dark. They turn it into instrumentation.'
+  ];
+  const BACKSTORY_FRAGMENTS = [
+    'survived the first fracture by learning to speak in relay codes',
+    'walked the chrome edges of the old salvage district with a stolen stare',
+    'turned a broken signal into a doctrine of discipline and motion',
+    'kept the crew alive by mapping the gaps between the scans',
+    'found the ledger fire and decided to become part of it'
+  ];
+  const CHAT_OPENERS = [
+    'Directive acknowledged.',
+    'Operative channel stabilized.',
+    'Transmission received.',
+    'Signal fused. Continue.',
+    'Command deck listening.'
+  ];
 
-    function getDayOfYear(date = new Date()) {
-        const start = Date.UTC(date.getUTCFullYear(), 0, 0);
-        const now = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-        return Math.floor((now - start) / 86400000);
+  const state = {
+    wallet: '',
+    connected: false,
+    nfts: [],
+    selectedTokenId: '',
+    fusedTokenId: '',
+    operative: null,
+    report: '',
+    chatHistory: [],
+    leaderboard: [],
+    currentTab: 0,
+    loadingNfts: false,
+    loadingReport: false,
+  };
+
+  function todayKey(date = new Date()) {
+    const d = new Date(date);
+    return [d.getUTCFullYear(), String(d.getUTCMonth() + 1).padStart(2, '0'), String(d.getUTCDate()).padStart(2, '0')].join('-');
+  }
+
+  function dayOfYear(date = new Date()) {
+    const start = Date.UTC(date.getUTCFullYear(), 0, 0);
+    const current = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+    return Math.floor((current - start) / 86400000);
+  }
+
+  function hashString(input) {
+    const text = String(input || '');
+    let hash = 2166136261;
+    for (let i = 0; i < text.length; i++) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
     }
+    return (hash >>> 0);
+  }
 
-    function getDailyBroId() {
-        if (!Number.isFinite(TOTAL_BROS) || TOTAL_BROS <= 0) return 1;
-        return ((getDayOfYear() - 1) % TOTAL_BROS) + 1;
+  function getDailyBroId() {
+    return ((dayOfYear() - 1) % BRO_COUNT) + 1;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function getStoredJSON(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch {
+      return fallback;
     }
+  }
 
-    const WARNING_MESSAGES = [
-        'WARNING: ENEMY CHATTER DETECTED IN SECTOR 7',
-        'LOOKOUT: BTC MINER SCOUTS SPOTTED NEAR THE RIFT',
-        'ALERT: UNKNOWN SIGNAL INTERCEPTED - STAY VIGILANT',
-        'CAUTION: VOID DRONES MOVING ALONG THE PERIMETER',
-        'DANGER: STATIC BREACH APPROACHING THE LEDGER',
-        'NOTICE: BROADCAST SPOOFING ATTEMPT DETECTED'
-    ];
+  function setStoredJSON(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+  }
 
-    function updateWarningTicker() {
-        const track = document.getElementById('warning-ticker-track');
-        if (!track) return;
+  function shortAddress(address) {
+    const a = String(address || '');
+    return a.length > 12 ? `${a.slice(0, 6)}…${a.slice(-6)}` : a;
+  }
 
-        const seed = Math.floor(Date.now() / (12 * 60 * 60 * 1000));
-        const start = seed % WARNING_MESSAGES.length;
-        const rotated = WARNING_MESSAGES.slice(start).concat(WARNING_MESSAGES.slice(0, start));
-        const loop = rotated.concat(rotated);
-        track.innerHTML = loop.map((message) => '<span class="news-item">' + message + '</span>').join('');
+  function dayTokenKey(tokenId, dateKey = todayKey()) {
+    return `${CACHE_PREFIX}:day-report:${state.wallet}:${tokenId}:${dateKey}`;
+  }
+
+  function chatKey(tokenId) {
+    return `${CACHE_PREFIX}:chat:${state.wallet}:${tokenId}`;
+  }
+
+  function operativeKey() {
+    return `${CACHE_PREFIX}:operative:${state.wallet}`;
+  }
+
+  function stateKey() {
+    return `${CACHE_PREFIX}:state:${state.wallet || 'guest'}`;
+  }
+
+  function getRpcBody(method, params) {
+    return { method, params: [params] };
+  }
+
+  function resolveIpfsGateway(url) {
+    if (!url) return '';
+    const raw = String(url).trim();
+    if (!raw) return '';
+    const encodeSegment = (segment) => encodeURIComponent(segment).replace(/%23/g, '%23');
+    if (raw.startsWith('ipfs://')) {
+      const path = raw.slice(7).replace(/^ipfs\//, '');
+      return 'https://ipfs.io/ipfs/' + path.split('/').map(encodeSegment).join('/');
     }
-
-    function resolveNftImage(input) {
-        const raw = typeof input === 'string'
-            ? input
-            : findDeepString(input, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || getNftTokenUri(input) || '';
-        return getIPFSUrl(raw, '');
+    if (raw.startsWith('ipns://')) {
+      const path = raw.slice(7).replace(/^ipns\//, '');
+      return 'https://ipfs.io/ipns/' + path.split('/').map(encodeSegment).join('/');
     }
-
-    function findDeepString(value, keys) {
-        if (!value || typeof value !== 'object') return null;
-
-        const record = value;
-        for (const key of keys) {
-            const candidate = record[key];
-            if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
-        }
-
-        for (const nested of Object.values(record)) {
-            const found = findDeepString(nested, keys);
-            if (found) return found;
-        }
-
-        return null;
+    if (raw.startsWith('Qm') || raw.startsWith('bafy')) {
+      return 'https://ipfs.io/ipfs/' + raw.split('/').map(encodeSegment).join('/');
     }
+    if (/^https?:\/\//i.test(raw) || raw.startsWith('data:image/')) return raw;
+    return raw;
+  }
 
-    function parseMaybeJson(value) {
-        if (!value) return null;
-        const text = String(value).trim();
-        if (!text) return null;
-        if (!(text.startsWith('{') || text.startsWith('['))) return null;
-        try {
-            const parsed = JSON.parse(text);
-            return parsed && typeof parsed === 'object' ? parsed : null;
-        } catch {
-            return null;
-        }
-    }
-
-    function hexToUtf8(hex) {
-        if (!hex) return '';
-        let clean = String(hex).trim();
-        if (clean.startsWith('0x')) clean = clean.slice(2);
-        const normalized = clean.replace(/[^0-9a-f]/gi, '');
-        if (!normalized || normalized.length % 2 !== 0) return String(hex).trim();
-        try {
-            const bytes = [];
-            for (let i = 0; i < normalized.length; i += 2) bytes.push(parseInt(normalized.slice(i, i + 2), 16));
-            const decoded = new TextDecoder().decode(new Uint8Array(bytes)).trim();
-            return decoded || String(hex).trim();
-        } catch (e) {
-            return String(hex).trim();
-        }
-    }
-
-    function decodeTokenUri(uriHex) {
-        const decoded = hexToUtf8(uriHex);
-        if (!decoded) return '';
+  function getTokenUri(nft) {
+    const raw = nft && (nft.URI || nft.Uri || nft.uri || nft.token_uri || nft.tokenUri || '');
+    if (!raw) return '';
+    const str = String(raw).trim();
+    if (!str) return '';
+    let hex = str;
+    if (hex.startsWith('0x')) hex = hex.slice(2);
+    if (/^[0-9a-fA-F]+$/.test(hex) && hex.length % 2 === 0) {
+      try {
+        const bytes = new Uint8Array(hex.match(/.{1,2}/g).map((b) => parseInt(b, 16)));
+        const decoded = new TextDecoder().decode(bytes).trim();
         return decoded.replace(/^ipfs:\/\//i, 'ipfs://').replace(/^ipns:\/\//i, 'ipns://');
+      } catch {}
+    }
+    return str.replace(/^ipfs:\/\//i, 'ipfs://').replace(/^ipns:\/\//i, 'ipns://');
+  }
+
+  function resolveNftImage(input) {
+    const direct = typeof input === 'string' ? input : (input && (input.image || input.image_url || input.imageUrl || input.animation_url || input.animationUrl || input.url || ''));
+    const resolved = direct || getTokenUri(input) || '';
+    if (!resolved) return '';
+    return resolveIpfsGateway(resolved).replace(/#/g, '%23');
+  }
+
+  function normalizeTraits(rawTraits) {
+    if (!rawTraits) return [];
+    if (Array.isArray(rawTraits)) return rawTraits.filter(Boolean).map((t) => typeof t === 'string' ? t : (t.trait_type && t.value ? `${t.trait_type}: ${t.value}` : JSON.stringify(t)));
+    if (typeof rawTraits === 'object') return Object.entries(rawTraits).map(([k, v]) => `${k}: ${v}`);
+    return [String(rawTraits)];
+  }
+
+  function maybeJson(value) {
+    if (!value) return null;
+    const text = String(value).trim();
+    if (!text || !(text.startsWith('{') || text.startsWith('['))) return null;
+    try { return JSON.parse(text); } catch { return null; }
+  }
+
+  function decodeHexText(value) {
+    if (!value) return '';
+    let hex = String(value).trim();
+    if (hex.startsWith('0x')) hex = hex.slice(2);
+    if (!hex || hex.length % 2 !== 0) return String(value).trim();
+    try {
+      const bytes = new Uint8Array(hex.match(/.{1,2}/g).map((b) => parseInt(b, 16)));
+      return new TextDecoder().decode(bytes).trim() || String(value).trim();
+    } catch {
+      return String(value).trim();
+    }
+  }
+
+  function getNftId(nft) {
+    return String(nft?.nft_id || nft?.NFTokenID || nft?.id || nft?.nftoken_id || '').trim();
+  }
+
+  function getNftIssuer(nft) {
+    return String(nft?.Issuer || nft?.issuer || nft?.owner || nft?.Owner || '').trim();
+  }
+
+  function getNftTaxon(nft) {
+    const raw = nft?.NFTokenTaxon ?? nft?.nft_taxon ?? nft?.taxon ?? nft?.Taxon;
+    const num = Number(raw);
+    return Number.isFinite(num) ? num : NaN;
+  }
+
+  function getNftSerial(nft) {
+    const raw = nft?.nft_serial ?? nft?.serial ?? nft?.NFTokenSequence;
+    const num = Number(raw);
+    return Number.isFinite(num) ? num : 999999999;
+  }
+
+  function isStrictMatch(nft) {
+    return getNftIssuer(nft) === STRICT_ISSUER && getNftTaxon(nft) === Number(STRICT_TAXON);
+  }
+
+  function chooseText(list, seed, fallback) {
+    if (!list.length) return fallback;
+    return list[Math.abs(hashString(seed)) % list.length];
+  }
+
+  function buildOperativeFromMetadata(nft, metadata) {
+    const name = metadata?.name || metadata?.title || nft?.name || `Operative ${getNftSerial(nft)}`;
+    const faction = metadata?.faction || metadata?.attributes?.faction || metadata?.trait?.faction || metadata?.collection?.name || 'The Collective';
+    const traits = normalizeTraits(metadata?.attributes || metadata?.traits || metadata?.properties || metadata?.trait_types || metadata?.traitType || metadata?.data?.attributes);
+    const tokenId = getNftId(nft);
+    const image = resolveNftImage(metadata) || resolveNftImage(nft);
+    const backstorySeed = `${name}|${faction}|${tokenId}|${todayKey()}`;
+    const backstory = metadata?.description || metadata?.bio || metadata?.lore || `${name} (${faction}) carries ${chooseText(BACKSTORY_FRAGMENTS, backstorySeed, 'a fractured aura')} and is tuned to ${chooseText(NOISY_PHRASES, backstorySeed, 'the terminal pulse')}.`;
+    return { tokenId, name, faction, traits, image, backstory, raw: nft, metadata };
+  }
+
+  function operativeName() { return state.operative?.name || 'No operative fused'; }
+
+  function renderOperativeMeta() {
+    const el = document.getElementById('console-operative-meta');
+    if (!el) return;
+    if (!state.operative) {
+      el.innerHTML = '<div class="text-[#00ffc8]/60">Connect a wallet to identify the operative stack.</div>';
+      return;
+    }
+    const traits = state.operative.traits.length ? state.operative.traits.slice(0, 6).map((t) => `<div class="rounded-xl border border-[#00ffc8]/12 bg-black/25 px-3 py-2">${escapeHtml(t)}</div>`).join('') : '<div class="rounded-xl border border-[#00ffc8]/12 bg-black/25 px-3 py-2">No explicit traits surfaced.</div>';
+    el.innerHTML = `
+      <div class="grid gap-2 sm:grid-cols-2">
+        <div class="rounded-xl border border-[#00ffc8]/12 bg-black/25 px-3 py-2"><span class="text-[#00ffc8]/55 uppercase tracking-[0.3em] text-[10px]">Token</span><div class="mt-1 break-all text-sm">${escapeHtml(state.operative.tokenId || 'n/a')}</div></div>
+        <div class="rounded-xl border border-[#00ffc8]/12 bg-black/25 px-3 py-2"><span class="text-[#00ffc8]/55 uppercase tracking-[0.3em] text-[10px]">Faction</span><div class="mt-1 text-sm">${escapeHtml(state.operative.faction || 'Unknown')}</div></div>
+      </div>
+      <div class="mt-2 grid gap-2 sm:grid-cols-2">${traits}</div>
+    `;
+  }
+
+  function renderConsole() {
+    const name = document.getElementById('console-operative-name');
+    const teaser = document.getElementById('console-teaser');
+    if (name) name.textContent = state.operative ? state.operative.name : 'No operative fused';
+    if (teaser) {
+      if (state.operative) {
+        const seed = `${state.operative.name}|${state.operative.faction}|${todayKey()}`;
+        teaser.textContent = `${chooseText(NOISY_PHRASES, seed, '')} ${state.operative.backstory}`;
+      } else {
+        teaser.textContent = 'The command terminal is waiting for a fused operative. Connect Xaman, select an NFT, and route it into the identity stack.';
+      }
+    }
+    const operativeBadge = document.getElementById('operative-badge');
+    if (operativeBadge) operativeBadge.textContent = state.operative ? 'Operative Live' : 'Locked';
+    const operativeTitle = document.getElementById('operative-title');
+    const operativeSubtitle = document.getElementById('operative-subtitle');
+    if (operativeTitle) operativeTitle.textContent = state.operative ? `${state.operative.name} online` : 'Token-gated command required';
+    if (operativeSubtitle) operativeSubtitle.textContent = state.operative ? `Identity driven by ${state.operative.faction}. Traits and logs are synced to the operative token.` : 'Connect a wallet, select an NFT, and fuse it into the operative stack.';
+  }
+
+  function renderWalletPill() {
+    const el = document.getElementById('wallet-pill');
+    if (!el) return;
+    if (!state.connected) {
+      el.textContent = 'Wallet disconnected.';
+      return;
+    }
+    el.textContent = `Connected: ${shortAddress(state.wallet)}${state.wallet === WHITELIST_WALLET ? ' • whitelist' : ''}`;
+  }
+
+  function renderCommandState(text) {
+    const el = document.getElementById('command-state');
+    if (el) el.textContent = text;
+  }
+
+  function renderPersistenceStatus(text) {
+    const el = document.getElementById('persistence-status');
+    if (el) el.textContent = text;
+  }
+
+  function setBootSeen() {
+    try { sessionStorage.setItem(BOOT_KEY, '1'); } catch {}
+  }
+
+  function shouldShowBoot() {
+    try { return sessionStorage.getItem(BOOT_KEY) !== '1'; } catch { return true; }
+  }
+
+  function showBootSequence() {
+    const overlay = document.getElementById('boot-overlay');
+    const lines = document.getElementById('boot-lines');
+    if (!overlay || !lines) return;
+    const symbols = ['⟊⟟⟒⟊⟟⟒⟊⟟', '⟒⟊⟟⟒⟊⟟⟒⟊', '⟟⟒⟊⟟⟒⟊⟟⟒', '⟊⟟⟒⟊⟒⟟⟒⟊', '⟒⟊⟟⟒⟊⟟⟊⟒', '⟟⟒⟊⟟⟒⟊⟒⟟'];
+    lines.innerHTML = symbols.map((line) => `<div>${line}</div>`).join('');
+    overlay.classList.remove('hidden');
+    setTimeout(() => overlay.classList.add('hidden'), 2000);
+    setBootSeen();
+  }
+
+  function switchTab(index) {
+    state.currentTab = index;
+    document.querySelectorAll('.tab-panel').forEach((panel, i) => panel.classList.toggle('hidden-tab', i !== index));
+    document.querySelectorAll('.nav-btn').forEach((btn, i) => btn.classList.toggle('active', i === index));
+    if (index === 2) {
+      renderChatPanel();
+      if (state.wallet && state.operative?.tokenId) loadChatHistory();
+      if (state.wallet && state.operative?.tokenId) loadFieldReport();
+    }
+  }
+  window.switchTab = switchTab;
+
+  function supabaseHeaders() {
+    return SUPABASE_URL && SUPABASE_KEY ? {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    } : null;
+  }
+
+  async function supabaseSelect(table, query) {
+    if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+    const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${encodeURIComponent(table)}?${query}`;
+    const res = await fetch(url, { headers: supabaseHeaders(), cache: 'no-store' });
+    if (!res.ok) throw new Error(`Supabase select failed: ${res.status}`);
+    return await res.json();
+  }
+
+  async function supabaseUpsert(table, row, onConflict = 'cache_key') {
+    if (!SUPABASE_URL || !SUPABASE_KEY) return false;
+    const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${encodeURIComponent(table)}?on_conflict=${encodeURIComponent(onConflict)}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        ...supabaseHeaders(),
+        Prefer: 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify(row)
+    });
+    if (!res.ok && res.status !== 204) throw new Error(`Supabase upsert failed: ${res.status}`);
+    return true;
+  }
+
+  async function fetchRpc(url, body) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(body),
+      cache: 'no-store'
+    });
+    if (!res.ok) throw new Error(`XRPL HTTP ${res.status}`);
+    return await res.json();
+  }
+
+  async function fetchXrplNftsByWallet(wallet) {
+    let lastError = null;
+    for (const rpcUrl of XRPL_RPC_URLS) {
+      try {
+        const payload = await fetchRpc(rpcUrl, getRpcBody('account_nfts', { account: wallet, ledger_index: 'validated', limit: 400 }));
+        const records = payload?.result?.account_nfts || payload?.result?.nfts || [];
+        if (Array.isArray(records) && records.length) return records;
+      } catch (err) { lastError = err; }
+    }
+    throw lastError || new Error('Unable to load NFTs');
+  }
+
+  async function fetchMetadata(tokenUri) {
+    const raw = tokenUri || '';
+    if (!raw) return null;
+    const parsed = maybeJson(raw);
+    if (parsed) return parsed;
+    const gateway = resolveIpfsGateway(raw);
+    if (!gateway) return null;
+    try {
+      const res = await fetch(gateway, { cache: 'no-store' });
+      if (!res.ok) return null;
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('json')) return await res.json();
+      const text = await res.text();
+      const maybe = maybeJson(text);
+      if (maybe) return maybe;
+      return { image: text, description: text };
+    } catch {
+      return null;
+    }
+  }
+
+  async function loadNfts() {
+    if (!state.wallet) return [];
+    state.loadingNfts = true;
+    renderCommandState('Scanning XRPL for operative NFTs…');
+    const grid = document.getElementById('nft-grid');
+    if (grid) grid.innerHTML = '<div class="col-span-full rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-5 text-center text-sm text-[#00ffc8]/60">Loading token roster…</div>';
+    try {
+      const rawNfts = await fetchXrplNftsByWallet(state.wallet);
+      const filtered = rawNfts.filter(isStrictMatch).sort((a, b) => getNftSerial(a) - getNftSerial(b));
+      state.nfts = filtered.map((nft) => ({ nft, metadata: null, tokenId: getNftId(nft), selected: false }));
+      const metaPromises = state.nfts.map(async (entry) => {
+        const uri = getTokenUri(entry.nft);
+        const metadata = await fetchMetadata(uri);
+        entry.metadata = metadata;
+        return entry;
+      });
+      await Promise.all(metaPromises);
+
+      const saved = getStoredJSON(stateKey(), {});
+      state.selectedTokenId = saved.selectedTokenId || state.selectedTokenId || (state.nfts[0]?.tokenId || '');
+      state.fusedTokenId = saved.fusedTokenId || state.fusedTokenId || '';
+      if (!state.fusedTokenId && state.selectedTokenId && state.wallet) {
+        const fused = getStoredJSON(`${CACHE_PREFIX}:fused:${state.wallet}`, null);
+        if (fused?.tokenId) state.fusedTokenId = fused.tokenId;
+      }
+      const selectedEntry = state.nfts.find((x) => x.tokenId === state.selectedTokenId) || state.nfts[0] || null;
+      if (selectedEntry) await setSelectedToken(selectedEntry.tokenId, false);
+      renderNftGrid();
+      renderFeatureCard();
+      renderChatPanels();
+      renderCommandState(filtered.length ? `Loaded ${filtered.length} matching operative NFTs.` : `No NFTs matched the strict issuer/taxon filter.`);
+      return filtered;
+    } catch (e) {
+      console.error(e);
+      renderCommandState('NFT scan failed. Check XRPL connectivity.');
+      if (grid) grid.innerHTML = '<div class="col-span-full rounded-[24px] border border-red-400/30 bg-black/35 p-5 text-center text-sm text-red-300">Could not load NFTs.</div>';
+      return [];
+    } finally {
+      state.loadingNfts = false;
+    }
+  }
+
+  function renderNftGrid() {
+    const grid = document.getElementById('nft-grid');
+    if (!grid) return;
+    if (!state.wallet) {
+      grid.innerHTML = '<div class="col-span-full rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-5 text-center text-sm text-[#00ffc8]/60">Connect a wallet to scan NFT inventory.</div>';
+      return;
+    }
+    if (!state.nfts.length) {
+      grid.innerHTML = '<div class="col-span-full rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-5 text-center text-sm text-[#00ffc8]/60">No matching NFTs found for the strict issuer/taxon filter.</div>';
+      return;
     }
 
-    function hexToString(value) {
-        return hexToUtf8(value);
+    grid.innerHTML = state.nfts.map((entry, index) => {
+      const meta = entry.metadata || {};
+      const tokenId = entry.tokenId;
+      const name = meta.name || meta.title || `Operative ${index + 1}`;
+      const faction = meta.faction || meta.collection?.name || 'Collective';
+      const traits = normalizeTraits(meta.attributes || meta.traits || meta.properties).slice(0, 3);
+      const img = resolveNftImage(meta) || resolveNftImage(entry.nft) || '';
+      const active = tokenId === state.selectedTokenId;
+      return `
+        <button class="text-left rounded-[24px] overflow-hidden border ${active ? 'border-[#00ffc8] shadow-[0_0_0_1px_rgba(0,255,200,0.22),0_0_26px_rgba(0,255,200,0.14)]' : 'border-[#00ffc8]/15'} bg-black/35 transition-transform hover:-translate-y-1" data-token-id="${escapeHtml(tokenId)}" onclick="selectNft('${escapeHtml(tokenId)}')">
+          <div class="bg-black/45">
+            ${img ? `<img src="${escapeHtml(img)}" class="nft-thumb w-full" alt="${escapeHtml(name)}" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden')" />` : ''}
+            <div class="hidden grid place-items-center h-[280px] text-[#00ffc8]/55 text-sm">NO IMAGE RELAY</div>
+          </div>
+          <div class="p-4 sm:p-5">
+            <div class="orbitron text-lg font-bold text-[#effffb]">${escapeHtml(name)}</div>
+            <div class="mt-2 text-xs uppercase tracking-[0.35em] text-[#00ffc8]/55">${escapeHtml(faction)}</div>
+            <div class="mt-3 space-y-2 text-[11px] text-[#d7fff7]/76">
+              ${traits.length ? traits.map((t) => `<div class="rounded-xl border border-[#00ffc8]/12 bg-black/20 px-3 py-2">${escapeHtml(t)}</div>`).join('') : '<div class="rounded-xl border border-[#00ffc8]/12 bg-black/20 px-3 py-2">Traits not surfaced.</div>'}
+            </div>
+          </div>
+        </button>
+      `;
+    }).join('');
+  }
+
+  function renderFeatureCard() {
+    const img = document.getElementById('featured-bro-image');
+    const placeholder = document.getElementById('featured-bro-placeholder');
+    const backstory = document.getElementById('featured-bro-backstory');
+    const consoleName = document.getElementById('console-operative-name');
+    if (!state.nfts.length) {
+      if (placeholder) {
+        placeholder.textContent = state.wallet ? 'NO MATCHING BROS DETECTED' : 'CONNECT WALLET TO LOAD BRO OF THE DAY';
+        placeholder.classList.remove('hidden');
+      }
+      if (img) img.classList.add('hidden');
+      if (backstory) backstory.textContent = 'The alien console is waiting for a fused operative. Connect a wallet, then select a matching NFT to populate the command frame.';
+      if (consoleName) consoleName.textContent = 'No operative fused';
+      renderOperativeMeta();
+      return;
     }
 
-    function getIPFSUrl(value, fallback = '') {
-        const raw = typeof value === 'string' ? value.trim() : '';
-        if (!raw) return fallback;
-
-        const encodePath = (path) => path.split('/').map((segment) => encodeURIComponent(segment)).join('/');
-
-        if (raw.startsWith('ipfs://')) {
-            const path = raw.slice(7).replace(/^ipfs\//, '');
-            return 'https://ipfs.io/ipfs/' + encodePath(path);
+    const dailyBroId = getDailyBroId();
+    const entry = state.nfts[(dailyBroId - 1) % state.nfts.length] || state.nfts[0];
+    const fusedEntry = state.fusedTokenId ? state.nfts.find((x) => x.tokenId === state.fusedTokenId) : null;
+    const displayEntry = fusedEntry || entry;
+    const displayOperative = buildOperativeFromMetadata(displayEntry.nft, displayEntry.metadata || {});
+    if (state.fusedTokenId && fusedEntry) {
+      state.operative = displayOperative;
+    } else {
+      state.operative = null;
+    }
+    if (img) {
+      const resolved = resolveNftImage(displayOperative.metadata || displayOperative.raw || displayEntry.nft) || resolveNftImage(displayEntry.metadata || displayEntry.nft);
+      if (resolved) {
+        img.src = resolved;
+        img.classList.remove('hidden');
+        if (placeholder) placeholder.classList.add('hidden');
+      } else {
+        img.classList.add('hidden');
+        if (placeholder) {
+          placeholder.classList.remove('hidden');
+          placeholder.textContent = 'BRO IMAGE UNAVAILABLE';
         }
+      }
+    }
+    if (backstory) backstory.textContent = displayOperative.backstory;
+    renderOperativeMeta();
+    renderConsole();
+  }
 
-        if (raw.startsWith('ipns://')) {
-            const path = raw.slice(7).replace(/^ipns\//, '');
-            return 'https://ipfs.io/ipns/' + encodePath(path);
-        }
+  function renderChatPanel() {
+    const panel = document.getElementById('chat-panel');
+    const fusion = document.getElementById('fusion-panel');
+    if (!panel || !fusion) return;
+    const operative = state.operative;
+    const isFused = Boolean(state.fusedTokenId && operative);
 
-        if (/^https?:\/\//i.test(raw) || raw.startsWith('data:image/')) {
-            return raw;
-        }
-
-        if (raw.startsWith('Qm') || raw.startsWith('bafy')) {
-            return 'https://ipfs.io/ipfs/' + encodePath(raw);
-        }
-
-        return fallback;
+    if (!state.wallet) {
+      fusion.innerHTML = `
+        <div class="space-y-4">
+          <div class="orbitron text-xl font-bold text-[#f5fffd]">Fuse the operative stack</div>
+          <div class="text-sm leading-7 text-[#d7fff7]/78">Connect Xaman, select a matching NFT, and click Fuse to convert that token into the operative identity.</div>
+          <div class="grid gap-3 sm:grid-cols-2 mt-4">
+            <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-4">
+              <div class="text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">Wallet State</div>
+              <div class="mt-2 text-sm text-[#d8fff8]/78">Disconnected</div>
+            </div>
+            <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-4">
+              <div class="text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">Operative State</div>
+              <div class="mt-2 text-sm text-[#d8fff8]/78">Locked</div>
+            </div>
+          </div>
+          <button class="button-aura mt-2 rounded-2xl px-5 py-4 text-sm uppercase tracking-[0.35em]" onclick="connectXaman()">Connect Xaman</button>
+        </div>
+      `;
+      panel.classList.add('hidden-tab');
+      return;
     }
 
-    function getNftSerial(nft) {
-        const raw = nft?.nft_serial ?? nft?.serial ?? nft?.NFTokenSerial ?? nft?.NFTokenSequence;
-        const numeric = Number(raw);
-        return Number.isFinite(numeric) ? numeric : Number.MAX_SAFE_INTEGER;
+    if (!isFused) {
+      fusion.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <div class="orbitron text-xl font-bold text-[#f5fffd]">Fusion / Buy Protocol</div>
+              <div class="mt-2 text-sm leading-7 text-[#d7fff7]/78">Select a token above and fuse it to unlock the in-world communications terminal.</div>
+            </div>
+            <div class="alien-chip rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.35em]">Token-gated</div>
+          </div>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-4">
+              <div class="text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">Selected Token</div>
+              <div class="mt-2 break-all text-sm text-[#d8fff8]/82">${escapeHtml(state.selectedTokenId || 'None selected')}</div>
+            </div>
+            <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-4">
+              <div class="text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">Operative Token</div>
+              <div class="mt-2 break-all text-sm text-[#d8fff8]/82">${escapeHtml(state.fusedTokenId || 'Not fused')}</div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-3 sm:flex-row">
+            <button class="button-aura rounded-2xl px-5 py-4 text-sm uppercase tracking-[0.35em]" onclick="fuseSelectedNft()">Fuse Selected NFT</button>
+            <a class="button-aura rounded-2xl px-5 py-4 text-sm uppercase tracking-[0.35em] text-center" href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" rel="noreferrer">Buy a Bro</a>
+          </div>
+        </div>
+      `;
+      panel.classList.remove('hidden-tab');
+      renderChatDisabled(panel);
+      return;
     }
 
-    function getNftTokenId(nft) {
-        return String(nft?.nft_id || nft?.nftoken_id || nft?.NFTokenID || nft?.id || '').trim();
+    fusion.innerHTML = `
+      <div class="space-y-4">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <div class="orbitron text-xl font-bold text-[#f5fffd]">Operative online</div>
+            <div class="mt-2 text-sm leading-7 text-[#d7fff7]/78">${escapeHtml(operative.name)} • ${escapeHtml(operative.faction)} • token ${escapeHtml(operative.tokenId)}</div>
+          </div>
+          <div class="alien-chip rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.35em]">Fused</div>
+        </div>
+        <div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 sm:p-5">
+          <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Traits</div>
+          <div class="mt-3 grid gap-2 sm:grid-cols-2">
+            ${(operative.traits.length ? operative.traits : ['No trait payload']).slice(0, 8).map((t) => `<div class="rounded-xl border border-[#00ffc8]/12 bg-black/25 px-3 py-2 text-sm">${escapeHtml(t)}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+    panel.classList.remove('hidden-tab');
+
+    panel.innerHTML = `
+      <div class="grid gap-5 xl:grid-cols-[0.9fr,1.1fr]">
+        <div class="rounded-[26px] border border-[#00ffc8]/15 bg-black/35 p-4 sm:p-5">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Comms Terminal</div>
+              <div class="mt-2 orbitron text-xl font-bold">In-world chat</div>
+            </div>
+            <div class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em]">Session bound</div>
+          </div>
+          <div id="chat-history" class="scrollbar-thin mt-4 h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
+          <div class="mt-4 flex gap-3">
+            <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
+            <button class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]" onclick="sendChatMessage()">Send</button>
+          </div>
+        </div>
+        <div class="space-y-5">
+          <div class="rounded-[26px] border border-[#00ffc8]/15 bg-black/35 p-4 sm:p-5">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Daily Intelligence Briefing</div>
+                <div class="mt-2 orbitron text-xl font-bold">Cached per day per token</div>
+              </div>
+              <button class="button-aura rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]" onclick="loadFieldReport(true)">Refresh</button>
+            </div>
+            <div id="field-report-comms" class="mt-4 rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm sm:text-base leading-7 text-[#dffef8]/85 min-h-[220px]"></div>
+          </div>
+          <div class="rounded-[26px] border border-[#00ffc8]/15 bg-black/35 p-4 sm:p-5">
+            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Fusion state</div>
+            <div class="mt-3 grid gap-3 sm:grid-cols-2 text-sm text-[#d7fff7]/80">
+              <div class="rounded-xl border border-[#00ffc8]/12 bg-black/25 px-3 py-2">Wallet: ${escapeHtml(shortAddress(state.wallet))}</div>
+              <div class="rounded-xl border border-[#00ffc8]/12 bg-black/25 px-3 py-2">Operative: ${escapeHtml(operative.name)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    loadChatHistory();
+    loadFieldReport();
+  }
+
+  function renderChatDisabled(target) {
+    const panel = target || document.getElementById('chat-panel');
+    if (!panel) return;
+    panel.innerHTML = '<div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm leading-7 text-[#d7fff7]/78">Fuse an NFT to unlock the in-world comms terminal.</div>';
+  }
+
+  async function loadFieldReport(force = false) {
+    const slot = document.getElementById('field-report');
+    const commsSlot = document.getElementById('field-report-comms');
+    const target = slot || commsSlot;
+    const dayEl = document.getElementById('report-day');
+    if (!target || !state.wallet || !state.operative?.tokenId) {
+      if (target) target.innerHTML = '<div class="text-[#00ffc8]/60">Select and fuse an operative to generate the intelligence briefing.</div>';
+      return;
     }
-
-    function getNftTokenUri(nft) {
-        return decodeTokenUri(nft?.URI || nft?.Uri || nft?.uri || '');
+    const key = dayTokenKey(state.operative.tokenId);
+    const dateKey = todayKey();
+    if (dayEl) dayEl.textContent = `Day key ${dateKey} • token ${state.operative.tokenId}`;
+    const local = getStoredJSON(key, null);
+    if (!force && local?.report) {
+      state.report = local.report;
+      target.innerHTML = `<div class="space-y-3"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Cached intelligence</div><div>${escapeHtml(local.report).replace(/\n/g, '<br>')}</div></div>`;
+      return;
     }
-
-    function getNftIssuer(nft) {
-        return String(nft?.Issuer || nft?.issuer || nft?.Owner || nft?.owner || nft?.account || '').trim();
-    }
-
-    function getNftTaxon(nft) {
-        const raw = nft?.NFTokenTaxon ?? nft?.nft_taxon ?? nft?.NFTTokenTaxon ?? nft?.NFTTaxon ?? nft?.taxon;
-        const numeric = Number(raw);
-        return Number.isFinite(numeric) ? numeric : NaN;
-    }
-
-    function isStrictMatch(nft) {
-        return getNftIssuer(nft) === STRICT_ISSUER && getNftTaxon(nft) === Number(STRICT_TAXON);
-    }
-
-    async function fetchXrplNftsByIssuer() {
-        let lastError = null;
-        const requests = [
-            {
-                method: 'nfts_by_issuer',
-                params: [{
-                    issuer: STRICT_ISSUER,
-                    taxon: Number(STRICT_TAXON),
-                    ledger_index: 'validated',
-                    limit: 400
-                }]
-            },
-            {
-                method: 'account_nfts',
-                params: [{
-                    account: STRICT_ISSUER,
-                    ledger_index: 'validated',
-                    limit: 400
-                }]
-            }
-        ];
-
-        for (const rpcUrl of XRPL_RPC_URLS) {
-            for (const body of requests) {
-                try {
-                    const response = await fetch(rpcUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Accept: 'application/json',
-                            'User-Agent': 'gross-bros-daily-loader'
-                        },
-                        body: JSON.stringify(body),
-                        cache: 'no-store'
-                    });
-
-                    if (!response.ok) {
-                        lastError = new Error('XRPL RPC HTTP ' + response.status);
-                        continue;
-                    }
-
-                    const payload = await response.json().catch(() => null);
-                    const result = payload?.result || payload || null;
-                    const records = Array.isArray(result?.nfts) ? result.nfts : Array.isArray(result?.account_nfts) ? result.account_nfts : [];
-                    const filtered = records.filter((entry) => {
-                        const issuer = String(entry.Issuer || entry.issuer || '').trim();
-                        const taxon = Number(entry.NFTokenTaxon ?? entry.nft_taxon ?? entry.taxon);
-                        return issuer === STRICT_ISSUER && Number.isFinite(taxon) && taxon === Number(STRICT_TAXON);
-                    }).sort((a, b) => getNftSerial(a) - getNftSerial(b) || getNftTokenId(a).localeCompare(getNftTokenId(b)));
-
-                    if (filtered.length) return filtered;
-                } catch (error) {
-                    lastError = error;
-                }
-            }
-        }
-
-        throw lastError || new Error('Unable to load XRPL NFTs.');
-    }
-
-    async function fetchMetadataFromTokenUri(tokenUri) {
-        const inlineMetadata = parseMaybeJson(tokenUri);
-        if (inlineMetadata) return inlineMetadata;
-
-        const metadataUrl = getIPFSUrl(tokenUri);
-        if (!metadataUrl) return null;
-
-        try {
-            const response = await fetch(metadataUrl, { cache: 'no-store' });
-            if (!response.ok) return null;
-
-            const contentType = response.headers.get('content-type') || '';
-            if (contentType.includes('json')) {
-                const json = await response.json().catch(() => null);
-                return json && typeof json === 'object' ? json : null;
-            }
-
-            const text = await response.text().catch(() => '');
-            const parsed = parseMaybeJson(text);
-            if (parsed) return parsed;
-
-            const inlineImage = getIPFSUrl(text, '');
-            if (inlineImage) return { image: inlineImage };
-        } catch (error) {
-            console.warn('Unable to load daily bro metadata', error);
-        }
-
-        return null;
-    }
-
-    async function loadDailyBro() {
-        const target = document.getElementById('bro-of-the-day');
-        const imageEl = document.getElementById('daily-bro-image');
-        const placeholderEl = document.getElementById('daily-bro-placeholder');
-        const nameEl = document.getElementById('daily-bro-name');
-        const descriptionEl = document.getElementById('daily-bro-description');
-        const issuerEl = document.getElementById('daily-bro-issuer');
-        const tokenIdEl = document.getElementById('daily-bro-tokenid');
-        const linkEl = document.getElementById('daily-bro-link');
-        if (!target) return;
-
-        if (placeholderEl) placeholderEl.textContent = 'Loading BRO OF THE DAY…';
-        if (nameEl) nameEl.textContent = 'XRPL BRO READY';
-        if (descriptionEl) descriptionEl.textContent = 'Fetching live TokenURI and metadata from the Ledger…';
-        if (issuerEl) issuerEl.textContent = 'PENDING';
-        if (tokenIdEl) tokenIdEl.textContent = 'PENDING';
-        if (linkEl) linkEl.href = 'https://xrp.cafe/collection/galactic-gross-bros';
-        if (imageEl) {
-            imageEl.src = '';
-            imageEl.classList.add('hidden');
-        }
-
-        try {
-            const records = await fetchXrplNftsByIssuer();
-            if (!records.length) throw new Error('No Gross Bros returned from XRPL.');
-
-            const dailyBroId = getDailyBroId();
-            const selected = records[(dailyBroId - 1) % records.length] || records[0];
-            const tokenUri = getNftTokenUri(selected);
-            const metadata = await fetchMetadataFromTokenUri(tokenUri);
-            const image = resolveNftImage(selected) || getIPFSUrl(findDeepString(metadata, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || '') || getIPFSUrl(tokenUri) || '';
-            const name = findDeepString(metadata, ['name', 'title']) || selected.name || 'Gross Bro #' + (getNftSerial(selected) === Number.MAX_SAFE_INTEGER ? '—' : getNftSerial(selected));
-            const tokenId = getNftTokenId(selected);
-            const browseUrl = tokenId ? 'https://xrp.cafe/nft/' + tokenId : 'https://xrp.cafe/collection/galactic-gross-bros';
-            const backstory = hexToString(BACKSTORIES[dailyBroId] || BACKSTORIES.default || '');
-
-            if (nameEl) nameEl.textContent = name;
-            if (descriptionEl) descriptionEl.textContent = backstory;
-            if (issuerEl) issuerEl.textContent = STRICT_ISSUER;
-            if (tokenIdEl) tokenIdEl.textContent = tokenId || 'UNAVAILABLE';
-            if (linkEl) linkEl.href = browseUrl;
-
-            if (imageEl && image) {
-                imageEl.src = image;
-                imageEl.onload = () => imageEl.classList.remove('hidden');
-                imageEl.onerror = () => {
-                    imageEl.classList.add('hidden');
-                    if (placeholderEl) placeholderEl.textContent = 'IMAGE RELAY FAILED';
-                };
-            } else if (placeholderEl) {
-                placeholderEl.textContent = 'IMAGE RELAY FAILED';
-            }
-
-            if (placeholderEl && image) {
-                placeholderEl.textContent = '';
-            }
-        } catch (error) {
-            console.warn('Unable to load Bro of the Day', error);
-            if (placeholderEl) placeholderEl.textContent = 'BRO OF THE DAY UNAVAILABLE';
-        }
-    }
-
-    function setWalletUI(connected, address = '') {
-        currentWalletAddress = address;
-        const isConnected = connected && address;
-
-        document.getElementById('wallet-text').textContent = isConnected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
-        document.getElementById('xaman-status').textContent = isConnected ? 'Connected: ' + shortenAddress(address) : 'Wallet disconnected.';
-
-        const monitor = document.getElementById('main-monitor');
-        if (isConnected) monitor.classList.add('connected-glow');
-        else monitor.classList.remove('connected-glow');
-
-        document.getElementById('xrp-amount').textContent = isConnected ? 'CONNECTED BRO: ' + shortenAddress(address) : '';
-
-        if (isConnected && document.getElementById('content-2').classList.contains('active')) {
-            loadNFTs();
-        }
-    }
-
-    function switchTab(n) {
-        document.querySelectorAll('.tab-content').forEach(function (el) { el.classList.remove('active'); });
-        document.getElementById('content-' + n).classList.add('active');
-        document.querySelectorAll('.tab').forEach(function (t, i) { t.classList.toggle('tab-active', i === n); });
-
-        if (n === 2) loadNFTs();
-    }
-
-    async function connectXaman() {
-        try {
-            document.getElementById('wallet-text').textContent = 'CONNECTING...';
-
-            const res = await fetch('/api/xaman?action=create-payload', { method: 'POST' });
-            const payload = await res.json();
-
-            if (payload.next && payload.next.always) window.open(payload.next.always, '_blank');
-
-            let attempts = 0;
-            const interval = setInterval(async function () {
-                attempts++;
-                if (attempts > 35) {
-                    clearInterval(interval);
-                    setWalletUI(false);
-                    return;
-                }
-
-                const check = await fetch('/api/xaman?action=check-payload&uuid=' + payload.uuid);
-                const status = await check.json();
-
-                if (status.meta && status.meta.signed || status.signed) {
-                    clearInterval(interval);
-                    const address = (status.response && status.response.account) || status.account;
-                    if (address) {
-                        localStorage.setItem('grossbros:xaman-session', JSON.stringify({ connected: true, address: address }));
-                        setWalletUI(true, address);
-                        alert('✅ Wallet Connected Successfully!');
-                    }
-                } else if (status.meta && status.meta.expired) {
-                    clearInterval(interval);
-                    setWalletUI(false);
-                }
-            }, 2500);
-        } catch (e) {
-            console.error(e);
-            alert('Connection failed');
-            setWalletUI(false);
-        }
-    }
-
-    async function loadNFTs() {
-        const grid = document.getElementById('nft-grid');
-        const summary = document.getElementById('nft-summary');
-        const walletAddress = String(currentWalletAddress || '').trim();
-        grid.innerHTML = '<p class="col-span-full text-center py-8">Loading matching Gross Bros NFTs...</p>';
-
-        if (!walletAddress) {
-            grid.innerHTML = '<p class="col-span-full text-center py-8 text-yellow-400">Please connect your wallet first.</p>';
-            if (summary) summary.textContent = 'Connect a wallet to load matching NFTs.';
-            return;
-        }
-
-        try {
-            const response = await fetch('https://xrplcluster.com/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    method: 'account_nfts',
-                    params: [{
-                        account: walletAddress,
-                        ledger_index: 'validated',
-                        limit: 200
-                    }]
-                })
-            });
-
-            const data = await response.json().catch(() => null);
-            const rawNfts = Array.isArray(data?.result?.account_nfts) ? data.result.account_nfts : [];
-            const filtered = rawNfts.filter(isStrictMatch);
-
-            if (summary) {
-                summary.textContent = filtered.length
-                    ? 'Showing ' + filtered.length + ' matching NFTs for issuer ' + STRICT_ISSUER + ' and taxon ' + STRICT_TAXON + '.'
-                    : 'No matching NFTs found for issuer ' + STRICT_ISSUER + ' and taxon ' + STRICT_TAXON + '.';
-            }
-
-            grid.innerHTML = '';
-
-            if (filtered.length > 0) {
-                filtered.forEach(function (nft, index) {
-                    const tokenId = getNftTokenId(nft);
-                    const imageUrl = resolveNftImage(nft);
-                    if (index < 3 && typeof debugNFTURI === 'function') debugNFTURI(nft);
-                    const issuer = getNftIssuer(nft) || 'Unknown';
-                    const taxon = String(getNftTaxon(nft) || 'Unknown');
-                    const isSelected = selectedNFT === tokenId;
-
-                    const div = document.createElement('div');
-                    div.className = 'nft-card border ' + (isSelected ? 'border-[#00ffc8] bg-[#00ffc8]/10' : 'border-[#00ffc8]/20') + ' rounded-2xl p-3 cursor-pointer hover:border-[#00ffc8] transition-all overflow-hidden';
-                    div.innerHTML = '<div class="fallback-art rounded-xl overflow-hidden mb-3">' + '<img src="' + escapeHtml(imageUrl) + '" alt="NFT image" loading="lazy" onload="console.log(\'✅ NFT IMAGE LOADED\', this.src)" onerror="console.log(\'❌ NFT IMAGE FAILED\', this.src); this.src=\'https://via.placeholder.com/400x400/111111/00ffc8?text=ERROR\';" />' + '</div>' + '<div class="space-y-1">' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50">NFTokenID</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(tokenId || nft.NFTokenID || '') + '</p>' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Issuer</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(issuer) + '</p>' + '<p class="text-[10px] uppercase tracking-widest text-[#00ffc8]/50 mt-2">Taxon</p>' + '<p class="text-[10px] text-[#00ffc8]/80 break-all">' + escapeHtml(taxon) + '</p>' + '</div>';
-                    div.onclick = function () {
-                        selectedNFT = tokenId;
-                        loadNFTs();
-                    };
-                    grid.appendChild(div);
-                });
-            } else {
-                grid.innerHTML = '<p class="col-span-full text-center py-8 text-[#00ffc8]/60">No NFTs match the strict filter.</p>';
-            }
-        } catch (e) {
-            console.error(e);
-            grid.innerHTML = '<p class="col-span-full text-center py-8 text-red-400">Could not load NFTs. Check connection.</p>';
-            if (summary) summary.textContent = 'Unable to load NFTs right now.';
-        }
-    }
-
-    async function initiateFusion() {
-        if (!currentWalletAddress) {
-            alert('Please connect your Xaman wallet first.');
-            connectXaman();
-            return;
-        }
-
-        if (currentWalletAddress === 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY') {
-            alert('✅ Fusion Complete (Whitelist Access - No payment required)');
-            return;
-        }
-
-        try {
-            const res = await fetch('/api/xaman?action=create-payload', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    txjson: {
-                        TransactionType: 'Payment',
-                        Destination: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
-                        Amount: '50000000'
-                    }
-                })
-            });
-            const payload = await res.json();
-            if (payload.next && payload.next.always) window.open(payload.next.always, '_blank');
-            alert('Fusion payload sent. Approve the 50 XRP payment in Xaman.');
-        } catch (e) {
-            alert('Unable to create the fusion payload');
-        }
-    }
-
-    window.onload = function () {
-        switchTab(0);
-        updateWarningTicker();
-        void loadDailyBro();
-        setInterval(updateWarningTicker, 60000);
-        const saved = localStorage.getItem('grossbros:xaman-session');
-        if (saved) {
-            try {
-                const s = JSON.parse(saved);
-                if (s.connected && s.address) setWalletUI(true, s.address);
-            } catch (e) {}
-        }
+    state.loadingReport = true;
+    target.innerHTML = '<div class="text-[#00ffc8]/60">Compiling intelligence briefing…</div>';
+    const report = generateFieldReport(state.operative, dateKey);
+    state.report = report;
+    const row = {
+      cache_key: key,
+      wallet_address: state.wallet,
+      token_id: state.operative.tokenId,
+      day_key: dateKey,
+      report_text: report,
+      operative_name: state.operative.name,
+      metadata: JSON.stringify({ name: state.operative.name, faction: state.operative.faction, traits: state.operative.traits })
     };
+    setStoredJSON(key, { report, updated_at: new Date().toISOString() });
+    await supabaseUpsert(REPORT_TABLE, row).catch(() => null);
+    target.innerHTML = `<div class="space-y-3"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Briefing ${dateKey}</div><div>${escapeHtml(report).replace(/\n/g, '<br>')}</div></div>`;
+    renderPersistenceStatus(SUPABASE_URL ? 'Supabase write attempted for report cache.' : 'Local cache only; Supabase not configured.');
+    state.loadingReport = false;
+  }
+
+  function generateFieldReport(operative, dateKey) {
+    const traitLine = operative.traits.slice(0, 4).join(' • ') || 'No surfaced traits';
+    const seed = `${operative.tokenId}|${operative.name}|${operative.faction}|${dateKey}`;
+    const lines = [
+      `${dateKey} intelligence briefing for ${operative.name}.`,
+      `Faction signature: ${operative.faction}.`,
+      `Trait lens: ${traitLine}.`,
+      `The operative remains tethered to the Gross Bros terminal with a ${chooseText(['calm', 'focused', 'hard-edged', 'signal-clean'], seed, 'calm')} posture, reading the grid for fractures before they become events.`,
+      `Today’s report indicates ${chooseText(['a narrow breach near the relay core', 'steady chat activity and a reinforced perimeter', 'a low-contrast threat pattern beneath the primary route', 'clean fusion alignment and strong terminal discipline'], seed, 'stable conditions')}.`,
+      `Recommendation: keep the channel warm, the operative fused, and the intel cache pinned to the wallet + token identity.`
+    ];
+    return lines.join(' ');
+  }
+
+  async function loadChatHistory() {
+    const panel = document.getElementById('chat-history');
+    if (!panel || !state.wallet || !state.operative?.tokenId) return;
+    const key = chatKey(state.operative.tokenId);
+    let history = getStoredJSON(key, []);
+    if (!Array.isArray(history)) history = [];
+    if (SUPABASE_URL && SUPABASE_KEY) {
+      try {
+        const query = `select=*&wallet_address=eq.${encodeURIComponent(state.wallet)}&token_id=eq.${encodeURIComponent(state.operative.tokenId)}&order=created_at.asc&limit=50`;
+        const rows = await supabaseSelect(CHAT_TABLE, query);
+        if (Array.isArray(rows) && rows.length) history = rows.map((row) => ({ role: row.role || 'system', message: row.message || row.content || '', created_at: row.created_at || new Date().toISOString() }));
+      } catch {}
+    }
+    state.chatHistory = history;
+    panel.innerHTML = history.length ? history.map(renderChatRow).join('') : '<div class="rounded-[18px] border border-[#00ffc8]/12 bg-black/20 p-3 text-sm text-[#00ffc8]/60">No comms yet. Send a directive to initialize the chat log.</div>';
+  }
+
+  function renderChatRow(row) {
+    const isUser = row.role === 'user';
+    const cls = isUser ? 'chat-bubble-user' : 'chat-bubble-system';
+    const label = isUser ? 'YOU' : (row.role || 'SYSTEM').toUpperCase();
+    return `<div class="${cls} rounded-[18px] p-3 text-sm leading-7"><div class="mb-2 text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">${escapeHtml(label)}</div><div>${escapeHtml(row.message || row.content || '')}</div></div>`;
+  }
+
+  async function persistChatMessage(message, role = 'user') {
+    const entry = {
+      cache_key: `${chatKey(state.operative.tokenId)}:${Date.now()}:${role}`,
+      wallet_address: state.wallet,
+      token_id: state.operative.tokenId,
+      role,
+      message,
+      created_at: new Date().toISOString(),
+      operative_name: state.operative.name,
+      metadata: JSON.stringify({ name: state.operative.name, faction: state.operative.faction })
+    };
+    state.chatHistory.push({ role, message, created_at: entry.created_at });
+    setStoredJSON(chatKey(state.operative.tokenId), state.chatHistory);
+    if (SUPABASE_URL && SUPABASE_KEY) {
+      await supabaseUpsert(CHAT_TABLE, entry).catch(() => null);
+    }
+  }
+
+  async function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    if (!input || !state.operative?.tokenId) return;
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    await persistChatMessage(text, 'user');
+    const operativeReply = `${chooseText(CHAT_OPENERS, text + state.operative.tokenId, 'Directive acknowledged.') } ${state.operative.name} registers your command and keeps the terminal warm.`;
+    await persistChatMessage(operativeReply, 'system');
+    renderChatHistory();
+    renderCommandState('Comms terminal updated.');
+  }
+  window.sendChatMessage = sendChatMessage;
+
+  function renderChatHistory() {
+    const panel = document.getElementById('chat-history');
+    if (!panel) return;
+    panel.innerHTML = state.chatHistory.length ? state.chatHistory.map(renderChatRow).join('') : '<div class="rounded-[18px] border border-[#00ffc8]/12 bg-black/20 p-3 text-sm text-[#00ffc8]/60">No comms yet. Send a directive to initialize the chat log.</div>';
+    panel.scrollTop = panel.scrollHeight;
+  }
+
+  async function setSelectedToken(tokenId, persist = true) {
+    const found = state.nfts.find((entry) => entry.tokenId === tokenId);
+    if (!found) return;
+    state.selectedTokenId = tokenId;
+    if (persist) {
+      setStoredJSON(stateKey(), { selectedTokenId: tokenId, fusedTokenId: state.fusedTokenId || '', wallet: state.wallet });
+    }
+    renderNftGrid();
+    renderFeatureCard();
+    if (state.wallet && state.fusedTokenId === tokenId) {
+      state.operative = buildOperativeFromMetadata(found.nft, found.metadata || {});
+      renderChatPanels();
+    }
+  }
+  window.selectNft = setSelectedToken;
+
+  function updateTabsVisibility() {
+    document.querySelectorAll('.tab-panel').forEach((panel, i) => panel.classList.toggle('hidden-tab', i !== state.currentTab));
+    document.querySelectorAll('.nav-btn').forEach((btn, i) => btn.classList.toggle('active', i === state.currentTab));
+  }
+
+  async function connectXaman() {
+    const xaman = window.xaman || window.xrpl || window.Xaman || null;
+    try {
+      renderCommandState('Initiating Xaman handshake…');
+      const runtime = window;
+      const action = xaman?.connect || xaman?.authorize || xaman?.login || runtime.xaman?.connect || runtime.xaman?.authorize || runtime.xaman?.login;
+      if (!action) {
+        renderCommandState('Xaman SDK not injected at runtime.');
+        return;
+      }
+      const session = await action();
+      const address = session?.account || session?.address || session?.walletAddress || session?.result?.account || session?.result?.address || '';
+      if (!address) throw new Error('No wallet address returned');
+      state.wallet = address;
+      state.connected = true;
+      setStoredJSON(SESSION_KEY, { connected: true, wallet: address, at: new Date().toISOString() });
+      renderWalletPill();
+      renderCommandState(`Wallet connected: ${shortAddress(address)}.`);
+      await loadNfts();
+      if (state.currentTab === 2) renderChatPanels();
+      loadLeaderboard();
+    } catch (error) {
+      console.error(error);
+      renderCommandState('Xaman connection failed.');
+      state.connected = false;
+      renderWalletPill();
+    }
+  }
+  window.connectXaman = connectXaman;
+
+  function findLocalSession() {
+    const session = getStoredJSON(SESSION_KEY, null);
+    if (session?.connected && session?.wallet) {
+      state.wallet = session.wallet;
+      state.connected = true;
+    }
+    const saved = getStoredJSON(stateKey(), null);
+    if (saved) {
+      state.selectedTokenId = saved.selectedTokenId || '';
+      state.fusedTokenId = saved.fusedTokenId || '';
+    }
+  }
+
+  async function fuseSelectedNft() {
+    if (!state.wallet) {
+      renderCommandState('Connect a wallet first.');
+      return;
+    }
+    if (!state.selectedTokenId) {
+      renderCommandState('Select an NFT before fusion.');
+      return;
+    }
+    if (state.wallet === WHITELIST_WALLET) {
+      state.fusedTokenId = state.selectedTokenId;
+      const found = state.nfts.find((entry) => entry.tokenId === state.selectedTokenId);
+      if (found) state.operative = buildOperativeFromMetadata(found.nft, found.metadata || {});
+      setStoredJSON(stateKey(), { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId, wallet: state.wallet });
+      setStoredJSON(`${CACHE_PREFIX}:fused:${state.wallet}`, { tokenId: state.fusedTokenId, at: new Date().toISOString() });
+      renderCommandState('Whitelist bypass applied. Operative fused instantly.');
+      renderChatPanels();
+      renderFeatureCard();
+      return;
+    }
+
+    try {
+      renderCommandState('Preparing 50 XRP fusion payload…');
+      const res = await fetch('/api/xaman?action=create-payload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          txjson: {
+            TransactionType: 'Payment',
+            Destination: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
+            Amount: String(FUSION_XRP * 1000000)
+          }
+        })
+      });
+      const payload = await res.json();
+      if (payload?.next?.always) window.open(payload.next.always, '_blank');
+      const found = state.nfts.find((entry) => entry.tokenId === state.selectedTokenId);
+      state.fusedTokenId = state.selectedTokenId;
+      if (found) state.operative = buildOperativeFromMetadata(found.nft, found.metadata || {});
+      setStoredJSON(stateKey(), { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId, wallet: state.wallet });
+      setStoredJSON(`${CACHE_PREFIX}:fused:${state.wallet}`, { tokenId: state.fusedTokenId, at: new Date().toISOString() });
+      renderCommandState('Fusion payload created. Approve in Xaman.');
+      renderChatPanels();
+      renderFeatureCard();
+    } catch (error) {
+      console.error(error);
+      renderCommandState('Fusion payload failed to create.');
+    }
+  }
+  window.fuseSelectedNft = fuseSelectedNft;
+
+  async function loadLeaderboard() {
+    const body = document.getElementById('leaderboard-body');
+    if (!body) return;
+    try {
+      let rows = [];
+      if (SUPABASE_URL && SUPABASE_KEY) {
+        const query = `select=holder,points,chat_time,win_loss,losses,wins&order=points.desc&limit=10`;
+        const data = await supabaseSelect(STATS_TABLE, query).catch(() => null);
+        if (Array.isArray(data) && data.length) rows = data;
+      }
+      if (!rows.length) {
+        rows = Array.from({ length: 10 }, (_, i) => {
+          const rank = i + 1;
+          return {
+            holder: `Operative ${rank}`,
+            points: 1000 - (rank * 61),
+            chat_time: `${(rank * 7).toString().padStart(2, '0')}m`,
+            win_loss: `${Math.max(51, 92 - rank * 4)}%`,
+          };
+        });
+      }
+      state.leaderboard = rows;
+      body.innerHTML = rows.slice(0, 10).map((row, i) => {
+        const chatTime = row.chat_time || row.chatTime || row.chat_minutes || `${String((i + 1) * 6).padStart(2, '0')}m`;
+        const winLoss = row.win_loss || row.winLoss || row.win_loss_pct || `${Math.max(51, 90 - i * 3)}%`;
+        return `
+          <div class="grid grid-cols-[72px,1.4fr,110px,120px,120px] gap-2 px-4 py-4 text-sm sm:text-base items-center">
+            <div class="text-[#00ffc8]/70">#${i + 1}</div>
+            <div class="font-medium text-[#f1fffd]">${escapeHtml(row.holder || row.name || row.wallet || `Holder ${i + 1}`)}</div>
+            <div class="text-[#00ffc8]">${escapeHtml(row.points ?? 0)}</div>
+            <div class="text-[#d6fff7]/80">${escapeHtml(chatTime)}</div>
+            <div class="text-[#d6fff7]/80">${escapeHtml(winLoss)}</div>
+          </div>
+        `;
+      }).join('');
+    } catch (error) {
+      console.error(error);
+      body.innerHTML = '<div class="px-4 py-5 text-sm text-[#00ffc8]/60">Leaderboard data unavailable.</div>';
+    }
+  }
+
+  function renderReportSlot(force = false) {
+    if (state.currentTab !== 2) return;
+    const slot = document.getElementById('field-report') || document.getElementById('field-report-comms');
+    if (!slot) return;
+    if (!state.wallet || !state.operative?.tokenId) {
+      slot.innerHTML = '<div class="text-[#00ffc8]/60">Fuse an operative to generate the daily intelligence briefing.</div>';
+      return;
+    }
+    const cache = getStoredJSON(dayTokenKey(state.operative.tokenId), null);
+    if (!force && cache?.report) {
+      slot.innerHTML = `<div class="space-y-3"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Cached intelligence</div><div>${escapeHtml(cache.report).replace(/\n/g, '<br>')}</div></div>`;
+      return;
+    }
+    const report = generateFieldReport(state.operative, todayKey());
+    state.report = report;
+    slot.innerHTML = `<div class="space-y-3"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Briefing ${todayKey()}</div><div>${escapeHtml(report).replace(/\n/g, '<br>')}</div></div>`;
+    const row = {
+      cache_key: dayTokenKey(state.operative.tokenId),
+      wallet_address: state.wallet,
+      token_id: state.operative.tokenId,
+      day_key: todayKey(),
+      report_text: report,
+      operative_name: state.operative.name,
+      metadata: JSON.stringify({ name: state.operative.name, faction: state.operative.faction, traits: state.operative.traits })
+    };
+    setStoredJSON(dayTokenKey(state.operative.tokenId), { report, day_key: todayKey(), updated_at: new Date().toISOString() });
+    supabaseUpsert(REPORT_TABLE, row).catch(() => null);
+    renderPersistenceStatus(SUPABASE_URL ? 'Supabase report cache write attempted.' : 'Local report cache active.');
+    const dayEl = document.getElementById('report-day');
+    if (dayEl) dayEl.textContent = `Day ${todayKey()} • Token ${state.operative.tokenId}`;
+  }
+
+  function generateFieldReport(operative, dayKey) {
+    const traits = operative.traits.slice(0, 4).join(' • ') || 'No surfaced traits';
+    const seed = `${operative.tokenId}|${operative.name}|${dayKey}`;
+    const theme = chooseText([
+      'A corridor of green static and disciplined motion',
+      'A controlled breach in a mirrored command lattice',
+      'An echo field where signal and loyalty align',
+      'A silent watch over the relay core and its shards',
+      'A sharp-edged pattern of allegiance under pressure'
+    ], seed, 'a steady command signal');
+    return `${dayKey} intelligence briefing for ${operative.name}. Faction: ${operative.faction}. Trait stack: ${traits}. The operative scans the perimeter through ${theme}. The terminal records a stable fusion signature, a strong identity lock, and a daily doctrine of minimal exposure, maximum awareness, and immediate response if the grid shifts. Keep the channel green, maintain the fused token, and preserve the report cache keyed to wallet and tokenId.`;
+  }
+  window.loadFieldReport = loadFieldReport;
+
+  async function loadChatHistory() {
+    if (!state.wallet || !state.operative?.tokenId) return;
+    const key = chatKey(state.operative.tokenId);
+    let history = getStoredJSON(key, []);
+    if (!Array.isArray(history)) history = [];
+    if (SUPABASE_URL && SUPABASE_KEY) {
+      try {
+        const query = `select=role,message,created_at&wallet_address=eq.${encodeURIComponent(state.wallet)}&token_id=eq.${encodeURIComponent(state.operative.tokenId)}&order=created_at.asc&limit=100`;
+        const rows = await supabaseSelect(CHAT_TABLE, query);
+        if (Array.isArray(rows) && rows.length) history = rows.map((r) => ({ role: r.role || 'system', message: r.message || r.content || '', created_at: r.created_at || new Date().toISOString() }));
+      } catch {}
+    }
+    state.chatHistory = history;
+    renderChatHistory();
+    if (document.getElementById('chat-panel')) {
+      document.getElementById('chat-panel').classList.remove('hidden-tab');
+    }
+  }
+
+  function renderChatHistory() {
+    const panel = document.getElementById('chat-history');
+    if (!panel) return;
+    if (!state.chatHistory.length) {
+      panel.innerHTML = '<div class="rounded-[18px] border border-[#00ffc8]/12 bg-black/20 p-3 text-sm text-[#00ffc8]/60">No comms yet. Send a directive to initialize the chat log.</div>';
+      return;
+    }
+    panel.innerHTML = state.chatHistory.map((entry) => renderChatBubble(entry)).join('');
+    panel.scrollTop = panel.scrollHeight;
+  }
+
+  function renderChatBubble(entry) {
+    const bubbleClass = entry.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-system';
+    const label = entry.role === 'user' ? 'YOU' : (entry.role || 'SYSTEM').toUpperCase();
+    return `<div class="${bubbleClass} rounded-[18px] p-3"><div class="mb-2 text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">${escapeHtml(label)}</div><div class="text-sm leading-7">${escapeHtml(entry.message || entry.content || '')}</div></div>`;
+  }
+
+  async function persistChat(entry) {
+    state.chatHistory.push(entry);
+    setStoredJSON(chatKey(state.operative.tokenId), state.chatHistory);
+    if (SUPABASE_URL && SUPABASE_KEY) {
+      await supabaseUpsert(CHAT_TABLE, {
+        cache_key: `${chatKey(state.operative.tokenId)}:${Date.now()}:${entry.role}`,
+        wallet_address: state.wallet,
+        token_id: state.operative.tokenId,
+        role: entry.role,
+        message: entry.message,
+        operative_name: state.operative.name,
+        metadata: JSON.stringify({ name: state.operative.name, faction: state.operative.faction }),
+        created_at: entry.created_at || new Date().toISOString()
+      }).catch(() => null);
+    }
+  }
+
+  window.sendChatMessage = async function () {
+    const input = document.getElementById('chat-input');
+    if (!input || !state.operative?.tokenId) return;
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
+    const reply = `${chooseText(CHAT_OPENERS, text + state.operative.tokenId, 'Directive acknowledged.')} ${state.operative.name} holds the line.`;
+    await persistChat({ role: 'system', message: reply, created_at: new Date().toISOString() });
+    renderChatHistory();
+    renderCommandState('Chat terminal updated.');
+  };
+
+  function renderChatPanels() {
+    const title = document.getElementById('operative-title');
+    const subtitle = document.getElementById('operative-subtitle');
+    const badge = document.getElementById('operative-badge');
+    const status = document.getElementById('command-state');
+    const fusion = document.getElementById('fusion-panel');
+    const chat = document.getElementById('chat-panel');
+    if (state.wallet && state.operative?.tokenId) {
+      if (title) title.textContent = `${state.operative.name} online`;
+      if (subtitle) subtitle.textContent = `Identity driven by ${state.operative.faction}. Traits and reports are synced to the operative token.`;
+      if (badge) badge.textContent = 'Fused';
+      if (status) status.textContent = `Operative active: ${state.operative.name}`;
+      if (fusion) fusion.classList.add('hidden-tab');
+      if (chat) chat.classList.remove('hidden-tab');
+      renderChatHistory();
+      renderReportSlot();
+    } else {
+      if (title) title.textContent = 'Token-gated command required';
+      if (subtitle) subtitle.textContent = 'Connect a wallet, select an NFT, and fuse it into the operative stack.';
+      if (badge) badge.textContent = 'Locked';
+      if (status) status.textContent = 'Awaiting operative fusion.';
+      if (chat) chat.classList.add('hidden-tab');
+      if (fusion) fusion.classList.remove('hidden-tab');
+      renderChatDisabled(chat);
+      renderReportSlot();
+    }
+  }
+
+  window.loadLeaderboard = loadLeaderboard;
+
+  window.resolveNftImage = resolveNftImage;
+
+  window.debugNFTURI = function (nft) {
+    console.debug('NFT debug', nft?.NFTokenID || nft?.nft_id || nft);
+  };
+
+  async function hydrateSelectedAndFused() {
+    const saved = getStoredJSON(stateKey(), null);
+    if (saved?.selectedTokenId) state.selectedTokenId = saved.selectedTokenId;
+    if (saved?.fusedTokenId) state.fusedTokenId = saved.fusedTokenId;
+    const fused = getStoredJSON(`${CACHE_PREFIX}:fused:${state.wallet}`, null);
+    if (fused?.tokenId) state.fusedTokenId = fused.tokenId;
+  }
+
+  function updateReportDay() {
+    const el = document.getElementById('report-day');
+    if (el && state.operative?.tokenId) el.textContent = `Day ${todayKey()} • Token ${state.operative.tokenId}`;
+  }
+
+  async function init() {
+    findLocalSession();
+    renderWalletPill();
+    renderConsole();
+    updateTabsVisibility();
+    if (shouldShowBoot()) showBootSequence(); else setBootSeen();
+    if (state.wallet) {
+      await hydrateSelectedAndFused();
+      await loadNfts().catch(() => null);
+    } else {
+      renderFeatureCard();
+      renderChatDisabled();
+      loadLeaderboard();
+    }
+    await loadLeaderboard();
+    renderChatPanels();
+    updateReportDay();
+    renderPersistenceStatus(SUPABASE_URL ? 'Supabase-aware persistence enabled.' : 'Local fallback persistence active.');
+  }
+
+  document.getElementById('connect-btn').addEventListener('click', connectXaman);
+  window.addEventListener('storage', (event) => {
+    if (event.key === SESSION_KEY) {
+      findLocalSession();
+      renderWalletPill();
+    }
+  });
+
+  window.addEventListener('DOMContentLoaded', init);
+})();
 </script>
 </body>
 </html>
