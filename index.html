@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.5</title>
+    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -100,7 +100,7 @@
         <div class="flex items-center gap-3 sm:gap-4">
             <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
             <div>
-                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.5</div>
+                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.6</div>
                 <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Ledger relay // XRPL survival interface</div>
             </div>
         </div>
@@ -118,7 +118,7 @@
     </div>
 
     <div class="bg-black/90 border-b border-[#00ffc8]/20 flex flex-wrap md:flex-nowrap text-xs sm:text-sm overflow-x-auto px-1 sm:px-0">
-        <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-4 cursor-pointer tab-active">MAIN CONSOLE</div>
+        <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-4 cursor-pointer tab-active">CONSOLE</div>
         <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-4 cursor-pointer">TRANSMISSION LOGS</div>
         <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-4 cursor-pointer">FUSION LAB</div>
         <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-4 cursor-pointer">NEURAL STANDINGS</div>
@@ -259,7 +259,7 @@
         <div class="flex gap-6 items-center">
             <a href="#" class="hover:text-white transition-colors">PRIVACY</a>
             <a href="#" class="hover:text-white transition-colors">TERMS</a>
-            <span class="text-[#00ffc8]/55">v8.5</span>
+            <span class="text-[#00ffc8]/55">v8.6</span>
         </div>
     </div>
 </div>
@@ -388,7 +388,7 @@
         }
 
         if (raw.startsWith('Qm') || raw.startsWith('bafy')) {
-            return 'https://ipfs.io/ipfs/' + raw;
+            return 'https://ipfs.io/ipfs/' + encodeURIComponent(raw).replace(/%2F/g, '/');
         }
 
         return fallback;
