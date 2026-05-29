@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GROSS BROS • GUARDIAN BROADCAST OS v7.2.5</title>
+    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -83,7 +83,7 @@
         <div class="flex items-center gap-3 sm:gap-4">
             <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
             <div>
-                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.2</div>
+                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.3</div>
                 <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Ledger relay // XRPL survival interface</div>
             </div>
         </div>
@@ -97,25 +97,12 @@
     </div>
 
     <div class="border-b border-[#00ffc8]/20 bg-gradient-to-r from-[#00ffc8]/10 via-transparent to-[#7c3aed]/10 overflow-hidden">
-        <div class="news-track px-4 sm:px-6">
-            <span class="news-item">NEWS //</span>
-            <span class="news-item">Neural relay active</span>
-            <span class="news-item">Issuer locked: rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY</span>
-            <span class="news-item">Taxon locked: 1</span>
-            <span class="news-item">IPFS image relay stabilized</span>
-            <span class="news-item">Wallet + XRPL helpers online</span>
-            <span class="news-item">NEWS //</span>
-            <span class="news-item">Neural relay active</span>
-            <span class="news-item">Issuer locked: rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY</span>
-            <span class="news-item">Taxon locked: 1</span>
-            <span class="news-item">IPFS image relay stabilized</span>
-            <span class="news-item">Wallet + XRPL helpers online</span>
-        </div>
+        <div id="warning-ticker-track" class="news-track px-4 sm:px-6"></div>
     </div>
 
     <div class="bg-black/90 border-b border-[#00ffc8]/20 flex flex-wrap md:flex-nowrap text-xs sm:text-sm overflow-x-auto px-1 sm:px-0">
         <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-4 cursor-pointer tab-active">MAIN CONSOLE</div>
-        <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-4 cursor-pointer">STORYLINE</div>
+        <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-4 cursor-pointer">TRANSMISSION LOGS</div>
         <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-4 cursor-pointer">FUSION LAB</div>
         <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-4 cursor-pointer">NEURAL STANDINGS</div>
     </div>
@@ -255,7 +242,7 @@
         <div class="flex gap-6 items-center">
             <a href="#" class="hover:text-white transition-colors">PRIVACY</a>
             <a href="#" class="hover:text-white transition-colors">TERMS</a>
-            <span class="text-[#00ffc8]/55">v8.2</span>
+            <span class="text-[#00ffc8]/55">v8.3</span>
         </div>
     </div>
 </div>
@@ -290,6 +277,26 @@
     function getDailyBroId() {
         if (!Number.isFinite(TOTAL_BROS) || TOTAL_BROS <= 0) return 1;
         return ((getDayOfYear() - 1) % TOTAL_BROS) + 1;
+    }
+
+    const WARNING_MESSAGES = [
+        'WARNING: ENEMY CHATTER DETECTED IN SECTOR 7',
+        'LOOKOUT: BTC MINER SCOUTS SPOTTED NEAR THE RIFT',
+        'ALERT: UNKNOWN SIGNAL INTERCEPTED - STAY VIGILANT',
+        'CAUTION: VOID DRONES MOVING ALONG THE PERIMETER',
+        'DANGER: STATIC BREACH APPROACHING THE LEDGER',
+        'NOTICE: BROADCAST SPOOFING ATTEMPT DETECTED'
+    ];
+
+    function updateWarningTicker() {
+        const track = document.getElementById('warning-ticker-track');
+        if (!track) return;
+
+        const seed = Math.floor(Date.now() / 43200000);
+        const start = seed % WARNING_MESSAGES.length;
+        const rotated = WARNING_MESSAGES.slice(start).concat(WARNING_MESSAGES.slice(0, start));
+        const loop = rotated.concat(rotated);
+        track.innerHTML = loop.map((message) => '<span class="news-item">' + message + '</span>').join('');
     }
 
     function findDeepString(value, keys) {
@@ -731,7 +738,9 @@
 
     window.onload = function () {
         switchTab(0);
+        updateWarningTicker();
         void loadDailyBro();
+        setInterval(updateWarningTicker, 60000);
         const saved = localStorage.getItem('grossbros:xaman-session');
         if (saved) {
             try {
