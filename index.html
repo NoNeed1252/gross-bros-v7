@@ -295,28 +295,11 @@
                         <div id="nft-summary" class="text-xs text-[#00ffc8]/60"></div>
                     </div>
                     <div class="inner-panel rounded-[2rem] p-4 sm:p-5">
-                        <div class="flex items-start justify-between gap-4 portrait-stack">
-                            <div>
-                                <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Console feature</div>
-                                <h3 class="header-font text-2xl sm:text-4xl mt-2">BRO OF THE DAY</h3>
-                            </div>
-                            <a id="daily-bro-link" href="#" target="_blank" class="button-aura rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">View NFT</a>
-                        </div>
-                        <div class="mt-4 grid gap-4 lg:grid-cols-[0.9fr_1.1fr] items-start">
-                            <div class="hero-frame hero-image-shell rounded-[26px] border border-[#00ffc8]/15 bg-black/35 overflow-hidden flex items-center justify-center">
-                                <img id="daily-bro-image" class="hero-image hidden" alt="Bro of the Day" />
-                                <div id="daily-bro-placeholder" class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/50 px-4 text-center">Loading featured operative…</div>
-                            </div>
-                            <div class="space-y-3">
-                                <div id="daily-bro-issuer" class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55"></div>
-                                <div id="daily-bro-name" class="header-font text-2xl sm:text-3xl text-[#effffb]">Booting…</div>
-                                <div id="daily-bro-tokenid" class="text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/60"></div>
-                                <div id="daily-bro-description" class="text-sm sm:text-base leading-7 text-[#d9fff8]/82"></div>
-                            </div>
-                        </div>
+                        <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Console teaser</div>
+                        <h3 class="header-font text-2xl sm:text-4xl mt-2">COLLECTIVE LORE</h3>
+                        <p class="mt-3 text-sm sm:text-base leading-7 text-[#d9fff8]/82">The Collective still speaks in static. The console only reveals what the signal is willing to remember.</p>
                     </div>
                 </div>
-
                 <div class="grid gap-5 xl:grid-cols-[0.98fr_1.02fr] fusion-lab-layout">
                     <div class="space-y-5">
                         <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
@@ -1266,58 +1249,60 @@
     }
     window.selectNft = selectNft;
 
+    async function hydrateXamanSessionFromUuid(uuid) {
+        const cleanUuid = String(uuid || '').trim();
+        if (!cleanUuid) return false;
+        try {
+            const check = await fetch('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(cleanUuid), { cache: 'no-store' });
+            const status = await check.json();
+            if (!((status.meta && status.meta.signed) || status.signed)) return false;
+            const address = (status.response && (status.response.account || status.response.address)) || status.account || status.address || '';
+            if (!address) return false;
+            state.wallet = address;
+            state.connected = true;
+            store(SESSION_KEY, { connected: true, address, wallet: address });
+            renderWalletUI();
+            await loadNfts();
+            await loadLeaderboard();
+            renderFusionLab();
+            return true;
+        } catch (error) {
+            console.error(error);
+            return false;
+        }
+    }
+
+    function clearXamanCallbackParams() {
+        try {
+            const url = new URL(window.location.href);
+            const changed = url.searchParams.has('xaman') || url.searchParams.has('uuid');
+            url.searchParams.delete('xaman');
+            url.searchParams.delete('uuid');
+            if (changed) {
+                const query = url.searchParams.toString();
+                history.replaceState({}, '', `${url.pathname}${query ? `?${query}` : ''}${url.hash}`);
+            }
+        } catch {}
+    }
+
     async function connectXaman() {
         const walletText = document.getElementById('wallet-text');
-        return await new Promise(async (resolve) => {
-            try {
-                if (walletText) walletText.textContent = 'CONNECTING...';
-                const res = await fetch('/api/xaman?action=create-payload', { method: 'POST' });
-                const payload = await res.json();
-                if (payload?.next?.always) window.open(payload.next.always, '_blank');
-                let attempts = 0;
-                if (!payloadUuid) {
-                throw new Error('Xaman payment payload did not return a UUID.');
+        try {
+            if (walletText) walletText.textContent = 'CONNECTING...';
+            const res = await fetch('/api/xaman?action=create-payload', { method: 'POST' });
+            const payload = await res.json();
+            const nextUrl = payload?.next?.always || payload?.deeplink || '';
+            if (!nextUrl) {
+                throw new Error('Unable to open Xaman sign-in request.');
             }
-            const interval = setInterval(async () => {
-                    attempts++;
-                    if (attempts > 35) {
-                        clearInterval(interval);
-                        state.connected = false;
-                        renderWalletUI();
-                        resolve(false);
-                        return;
-                    }
-                    const check = await fetch('/api/xaman?action=check-payload&uuid=' + payload.uuid);
-                    const status = await check.json();
-                    if ((status.meta && status.meta.signed) || status.signed) {
-                        clearInterval(interval);
-                        const address = (status.response && status.response.account) || status.account || '';
-                        if (address) {
-                            state.wallet = address;
-                            state.connected = true;
-                            store(SESSION_KEY, { connected: true, address, wallet: address });
-                            renderWalletUI();
-                            await loadNfts();
-                            await loadLeaderboard();
-                            renderFusionLab();
-                            resolve(true);
-                        } else {
-                            resolve(false);
-                        }
-                    } else if (status.meta && status.meta.expired) {
-                        clearInterval(interval);
-                        state.connected = false;
-                        renderWalletUI();
-                        resolve(false);
-                    }
-                }, 2500);
-            } catch (error) {
-                console.error(error);
-                state.connected = false;
-                renderWalletUI();
-                resolve(false);
-            }
-        });
+            window.open(nextUrl, '_blank', 'noopener,noreferrer');
+            return true;
+        } catch (error) {
+            console.error(error);
+            state.connected = false;
+            renderWalletUI();
+            return false;
+        }
     }
     window.connectXaman = connectXaman;
 
@@ -1502,7 +1487,13 @@
 
         const savedSession = local(SESSION_KEY, null);
         const savedState = getStoredState();
-        if (savedSession?.connected && savedSession?.address) {
+        const params = new URLSearchParams(window.location.search);
+        const callbackMode = params.get('xaman') || '';
+        const callbackUuid = params.get('uuid') || '';
+        if (callbackMode === 'success' && callbackUuid) {
+            await hydrateXamanSessionFromUuid(callbackUuid);
+            clearXamanCallbackParams();
+        } else if (savedSession?.connected && savedSession?.address) {
             state.wallet = savedSession.address;
             state.connected = true;
         }
@@ -1513,9 +1504,6 @@
         await loadLeaderboard();
         if (state.wallet) {
             await loadNfts();
-            await loadDailyBro();
-        } else {
-            await loadDailyBro();
         }
         renderOperativePanel();
         renderChatHistory();
