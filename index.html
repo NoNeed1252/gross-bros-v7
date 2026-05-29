@@ -117,11 +117,12 @@
         <div id="warning-ticker-track" class="news-track px-4 sm:px-6"></div>
     </div>
 
-    <div class="bg-black/90 border-b border-[#00ffc8]/20 flex flex-wrap md:flex-nowrap text-xs sm:text-sm overflow-x-auto px-1 sm:px-0">
-        <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-4 cursor-pointer tab-active">CONSOLE</div>
-        <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-4 cursor-pointer">TRANSMISSION LOGS</div>
-        <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-4 cursor-pointer">FUSION LAB</div>
-        <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-4 cursor-pointer">NEURAL STANDINGS</div>
+    <div class="bg-black/90 border-b border-[#00ffc8]/20 flex flex-row flex-nowrap overflow-x-auto text-[10px] sm:text-sm px-1 sm:px-0">
+        <div onclick="switchTab(0)" id="tab-0" class="tab flex-1 min-w-[92px] px-3 sm:px-5 py-4 cursor-pointer text-center tab-active">CONSOLE</div>
+        <div onclick="switchTab(1)" id="tab-1" class="tab flex-1 min-w-[120px] px-3 sm:px-5 py-4 cursor-pointer text-center whitespace-nowrap">TRANSMISSION LOGS</div>
+        <div onclick="switchTab(2)" id="tab-2" class="tab flex-1 min-w-[96px] px-3 sm:px-5 py-4 cursor-pointer text-center">FUSION LAB</div>
+        <div onclick="switchTab(3)" id="tab-3" class="tab flex-1 min-w-[118px] px-3 sm:px-5 py-4 cursor-pointer text-center whitespace-nowrap">NEURAL STANDINGS</div>
+        <div onclick="switchTab(4)" id="tab-4" class="tab flex-1 min-w-[90px] px-3 sm:px-5 py-4 cursor-pointer text-center">SOCIALS</div>
     </div>
 
     <div class="flex-1 overflow-auto p-3 sm:p-6 relative z-10 bg-black" id="content-area">
@@ -247,18 +248,37 @@
                     </div>
                 </div>
             </div>
+        <div id="content-4" class="tab-content">
+            <div class="max-w-4xl mx-auto">
+                <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
+                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Socials</div>
+                    <h2 class="header-font text-3xl sm:text-5xl mt-3">COMM LINKS</h2>
+                    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                        <a href="https://discord.gg/fcZYk7UcB" target="_blank" class="rounded-3xl bg-black/45 px-5 py-5 text-center hover:bg-[#00ffc8] hover:text-black transition-all border border-transparent">
+                            <div class="text-xs uppercase tracking-[0.35em] opacity-70">Discord</div>
+                            <div class="mt-2 text-lg sm:text-xl font-bold">Join the server</div>
+                        </a>
+                        <a href="https://x.com/thegrossbros?s=21" target="_blank" class="rounded-3xl bg-black/45 px-5 py-5 text-center hover:bg-[#00ffc8] hover:text-black transition-all border border-transparent">
+                            <div class="text-xs uppercase tracking-[0.35em] opacity-70">X</div>
+                            <div class="mt-2 text-lg sm:text-xl font-bold">Follow @thegrossbros</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         </div>
 
     </div>
 
-    <div class="bg-black/95 border-t border-[#00ffc8]/20 px-4 sm:px-6 py-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between text-xs">
+    <div class="bg-black/95 border-t border-[#00ffc8]/20 px-4 sm:px-6 py-4 mt-auto sticky bottom-0 z-20 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between text-xs">
         <div class="flex gap-6">
             <a href="https://x.com/thegrossbros" target="_blank" class="hover:text-white transition-colors">𝕏</a>
-            <a href="#" class="hover:text-white transition-colors">DISCORD</a>
+            <a href="https://discord.gg/fcZYk7UcB" target="_blank" class="hover:text-white transition-colors">Discord</a>
         </div>
         <div class="flex gap-6 items-center">
-            <a href="#" class="hover:text-white transition-colors">PRIVACY</a>
-            <a href="#" class="hover:text-white transition-colors">TERMS</a>
+            <a href="#" class="hover:text-white transition-colors">Privacy</a>
+            <a href="#" class="hover:text-white transition-colors">Terms</a>
             <span class="text-[#00ffc8]/55">v8.6</span>
         </div>
     </div>
