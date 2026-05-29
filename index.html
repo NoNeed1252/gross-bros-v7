@@ -313,50 +313,50 @@
     }
 
     async function resolveNftImage(nft) {
-        const rawUri = decodeTokenUri(nft.URI || nft.Uri || nft.uri || '');
-        if (!rawUri) return '';
-
-        const candidates = [];
-        const base = getIPFSUrl(rawUri);
-        if (base) candidates.push(base);
-
-        if (/\.json(?:$|[?#])/i.test(base)) {
+        let uri = nft.URI || nft.image || '';
+        if (!uri) return 'https://via.placeholder.com/400x400/111111/00ffc8?text=NO+URI';
+        let cleanUri = uri.toString().trim();
+        if (/^[0-9A-Fa-f]+$/.test(cleanUri)) {
             try {
-                const res = await fetch(base);
-                if (res.ok) {
-                    const meta = await res.json();
-                    const image = meta.image || meta.image_url || meta.imageUrl || meta.animation_url || '';
-                    const normalized = getIPFSUrl(image);
-                    if (normalized) candidates.unshift(normalized);
+                let decoded = '';
+                for (let i = 0; i < cleanUri.length; i += 2) {
+                    decoded += String.fromCharCode(parseInt(cleanUri.substr(i, 2), 16));
                 }
+                cleanUri = decoded.trim();
             } catch (e) {
-                console.error(e);
+                console.warn("Hex decode failed for", uri);
             }
         }
-
-        const gatewayFallbacks = [];
-        for (const candidate of candidates) {
-            if (candidate.startsWith('https://ipfs.io/ipfs/')) {
-                const suffix = candidate.slice('https://ipfs.io/ipfs/'.length);
-                gatewayFallbacks.push(candidate, 'https://cloudflare-ipfs.com/ipfs/' + suffix, 'https://gateway.pinata.cloud/ipfs/' + suffix);
-            } else {
-                gatewayFallbacks.push(candidate);
-            }
+        if (cleanUri.startsWith('ipfs://')) cleanUri = cleanUri.replace('ipfs://', '');
+        if (cleanUri.includes('/ipfs/')) cleanUri = cleanUri.split('/ipfs/').pop();
+        const gateways = ["https://ipfs.io/ipfs/", "https://gateway.pinata.cloud/ipfs/", "https://cloudflare-ipfs.com/ipfs/"];
+        const metadataUrl = cleanUri.startsWith('http') ? cleanUri : gateways[0] + cleanUri;
+        try {
+            const response = await fetch(metadataUrl);
+            if (!response.ok) throw new Error('Metadata fetch failed');
+            const metadata = await response.json();
+            let imageUri = metadata.image || metadata.image_url || metadata.img || '';
+            if (!imageUri) return 'https://via.placeholder.com/400x400/111111/00ffc8?text=NO+IMAGE+IN+METADATA';
+            if (imageUri.startsWith('ipfs://')) imageUri = imageUri.replace('ipfs://', '');
+            if (imageUri.includes('/ipfs/')) imageUri = imageUri.split('/ipfs/').pop();
+            return imageUri.startsWith('http') ? imageUri : gateways[0] + imageUri;
+        } catch (error) {
+            console.error('Metadata fetch error for NFT', nft.NFTokenID, error);
+            return 'https://via.placeholder.com/400x400/111111/00ffc8?text=METADATA+ERROR';
         }
-
-        for (const url of gatewayFallbacks) {
-            if (/\.(png|jpg|jpeg|gif|webp|svg|avif)(?:$|[?#])/i.test(url) || url.startsWith('data:image/')) {
-                return url;
-            }
-        }
-
-        return '';
     }
 
     function isStrictMatch(nft) {
         const issuer = String(nft.Issuer || nft.issuer || '').toLowerCase();
         const taxon = String(nft.NFTokenTaxon ?? nft.nft_taxon ?? nft.NFTTaxon ?? nft.taxon ?? '').trim();
         return issuer === STRICT_ISSUER.toLowerCase() && taxon === STRICT_TAXON;
+    }
+
+    function removeStrictNftFilterBanner() {
+        const banner = document.getElementById('strict-nft-filter-banner') || document.querySelector('.strict-nft-filter-banner');
+        if (banner) {
+            banner.style.display = 'none';
+        }
     }
 
     function openSigninUrl(payload, targetWindow = null) {
@@ -475,7 +475,7 @@
 
             if (filtered.length > 0) {
                 for (const [index, nft] of filtered.entries()) {
-                    const imageUrl = await getNFTImageUrl(nft);
+                    const imageUrl = await resolveNftImage(nft);
                     if (index < 3) debugNFTURI(nft);
                     const issuer = nft.Issuer || nft.issuer || 'Unknown';
                     const taxon = String(nft.NFTokenTaxon ?? nft.nft_taxon ?? nft.NFTTaxon ?? nft.taxon ?? 'Unknown');
@@ -533,7 +533,6 @@
     }
 
     window.onload = function () {
-        switchTab(0);
         const saved = localStorage.getItem('grossbros:xaman-session');
         if (saved) {
             try {
@@ -541,6 +540,7 @@
                 if (s.connected && s.address) setWalletUI(true, s.address);
             } catch (e) {}
         }
+        switchTab(0);
     };
 </script>
 </body>
