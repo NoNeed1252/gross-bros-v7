@@ -533,14 +533,22 @@
     }
 
     window.onload = function () {
-        const saved = localStorage.getItem('grossbros:xaman-session');
-        if (saved) {
-            try {
-                const s = JSON.parse(saved);
-                if (s.connected && s.address) setWalletUI(true, s.address);
-            } catch (e) {}
-        }
         switchTab(0);
+        try {
+            removeStrictNftFilterBanner();
+        } catch (e) {
+            console.warn('removeStrictNftFilterBanner failed', e);
+        }
+
+        (async () => {
+            const saved = localStorage.getItem('grossbros:xaman-session');
+            if (saved) {
+                try {
+                    const s = JSON.parse(saved);
+                    if (s.connected && s.address) setWalletUI(true, s.address);
+                } catch (e) {}
+            }
+        })();
     };
 </script>
 </body>
