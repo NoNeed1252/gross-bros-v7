@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.4</title>
+    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -24,8 +24,18 @@
             height: 92vh;
         }
 
-        @media (max-width: 640px) {
-            .alien-monitor { border: 16px solid #1f1f1f; height: 96vh; margin: 8px auto; }
+        @media (max-width: 768px) {
+            body { background: #050505; }
+            .alien-monitor {
+                border: none;
+                outline: none;
+                box-shadow: none;
+                background: #050505;
+                margin: 0;
+                height: auto;
+                min-height: 100vh;
+                border-radius: 0;
+            }
         }
 
         .crt::before {
@@ -59,19 +69,19 @@
             background: linear-gradient(90deg, rgba(0,255,200,0.08), rgba(0,255,200,0.03));
             overflow: hidden;
             white-space: nowrap;
-            height: 2rem;
+            height: 1.5rem;
             display: flex;
             align-items: center;
         }
         .news-track {
             display: inline-flex;
-            gap: 2rem;
-            padding: 0;
-            height: 2rem;
+            gap: 1rem;
+            padding: 0 0.5rem;
+            height: 1.5rem;
             align-items: center;
             will-change: transform;
             animation: ticker 24s linear infinite;
-            font-size: 0.75rem;
+            font-size: 0.6875rem;
             line-height: 1rem;
         }
         .news-item { color: rgba(0,255,200,0.9); white-space: nowrap; }
@@ -90,7 +100,7 @@
         <div class="flex items-center gap-3 sm:gap-4">
             <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
             <div>
-                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.4</div>
+                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.5</div>
                 <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Ledger relay // XRPL survival interface</div>
             </div>
         </div>
@@ -249,7 +259,7 @@
         <div class="flex gap-6 items-center">
             <a href="#" class="hover:text-white transition-colors">PRIVACY</a>
             <a href="#" class="hover:text-white transition-colors">TERMS</a>
-            <span class="text-[#00ffc8]/55">v8.4</span>
+            <span class="text-[#00ffc8]/55">v8.5</span>
         </div>
     </div>
 </div>
