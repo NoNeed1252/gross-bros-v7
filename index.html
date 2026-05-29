@@ -125,11 +125,12 @@
         <!-- TAB 0 -->
         <div id="content-0" class="tab-content active">
             <h1 class="header-font text-4xl sm:text-5xl text-center mb-8">BRO OF THE DAY</h1>
-            <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/80 mb-12">
+            <div id="bro-of-the-day" class="max-w-3xl mx-auto"></div>
+            <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/80 mt-12">
                 In the aftermath of the XRP-7 disaster, the Gross Bros were shattered across dimensions.<br>
                 Now fused with machine intelligence, they defend the Ledger from the BTC miners.
             </div>
-            <div class="border-4 border-[#00ffc8] bg-black/70 rounded-3xl p-8 text-center">
+            <div class="border-4 border-[#00ffc8] bg-black/70 rounded-3xl p-8 text-center mt-12">
                 <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" 
                    class="block py-6 text-2xl header-font border-2 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
                     ACCESS THE COLLECTION
@@ -198,6 +199,22 @@
 <script>
     const STRICT_ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
     const STRICT_TAXON = '1';
+    const TOTAL_BROS = 214;
+    const BACKSTORIES = Object.fromEntries(Array.from({ length: TOTAL_BROS }, (_, index) => {
+        const id = index + 1;
+        const templates = [
+            'The first crack in the Ledger turned this bro into a listener for miner static.',
+            'Built in the shadow of XRP-7, this bro survived by decoding the void before it spoke.',
+            'When the BTC miners breached the perimeter, this bro carried the relay core to safety.',
+            'A relic of the dim dimension war, this bro still hums with ledger fire.',
+            'Born from a broken block, this bro learned to survive on signal and instinct alone.',
+            'This bro patrols the rift edges and keeps the Ledger calm when the static rises.',
+            'Forged from chrome and consequence, this bro never blinks when the chain trembles.',
+            'A scanline myth in a neon shell, this bro watches over the survivors of XRP-7.'
+        ];
+        return [id, 'Bro ' + id + ': ' + templates[index % templates.length]];
+    }));
+    BACKSTORIES.default = 'A legend still forming inside the neon fog.';
     let currentWalletAddress = null;
     let selectedNFT = null;
 
@@ -327,6 +344,34 @@
         return issuer === STRICT_ISSUER.toLowerCase() && taxon === STRICT_TAXON;
     }
 
+    function getDailyBroId() {
+        const utcDate = new Date().toISOString().slice(0, 10);
+        let hash = 0;
+        for (let i = 0; i < utcDate.length; i++) {
+            hash = Math.imul(31, hash) + utcDate.charCodeAt(i);
+            hash >>>= 0;
+        }
+        return (hash % TOTAL_BROS) + 1;
+    }
+
+    async function loadDailyBro() {
+        const target = document.getElementById('bro-of-the-day');
+        if (!target) return;
+
+        const dailyBroId = getDailyBroId();
+        const backstory = hexToString(BACKSTORIES[dailyBroId] || BACKSTORIES.default || '');
+
+        target.innerHTML = `
+            <div class="border border-[#00ffc8]/30 rounded-3xl p-8 text-center text-[#00ffc8] bg-black/70">
+                <div class="text-sm uppercase tracking-[0.35em] text-[#00ffc8]/60">BRO OF THE DAY</div>
+                <div class="text-6xl sm:text-7xl font-bold mt-3">BRO ${dailyBroId}</div>
+                <div class="mt-6 max-w-2xl mx-auto">
+                    <div class="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#00ffc8]/50 mb-3">Backstory</div>
+                    <div class="backstory text-[#00ffc8]/85 leading-8 text-lg sm:text-xl">${escapeHtml(backstory)}</div>
+                </div>
+            </div>
+        `;
+    }
     function setWalletUI(connected, address = '') {
         currentWalletAddress = address;
         const isConnected = connected && address;
@@ -490,6 +535,7 @@
 
     window.onload = function () {
         switchTab(0);
+        loadDailyBro();
         const saved = localStorage.getItem('grossbros:xaman-session');
         if (saved) {
             try {
