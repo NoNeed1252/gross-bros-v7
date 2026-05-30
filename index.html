@@ -115,6 +115,9 @@
         }
         .fusion-panel { border-color: rgba(0,255,200,0.20); }
         .news-ticker {
+            width: 100%;
+            max-width: none;
+            margin: 0;
             border-top: 1px solid rgba(0,255,200,0.20);
             border-bottom: 1px solid rgba(0,255,200,0.20);
             background: linear-gradient(90deg, rgba(0,255,200,0.08), rgba(0,255,200,0.03));
@@ -127,7 +130,6 @@
         .news-track {
             display: inline-flex;
             gap: 1rem;
-            padding: 0 0.5rem;
             height: 1.5rem;
             align-items: center;
             will-change: transform;
@@ -235,8 +237,8 @@
         <p id="xaman-status" class="text-[11px] sm:text-sm text-[#00ffc8]/60 text-center lg:text-right">Wallet disconnected.</p>
     </div>
 
-    <div class="border-b border-[#00ffc8]/20 bg-gradient-to-r from-[#00ffc8]/10 via-transparent to-[#7c3aed]/10 overflow-hidden">
-        <div id="warning-ticker-track" class="news-track px-4 sm:px-6"></div>
+    <div class="news-ticker border-b border-[#00ffc8]/20 bg-gradient-to-r from-[#00ffc8]/10 via-transparent to-[#7c3aed]/10 overflow-hidden w-full max-w-none mx-0">
+        <div id="warning-ticker-track" class="news-track"></div>
     </div>
 
     <div class="bg-black/90 border-b border-[#00ffc8]/20 flex flex-row flex-nowrap overflow-x-auto text-[10px] sm:text-sm px-1 sm:px-0">
@@ -529,7 +531,7 @@
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
+            .replace(/\"/g, '&quot;')
             .replace(/'/g, '&#39;');
     }
 
