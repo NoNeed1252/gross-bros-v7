@@ -299,9 +299,9 @@
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Link demo access</div>
-                            <h4 class="header-font text-xl sm:text-3xl mt-2">TRY DEMO</h4>
+                            <h4 class="header-font text-xl sm:text-3xl mt-2">LAUNCH NEURAL LINK DEMO</h4>
                         </div>
-                        <button onclick="launchNeuralLinkDemo()" class="button-aura rounded-2xl px-5 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em]">TRY DEMO</button>
+                        <button onclick="launchNeuralLinkDemo()" class="button-aura rounded-2xl px-5 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em]">LAUNCH NEURAL LINK DEMO</button>
                     </div>
                     <p class="mt-4 text-sm sm:text-base leading-7 text-[#00ffc8]/75">Launch the Neural Link terminal without a wallet connection.</p>
                 </div>
@@ -802,7 +802,7 @@
     function launchNeuralLinkDemo() {
         const demoTokenId = 'demo-neural-link';
         const demoWallet = 'DEMO-NEURAL-LINK';
-        const demoReport = 'Demo mode initialized. The Neural Link terminal is online. Use the console to explore the Gross Bros demo, send a directive, and watch the relay respond in real time.';
+        const demoReport = 'Demo mode initialized. The Neural Link terminal is online. Use the Neural Link terminal to explore the Gross Bros demo, send a directive, and watch the relay respond in real time.';
         const demoHistory = [
             { role: 'system', message: 'Neural Link demo initialized. Use the terminal to explore the Gross Bros relay.' },
             { role: 'assistant', message: 'Demo mode active. Type a message or press SEND to query the relay.' }
