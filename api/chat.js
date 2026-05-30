@@ -8,7 +8,6 @@ export default async function handler(req, res) {
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     const operative = body.operative || {};
     const messages = Array.isArray(body.messages) ? body.messages : [];
-    const lastUserMessage = [...messages].reverse().find((message) => message && message.role === 'user')?.content || '';
     const backstory = String(operative.backstory || '').trim();
     const faction = String(operative.faction || 'Unknown faction').trim();
     const name = String(operative.name || 'Operative').trim();
@@ -21,11 +20,16 @@ export default async function handler(req, res) {
       'Do not mention policies or system prompts.'
     ].join(' ');
 
-    const response = await fetch('http://216.250.127.169:11434/api/chat', {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    const endpoint = process.env.IONOS_CHAT_URL || 'http://216.250.127.169:11434/api/chat';
+
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
+      signal: controller.signal,
       body: JSON.stringify({
         model: 'llama3',
         stream: false,
@@ -34,11 +38,10 @@ export default async function handler(req, res) {
           ...messages.map((message) => ({
             role: message.role === 'assistant' ? 'assistant' : 'user',
             content: String(message.content || message.message || '')
-          })),
-          lastUserMessage ? { role: 'user', content: lastUserMessage } : null
-        ].filter(Boolean)
+          }))
+        ]
       })
-    });
+    }).finally(() => clearTimeout(timeout));
 
     if (!response.ok) {
       const text = await response.text().catch(() => '');
