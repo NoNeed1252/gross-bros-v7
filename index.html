@@ -286,6 +286,22 @@
 
         <div id="content-2" class="tab-content">
             <div class="max-w-6xl mx-auto space-y-5">
+                    <div id="chat-shell" class="inner-panel rounded-[2rem] p-5 sm:p-6">
+                        <div class="flex items-center justify-between gap-4 portrait-stack">
+                            <div>
+                                <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Terminal</div>
+                                <h4 class="header-font text-xl sm:text-3xl mt-2">CHAT TERMINAL</h4>
+                            </div>
+                            <div id="neural-terminal-voice" class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">VOICE // standby</div>
+                        </div>
+                        <div id="neural-terminal-active" class="mt-4 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-4 text-sm sm:text-base leading-7 text-[#d9fff8]/80 soft-wrap">Awaiting Connection.</div>
+                        <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
+                        <div class="mt-4 flex gap-3">
+                            <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative\u2026" maxlength="240" />
+                            <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">Send</button>
+                        </div>
+                    </div>
+
                 <div class="rounded-[2rem] bg-[#06110f] p-4 sm:p-6">
                     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between portrait-stack">
                         <div class="flex items-center gap-2 text-xs sm:text-sm text-[#00ffc8]/80">
@@ -331,22 +347,6 @@
                                     The selected NFT ID determines the speaking style, memory tone, and chat cadence.
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div id="chat-shell" class="inner-panel rounded-[2rem] p-5 sm:p-6 hidden-tab">
-                        <div class="flex items-center justify-between gap-4 portrait-stack">
-                            <div>
-                                <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Terminal</div>
-                                <h4 class="header-font text-xl sm:text-3xl mt-2">CHAT TERMINAL</h4>
-                            </div>
-                            <div id="neural-terminal-voice" class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">VOICE // standby</div>
-                        </div>
-                        <div id="neural-terminal-active" class="mt-4 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-4 text-sm sm:text-base leading-7 text-[#d9fff8]/80 soft-wrap">Awaiting operative selection.</div>
-                        <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
-                        <div class="mt-4 flex gap-3">
-                            <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative\u2026" maxlength="240" />
-                            <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">Send</button>
                         </div>
                     </div>
 
@@ -887,7 +887,7 @@
         const personality = operative && operative.tokenId ? getNeuralPersonality(operative.tokenId) : null;
         if (!activeEl || !voiceEl) return;
         if (!state.wallet || !operative) {
-            activeEl.textContent = 'Awaiting operative selection.';
+            activeEl.textContent = state.wallet ? 'Awaiting operative selection.' : 'Awaiting Connection.';
             voiceEl.textContent = 'VOICE // standby';
             return;
         }
@@ -941,13 +941,15 @@
         if (!state.wallet) {
             panel.innerHTML = '<div class="text-[#00ffc8]/60">Connect Xaman to expose the operative roster.</div>';
             fusionPanel.innerHTML = '<div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/78">Wallet disconnected. Connect Xaman to begin token-gated selection.</div>';
-            chatShell.classList.add('hidden-tab');
+            chatShell.classList.remove('hidden-tab');
+            renderNeuralTerminalState();
             return;
         }
 
         if (!activeEntry) {
             panel.innerHTML = '<div class="text-[#00ffc8]/60">No matching Gross Bros NFT selected.</div>';
-            chatShell.classList.add('hidden-tab');
+            chatShell.classList.remove('hidden-tab');
+            renderNeuralTerminalState();
         } else {
             panel.innerHTML = `
                 <div class="grid gap-2 sm:grid-cols-2">
