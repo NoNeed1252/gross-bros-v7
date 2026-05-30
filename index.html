@@ -265,7 +265,7 @@
             </div>
         </div>
 
-        <div id="content-1" class="tab-content">
+                <div id="content-1" class="tab-content">
             <div class="max-w-6xl mx-auto">
                 <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Storyline archive</div>
@@ -277,12 +277,24 @@
                             <p>Each bro carries a distinct signal, and the daily transmission locks onto one of them.</p>
                         </div>
 
+                        <div class="space-y-5">
+                            <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
+                                <div class="flex items-center justify-between gap-4 portrait-stack">
+                                    <div>
+                                        <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Daily Intelligence Briefing</div>
+                                        <h4 class="header-font text-xl sm:text-3xl mt-2">FIELD REPORT</h4>
+                                    </div>
+                                    <button onclick="loadFieldReport(true)" class="button-aura rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Refresh</button>
+                                </div>
+                                <div id="report-day" class="mt-4 text-[11px] uppercase tracking-[0.45em] text-[#00ffc8]/55"></div>
+                                <div id="field-report" class="mt-4 rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-4 sm:p-5 text-sm sm:text-base leading-7 text-[#ddfff9]/85 min-h-[160px]"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-                <div id="content-2" class="tab-content">
+        <div id="content-2" class="tab-content">
             <div class="max-w-6xl mx-auto space-y-5">
                 <div class="rounded-[2rem] bg-[#06110f] p-4 sm:p-6">
                     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between portrait-stack">
@@ -292,17 +304,6 @@
                         </div>
                         <div id="nft-summary" class="text-xs text-[#00ffc8]/60"></div>
                     </div>
-                </div>
-
-                <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
-                    <div class="flex items-center justify-between gap-4 portrait-stack">
-                        <div>
-                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">NFT roster</div>
-                            <h4 class="header-font text-xl sm:text-3xl mt-2">SELECT AN OPERATIVE</h4>
-                        </div>
-                        <div id="xrp-amount" class="text-xs sm:text-sm text-[#00ffc8]/70"></div>
-                    </div>
-                    <div id="nft-grid" class="mt-5 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3"></div>
                 </div>
 
                 <div class="grid gap-5 xl:grid-cols-[0.98fr_1.02fr] fusion-lab-layout">
@@ -331,18 +332,6 @@
                     </div>
 
                     <div class="space-y-5">
-                        <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
-                            <div class="flex items-center justify-between gap-4 portrait-stack">
-                                <div>
-                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Daily Intelligence Briefing</div>
-                                    <h4 class="header-font text-xl sm:text-3xl mt-2">FIELD REPORT</h4>
-                                </div>
-                                <button onclick="loadFieldReport(true)" class="button-aura rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Refresh</button>
-                            </div>
-                            <div id="report-day" class="mt-4 text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/55"></div>
-                            <div id="field-report" class="mt-4 rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-4 sm:p-5 text-sm sm:text-base leading-7 text-[#ddfff9]/85 min-h-[160px]"></div>
-                        </div>
-
                         <div id="chat-shell" class="inner-panel rounded-[2rem] p-5 sm:p-6 hidden-tab">
                             <div class="flex items-center justify-between gap-4 portrait-stack">
                                 <div>
@@ -363,8 +352,7 @@
                 </div>
             </div>
         </div>
-
-        <div id="content-3" class="tab-content">
+<div id="content-3" class="tab-content">
             <div class="max-w-6xl mx-auto">
                 <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural standings</div>
