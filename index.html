@@ -590,7 +590,7 @@
     }
 
     function getNftId(nft) {
-        return String(nft?.nft_id || nft?.NFTokenID || nft?.nftoken_id || nft?.id || '').trim();
+        return String(nft?.nft_id || nft?.NFTokenID || nft?.nftoken_id || nft?.tokenId || nft?.TokenId || nft?.id || '').trim();
     }
 
     function getNftIssuer(nft) {
@@ -816,7 +816,7 @@
 
         state.nfts = [{
             tokenId: demoTokenId,
-            nft: { name: 'Neural Link Demo' },
+            nft: { name: 'Neural Link Demo', tokenId: demoTokenId, TokenId: demoTokenId },
             metadata: {
                 name: 'Neural Link Demo',
                 faction: 'Gross Bros',
@@ -834,6 +834,7 @@
         store(reportKey(demoTokenId, todayKey()), { report: demoReport, day_key: todayKey(), updated_at: new Date().toISOString() });
 
         renderWalletUI();
+        renderNftGrid();
         switchTab(2);
         renderOperativePanel();
         renderChatFace();
