@@ -295,59 +295,21 @@
             </div>
         </div>
         <div id="content-2" class="tab-content">
-            <div class="max-w-6xl mx-auto space-y-5">
-                <div class="rounded-[2rem] bg-[#06110f] p-4 sm:p-6">
-                    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between portrait-stack">
-                        <div class="flex items-center gap-2 text-xs sm:text-sm text-[#00ffc8]/80">
-                            <span class="inline-block w-2 h-2 rounded-full bg-[#00ffc8]"></span>
-                            Operative filter active • Taxon 1
+            <div class="max-w-4xl mx-auto space-y-5">
+                <div id="chat-face" class="inner-panel rounded-[2rem] p-5 sm:p-6"></div>
+                <div id="chat-shell" class="inner-panel rounded-[2rem] p-5 sm:p-6 hidden-tab">
+                    <div class="flex items-center justify-between gap-4 portrait-stack">
+                        <div>
+                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">In-world comms terminal</div>
+                            <h4 class="header-font text-xl sm:text-3xl mt-2">CHAT TERMINAL</h4>
                         </div>
-                        <div id="nft-summary" class="text-xs text-[#00ffc8]/60"></div>
+                        <div class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">Fused</div>
                     </div>
-                </div>
-
-                <div class="grid gap-5 xl:grid-cols-[0.98fr_1.02fr] fusion-lab-layout">
-                    <div class="space-y-5">
-                        <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
-                            <div class="flex items-start justify-between gap-4 portrait-stack">
-                                <div>
-                                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Fusion Lab</div>
-                                </div>
-                                <div id="operative-badge" class="alien-chip rounded-2xl px-4 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em] soft-wrap">Locked</div>
-                            </div>
-                            <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                                <div class="data-card rounded-[22px] p-4">
-                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Selected Operative</div>
-                                    <div id="selected-token" class="mt-2 break-all text-sm text-[#d9fff8]/82">None selected</div>
-                                </div>
-                                <div class="data-card rounded-[22px] p-4">
-                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Fusion State</div>
-                                    <div id="operative-token" class="mt-2 break-all text-sm text-[#d9fff8]/82">Not fused</div>
-                                </div>
-                            </div>
-                            <div id="operative-panel" class="mt-4 space-y-3 text-sm sm:text-base text-[#d9fff8]/85 leading-7"></div>
-                            <div id="fusion-panel" class="mt-5"></div>
-                        </div>
-
-                    </div>
-
-                    <div class="space-y-5">
-                        <div id="chat-shell" class="inner-panel rounded-[2rem] p-5 sm:p-6 hidden-tab">
-                            <div class="flex items-center justify-between gap-4 portrait-stack">
-                                <div>
-                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">In-world comms terminal</div>
-                                    <h4 class="header-font text-xl sm:text-3xl mt-2">CHAT TERMINAL</h4>
-                                </div>
-                                <div class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">Fused</div>
-                            </div>
-                            <div id="chat-face" class="mt-4 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3 sm:p-4"></div>
-                            <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
-                            <div class="mt-4 flex gap-3">
-                                <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
-                                <button onclick="fuseSelectedNft()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
-                                <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
-                            </div>
-                        </div>
+                    <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
+                    <div class="mt-4 flex gap-3">
+                        <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
+                        <button onclick="fuseSelectedNft()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
+                        <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
                     </div>
                 </div>
             </div>
@@ -848,71 +810,18 @@
     }
 
     function renderOperativePanel() {
-        const panel = document.getElementById('operative-panel');
-        const badge = document.getElementById('operative-badge');
-        const selectedTokenEl = document.getElementById('selected-token');
-        const operativeTokenEl = document.getElementById('operative-token');
-        const fusionPanel = document.getElementById('fusion-panel');
         const chatShell = document.getElementById('chat-shell');
-        if (!panel || !badge || !selectedTokenEl || !operativeTokenEl || !fusionPanel || !chatShell) return;
         const selectedEntry = state.selectedTokenId ? state.nfts.find((item) => item.tokenId === state.selectedTokenId) : null;
         const fusedEntry = state.fusedTokenId ? state.nfts.find((item) => item.tokenId === state.fusedTokenId) : null;
         const activeEntry = fusedEntry || selectedEntry || null;
         state.operative = activeEntry ? buildOperativeFromMetadata(activeEntry.nft, activeEntry.metadata || {}) : null;
-
-        selectedTokenEl.textContent = state.selectedTokenId ? 'Selection ready' : 'None selected';
-        operativeTokenEl.textContent = state.fusedTokenId ? 'Fusion active' : 'Not fused';
-        badge.textContent = state.operative ? (state.fusedTokenId ? 'Fused' : 'Selected') : 'Locked';
-
-        if (!state.wallet) {
-            panel.innerHTML = '<div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm sm:text-base text-[#d8fff7]/82">Connect Xaman to expose the operative roster.</div>';
-            fusionPanel.innerHTML = '<div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/78">Wallet disconnected. Connect Xaman to begin token-gated selection.</div>';
+        if (!chatShell) return;
+        if (!state.wallet || !activeEntry) {
             chatShell.classList.add('hidden-tab');
             return;
         }
-
-        if (!activeEntry) {
-            panel.innerHTML = '<div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/82">No matching Gross Bros NFT selected.</div>';
-            chatShell.classList.add('hidden-tab');
-        } else {
-            panel.innerHTML = '<div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm sm:text-base text-[#d8fff7]/82">Operative channel ready. Open the chat terminal for live access.</div>';
-            chatShell.classList.remove('hidden-tab');
-            renderChatFace();
-        }
-
-        if (!state.fusedTokenId) {
-            fusionPanel.innerHTML = `
-                <div class="space-y-4">
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Trading / Buy Protocol</div>
-                            <div class="mt-2 header-font text-xl sm:text-3xl">Token-gated selection</div>
-                            <div class="mt-2 text-sm leading-7 text-[#d9fff8]/78">Select a matching NFT to chat immediately. Fuse only if you want to enable trading on XRP or other XRPL assets.</div>
-                        </div>
-                        <div class="alien-chip rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Locked</div>
-                    </div>
-                    <div class="flex flex-col gap-3 sm:flex-row">
-                        <button onclick="fuseSelectedNft()" class="button-aura rounded-2xl px-5 py-4 text-sm uppercase tracking-[0.35em]">Enable Trading</button>
-                        <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" rel="noreferrer" class="button-aura rounded-2xl px-5 py-4 text-sm uppercase tracking-[0.35em] text-center">Buy a Bro</a>
-                    </div>
-                </div>
-            `;
-        } else {
-            fusionPanel.innerHTML = `
-                <div class="space-y-4">
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative Online</div>
-                            <div class="mt-2 text-sm leading-7 text-[#d9fff8]/78">Chat access is unlocked for the selected token.</div>
-                        </div>
-                        <div class="alien-chip rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Chat unlocked</div>
-                    </div>
-                    <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/78">Wallet: ${escapeHtml(shortAddress(state.wallet))}</div>
-                </div>
-            `;
-            chatShell.classList.remove('hidden-tab');
-            renderChatFace();
-        }
+        chatShell.classList.remove('hidden-tab');
+        renderChatFace();
     }
 
     function renderNftGrid() {
@@ -1096,10 +1005,10 @@
         if (!face) return;
         const operative = state.operative;
         if (!state.wallet || !operative || !operative.image) {
-            face.innerHTML = '<div class="rounded-[18px] border border-[#00ffc8]/12 bg-black/20 p-4 text-sm text-[#00ffc8]/60">Bro face offline. Fuse a token to beam the operative into the terminal.</div>';
+            face.innerHTML = '<div class="hero-frame rounded-[18px] border border-[#00ffc8]/12 bg-black/20"></div>';
             return;
         }
-        face.innerHTML = `<div class="flex flex-col gap-4 sm:flex-row sm:items-center"><div class="mx-auto sm:mx-0 w-28 h-28 sm:w-32 sm:h-32 rounded-[24px] border border-[#00ffc8]/20 bg-black/60 overflow-hidden flex items-center justify-center shrink-0 shadow-[0_0_30px_rgba(0,255,200,0.12)]">${escapeHtml(operative.image) ? `<img src="${escapeHtml(operative.image)}" alt="operative link" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')" />` : ''}<div class="hidden text-[10px] text-[#00ffc8]/55 px-2 text-center">FACE LINK LOST</div></div><div class="min-w-0 flex-1 space-y-2"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative face in-terminal</div><div class="text-sm sm:text-base leading-7 text-[#d9fff8]/78">${escapeHtml(state.fusedTokenId ? 'fused and talking' : 'selected and standing by')} • Token ${escapeHtml(operative.tokenId || 'pending')}</div></div></div>`;
+        face.innerHTML = '<div class="hero-frame mx-auto w-full max-w-[28rem] overflow-hidden rounded-[24px] border border-[#00ffc8]/20 bg-black/60 shadow-[0_0_30px_rgba(0,255,200,0.12)]"><img src="' + escapeHtml(operative.image) + '" alt="operative link" class="hero-image" onerror="this.style.display=\'none\'" /></div>';
     }
 
     function generateFieldReport(operative, dayKey) {
