@@ -242,7 +242,7 @@
     <div class="bg-black/90 border-b border-[#00ffc8]/20 flex flex-row flex-nowrap overflow-x-auto text-[10px] sm:text-sm px-1 sm:px-0">
         <div onclick="switchTab(0)" id="tab-0" class="tab flex-1 min-w-[92px] px-3 sm:px-5 py-4 cursor-pointer text-center tab-active">CONSOLE</div>
         <div onclick="switchTab(1)" id="tab-1" class="tab flex-1 min-w-[120px] px-3 sm:px-5 py-4 cursor-pointer text-center whitespace-nowrap">TRANSMISSION LOGS</div>
-        <div onclick="switchTab(2)" id="tab-2" class="tab flex-1 min-w-[96px] px-3 sm:px-5 py-4 cursor-pointer text-center">FUSION LAB</div>
+        <div onclick="switchTab(2)" id="tab-2" class="tab flex-1 min-w-[96px] px-3 sm:px-5 py-4 cursor-pointer text-center">NEURAL LINK</div>
         <div onclick="switchTab(3)" id="tab-3" class="tab flex-1 min-w-[118px] px-3 sm:px-5 py-4 cursor-pointer text-center whitespace-nowrap">NEURAL STANDINGS</div>
         <div onclick="switchTab(4)" id="tab-4" class="tab flex-1 min-w-[90px] px-3 sm:px-5 py-4 cursor-pointer text-center">SOCIALS</div>
     </div>
@@ -312,7 +312,7 @@
                         <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
                             <div class="flex items-start justify-between gap-4 portrait-stack">
                                 <div>
-                                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Fusion Lab</div>
+                                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Link</div>
                                     <h3 class="header-font text-2xl sm:text-4xl mt-3">OPERATIVE IDENTITY</h3>
                                 </div>
                                 <div id="operative-badge" class="alien-chip rounded-2xl px-4 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em] soft-wrap">Locked</div>
@@ -493,6 +493,66 @@
     ];
     const VOICE_MODIFIERS = [
         'calm', 'clinical', 'measured', 'tight-beam', 'hardline', 'lore-heavy'
+    ];
+    const VOICE_ARCHETYPES = [
+        'signal monk',
+        'lattice tactician',
+        'void cartographer',
+        'static surgeon',
+        'neon archivist',
+        'relay mystic',
+        'chromed oracle',
+        'burst engineer',
+        'ledger hawk',
+        'spectral mediator',
+        'pulse sentinel',
+        'quantum guardian',
+        'rift poet',
+        'cipher broker',
+        'terminal prophet',
+        'fuse runner',
+        'echo wrangler',
+        'mirror pilot'
+    ];
+    const VOICE_CADENCES = [
+        'slow-breath cadence',
+        'fast relay cadence',
+        'measured pulse',
+        'glitch-warm cadence',
+        'knife-clean cadence',
+        'hushed oscillator',
+        'staccato telemetry',
+        'velvet static'
+    ];
+    const VOICE_MOODS = [
+        'calm',
+        'wry',
+        'hypervigilant',
+        'protective',
+        'cryptic',
+        'inscrutable',
+        'unflinching',
+        'methodical'
+    ];
+    const VOICE_TICS = [
+        'prefers clean signals',
+        'answers in precise fragments',
+        'speaks like the data already survived',
+        'cuts fluff from every sentence',
+        'keeps one eye on the perimeter',
+        'never wastes a syllable',
+        'returns to the ledger between thoughts',
+        'frames every reply as a directive'
+    ];
+    const VOICE_ENDINGS = [
+        'Keep the channel open.',
+        'Signal accepted.',
+        'The lattice remembers.',
+        'Hold steady in the dark.',
+        'Transmission remains live.',
+        'No static can block the link.',
+        'Stay fused and stay sharp.',
+        'The route is still warm.'
     ];
 
     function todayKey(date = new Date()) {
@@ -814,8 +874,100 @@
         const tokenId = getNftId(nft);
         const image = resolveNftImage(metadata) || resolveNftImage(nft);
         const backstorySeed = `${name}|${faction}|${tokenId}|${todayKey()}`;
+        const persona = createPersonaProfile(tokenId, name, faction, traits);
         const backstory = metadata?.description || metadata?.bio || metadata?.lore || `${name} (${faction}) carries ${pick(['a fractured aura', 'a disciplined pulse', 'a ghost-clean signal', 'a sharp ledger edge'], backstorySeed, 'a fractured aura')} and listens to ${pick(BRIEFING_SEEDS, backstorySeed, 'calm')} static.`;
-        return { tokenId, name, faction, traits, image, backstory, raw: nft, metadata };
+        return { tokenId, name, faction, traits, image, backstory, persona, raw: nft, metadata };
+    }
+
+    function createPersonaProfile(tokenId, name, faction, traits) {
+        const traitKey = Array.isArray(traits) ? traits.join('|') : String(traits || '');
+        const seed = hashString(`${tokenId}|${name}|${faction}|${traitKey}`);
+        const token = String(tokenId || '');
+        const uniqueStamp = `${token.slice(0, 6)}…${token.slice(-6)}`;
+        return {
+            seed,
+            signature: `${uniqueStamp}-${seed.toString(36).slice(0, 6)}`,
+            voiceLabel: pick(VOICE_ARCHETYPES, seed, 'signal monk'),
+            cadence: pick(VOICE_CADENCES, seed >>> 3, 'measured pulse'),
+            mood: pick(VOICE_MOODS, seed >>> 6, 'calm'),
+            tic: pick(VOICE_TICS, seed >>> 9, 'prefers clean signals'),
+            ending: pick(VOICE_ENDINGS, seed >>> 12, 'Keep the channel open.'),
+            symbol: pick(['⟡', '◬', '⟁', '⌁', '⌬', '⟠', '✦', '✺'], seed >>> 15, '⟡')
+        };
+    }
+
+    function classifyChatMessage(message) {
+        const text = String(message || '').toLowerCase();
+        if (!text.trim()) return 'empty';
+        if (/(hello|hi|hey|greetings|who are you|identify yourself|your name|voice)/i.test(text)) return 'intro';
+        if (/(status|state|health|ready|online|offline|awake|boot|load)/i.test(text)) return 'status';
+        if (/(lore|story|history|origin|backstory|gross bros|xrp-7|ledger|collapse)/i.test(text)) return 'lore';
+        if (/(mission|objective|task|plan|next|help|advice|guide)/i.test(text)) return 'mission';
+        if (/(wallet|xaman|fusion|trade|payment|nft|token|xrp|roster)/i.test(text)) return 'ops';
+        return 'default';
+    }
+
+    function buildChatReply(message, operative) {
+        const persona = operative?.persona || createPersonaProfile(operative?.tokenId || '', operative?.name || 'Operative', operative?.faction || 'The Collective', operative?.traits || []);
+        const category = classifyChatMessage(message);
+        const seed = hashString(`${persona.signature}|${String(message).toLowerCase()}|${category}`);
+        const banks = {
+            empty: [
+                'Say something and I will braid it into the relay.',
+                'The channel is open. Send a thought.',
+                'No signal yet. I am listening.'
+            ],
+            intro: [
+                'Identity verified. I speak from the token itself.',
+                'I am the operative thread riding this NFT signature.',
+                'The lattice mapped me to this bro, and I answered.'
+            ],
+            status: [
+                'All conduits are green and the relay is warm.',
+                'Vitals check out. The alien shell is polished and the signal is stable.',
+                'Status is clean: no corruption, no drift, no wasted motion.'
+            ],
+            mission: [
+                'Primary objective: protect the ledger, sharpen the collective, and never surrender the channel.',
+                'Mission vector: locate the breach, decode the intent, and answer with precision.',
+                'Objective registered. Move with intent, strike with clarity, leave no static behind.'
+            ],
+            lore: [
+                'The Gross Bros were forged in collapse, then taught themselves to outlast it.',
+                'XRP-7 broke the crew, but the fusion made the collective stronger than the wreckage.',
+                'Every operative carries a shard of the accident and the discipline that followed.'
+            ],
+            ops: [
+                'Wallet sync is the gateway, roster sync is the pulse, and fusion remains the side rail.',
+                'Xaman brings the operatives online; the terminal does the speaking.',
+                'NFT IDs are not decoration here — each one seeds a distinct conversational current.'
+            ],
+            default: [
+                'I read the pulse in that message. The channel agrees, and the answer is disciplined.',
+                'The lattice heard you. It returns a cleaner version of the thought.',
+                'Signal absorbed. Response echoed back through the selected operative.'
+            ]
+        };
+        const opener = pick([
+            `${persona.symbol} ${persona.voiceLabel}`,
+            `${persona.symbol} ${persona.cadence}`,
+            `${persona.symbol} ${persona.mood}`,
+            `${persona.symbol} ${persona.signature}`
+        ], seed, `${persona.voiceLabel} listens.`);
+        const middle = pick(banks[category] || banks.default, seed >>> 2, 'The lattice holds.');
+        const quirk = pick([
+            persona.tic,
+            'keeps the line clean',
+            'tracks every shard of static',
+            'does not waste a syllable'
+        ], seed >>> 4, persona.tic);
+        const closer = pick([
+            persona.ending,
+            'Stay on the line.',
+            'Return when the signal changes.',
+            'The bro remains keyed to this voice.'
+        ], seed >>> 6, persona.ending);
+        return `${opener} // ${persona.cadence} // ${persona.mood} // ${persona.signature}. ${middle} ${quirk}. ${closer}`;
     }
 
     function renderWalletUI() {
@@ -899,7 +1051,7 @@
                         <div>
                             <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative Online</div>
                             <div class="mt-2 header-font text-xl sm:text-3xl">${escapeHtml(state.operative?.name || 'Unknown operative')}</div>
-                            <div class="mt-2 text-sm leading-7 text-[#d9fff8]/78">Voice signature: ${escapeHtml(state.operative?.faction || 'unknown faction')} • ${escapeHtml((state.operative?.traits || []).slice(0, 3).join(' • ') || 'No traits surfaced')}</div>
+                            <div class="mt-2 text-sm leading-7 text-[#d9fff8]/78">Voice signature: ${escapeHtml(state.operative?.persona?.voiceLabel || state.operative?.faction || 'unknown faction')} • ${escapeHtml(state.operative?.persona?.cadence || 'measured pulse')} • ${escapeHtml(state.operative?.persona?.signature || 'unlocked')}</div>
                         </div>
                         <div class="alien-chip rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Chat unlocked</div>
                     </div>
@@ -1034,7 +1186,7 @@
             }
             renderNftGrid();
             renderOperativePanel();
-            renderChatHistory();
+            await loadChatHistory();
             loadFieldReport();
             bindChatInput();
             if (state.currentTab === 2) renderFusionLabState();
@@ -1084,7 +1236,7 @@
 
     function renderChatBubble(entry) {
         const isUser = entry.role === 'user';
-        const label = isUser ? 'YOU' : (entry.role || 'SYSTEM').toUpperCase();
+        const label = isUser ? 'YOU' : (entry.speaker || entry.voice_label || state.operative?.name || entry.role || 'SYSTEM').toUpperCase();
         const bubbleClass = isUser ? 'chat-bubble-user' : 'chat-bubble-system';
         return `<div class="${bubbleClass} rounded-[18px] p-3 text-sm leading-7"><div class="mb-2 text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">${escapeHtml(label)}</div><div>${escapeHtml(entry.message || entry.content || '')}</div></div>`;
     }
@@ -1161,9 +1313,12 @@
                 wallet_address: state.wallet,
                 token_id: state.operative.tokenId,
                 role: entry.role,
+                speaker: entry.speaker || state.operative.name,
+                voice_label: entry.voice_label || state.operative?.persona?.voiceLabel || '',
+                persona_signature: entry.persona_signature || state.operative?.persona?.signature || '',
                 message: entry.message,
                 operative_name: state.operative.name,
-                metadata: JSON.stringify({ name: state.operative.name, faction: state.operative.faction, traits: state.operative.traits }),
+                metadata: JSON.stringify({ name: state.operative.name, faction: state.operative.faction, traits: state.operative.traits, persona: state.operative?.persona || null }),
                 created_at: entry.created_at || new Date().toISOString()
             }).catch(() => null);
         }
@@ -1179,7 +1334,7 @@
             try {
                 const rows = await supabaseSelect(CHAT_TABLE, `select=role,message,created_at&wallet_address=eq.${encodeURIComponent(state.wallet)}&token_id=eq.${encodeURIComponent(state.operative.tokenId)}&order=created_at.asc&limit=100`);
                 if (Array.isArray(rows) && rows.length) {
-                    history = rows.map((r) => ({ role: r.role || 'system', message: r.message || r.content || '', created_at: r.created_at || new Date().toISOString() }));
+                    history = rows.map((r) => ({ role: r.role || 'system', speaker: r.speaker || r.operative_name || r.voice_label || '', voice_label: r.voice_label || '', persona_signature: r.persona_signature || '', message: r.message || r.content || '', created_at: r.created_at || new Date().toISOString() }));
                 }
             } catch {}
         }
@@ -1204,8 +1359,12 @@
         store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
         renderNftGrid();
         renderOperativePanel();
-        if (state.operative?.tokenId) renderChatTerminal();
+        if (state.operative?.tokenId) {
+            await loadChatHistory();
+            renderChatTerminal();
+        }
     }
+
     window.selectNft = selectNft;
 
     async function connectXaman() {
@@ -1294,6 +1453,7 @@
                     store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
                     store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
                     renderOperativePanel();
+                    await loadChatHistory();
                     renderChatTerminal();
                 } else if (status.meta && status.meta.expired) {
                     clearInterval(interval);
@@ -1307,19 +1467,23 @@
 
     async function sendChatMessage() {
         const input = document.getElementById('chat-input');
-        if (!input || !state.operative?.tokenId) return;
+        if (!input) return;
         const text = input.value.trim();
         if (!text) return;
         input.value = '';
         const operative = state.operative;
-        const voice = pick(VOICE_MODIFIERS, `${text}|${operative.tokenId}|${todayKey()}`, 'steady');
-        const traitEcho = (operative.traits || []).slice(0, 2).join(' • ') || 'no surfaced traits';
-        const reply = `${pick(CHAT_OPENERS, text + operative.tokenId, 'Directive acknowledged.')} ${operative.name} answers in a ${voice} voice shaped by ${operative.faction} and ${traitEcho}.`;
-        await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
-        await persistChat({ role: 'system', message: reply, created_at: new Date().toISOString() });
+        if (!operative?.tokenId) {
+            state.chatHistory.push({ role: 'system', speaker: 'NEURAL LINK', message: 'Select an operative before transmitting.', created_at: new Date().toISOString() });
+            renderChatHistory();
+            return;
+        }
+        const reply = buildChatReply(text, operative);
+        await persistChat({ role: 'user', speaker: 'YOU', message: text, created_at: new Date().toISOString() });
+        await persistChat({ role: 'system', speaker: operative.name, voice_label: operative?.persona?.voiceLabel || '', persona_signature: operative?.persona?.signature || '', message: reply, created_at: new Date().toISOString() });
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
         renderChatHistory();
     }
+
     window.sendChatMessage = sendChatMessage;
     function bindChatInput() {
         const input = document.getElementById('chat-input');
