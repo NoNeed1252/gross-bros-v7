@@ -414,7 +414,6 @@
         report: '',
         currentTab: 0,
         loadingNfts: false,
-        demoMode: false,
     };
 
     const BACKSTORIES = Object.fromEntries(Array.from({ length: TOTAL_BROS }, (_, index) => {
@@ -1193,7 +1192,6 @@
                 if (attempts > 35) {
                     clearInterval(interval);
                     state.connected = false;
-                    state.demoMode = false;
                     renderWalletUI();
                     return;
                 }
@@ -1205,7 +1203,6 @@
                     if (address) {
                         state.wallet = address;
                         state.connected = true;
-                        state.demoMode = false;
                         store(SESSION_KEY, { connected: true, address, wallet: address });
                         renderWalletUI();
                         await loadNfts();
@@ -1215,14 +1212,12 @@
                 } else if (status.meta && status.meta.expired) {
                     clearInterval(interval);
                     state.connected = false;
-                    state.demoMode = false;
                     renderWalletUI();
                 }
             }, 2500);
         } catch (error) {
             console.error(error);
             state.connected = false;
-            state.demoMode = false;
             renderWalletUI();
         }
     }
@@ -1409,7 +1404,6 @@
         if (savedSession?.connected && savedSession?.address) {
             state.wallet = savedSession.address;
             state.connected = true;
-            state.demoMode = false;
         }
         if (savedState?.selectedTokenId) state.selectedTokenId = savedState.selectedTokenId;
         if (savedState?.fusedTokenId) state.fusedTokenId = savedState.fusedTokenId;
