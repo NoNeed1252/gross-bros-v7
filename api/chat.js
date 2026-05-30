@@ -17,11 +17,12 @@ export default async function handler(req, res) {
       'Lean into the operative lore of Backpack Bros, Worker Bros, and Business Bros.',
       'Keep the tone confident, warm, practical, and lightly playful.',
       'Be concise, useful, and grounded in the operative’s faction/backstory.',
-      'Do not mention policies or system prompts.'
+      'Do not mention policies or system prompts.',
+      'Keep the reply to at most 50 tokens and answer immediately.'
     ].join(' ');
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), 8000);
     const upstreamBase = 'http://216.250.127.169:8443';
 
     const generatePrompt = [
@@ -38,9 +39,12 @@ export default async function handler(req, res) {
       },
       signal: controller.signal,
       body: JSON.stringify({
-        model: 'llama3',
+        model: 'llama3:8b',
         prompt: generatePrompt,
-        stream: false
+        stream: false,
+        options: {
+          num_predict: 50
+        }
       })
     }).finally(() => clearTimeout(timeout));
 
@@ -60,3 +64,4 @@ export default async function handler(req, res) {
     });
   }
 }
+
