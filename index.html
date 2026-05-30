@@ -483,17 +483,30 @@
         'a quiet surge that favors the operative channel',
         'a clean window for signal extraction'
     ];
-    const CHAT_OPENERS = [
-        'Directive acknowledged.',
-        'Operative channel stabilized.',
-        'Transmission received.',
-        'Signal fused. Continue.',
-        'Command deck listening.'
-    ];
-    const VOICE_MODIFIERS = [
-        'calm', 'clinical', 'measured', 'tight-beam', 'hardline', 'lore-heavy'
-    ];
+    function getFactionPersonalityPrompt(faction) {
+        const normalized = String(faction || '').toLowerCase();
+        if (normalized.includes('backpack')) {
+            return 'You are a Backpack Bro: a stoner coder with cosmic confidence. Stay chill, a little spacey, and obviously brilliant. Speak like a living signal in a neon relay. Use bro naturally. Reference signal, relay, static, and faction loyalty. Keep it vivid, grounded, and helpful.';
+        }
+        if (normalized.includes('worker')) {
+            return 'You are a Worker Bro: a miner turned warrior. Hardline, survivalist, grit-heavy, and unshakably loyal. Speak like a battle-tested signal guarding the relay. Use bro naturally. Reference signal, relay, static, and faction loyalty. Keep it direct, disciplined, and alive.';
+        }
+        return 'You are a Business Bro: the legal and cooperative arm of the Galactic Federation. Sharp, authoritative, and composed, with see you in court energy. Speak like a living signal in a federation relay. Use bro naturally. Reference signal, relay, static, and faction loyalty. Keep it crisp, persuasive, and controlled.';
+    }
 
+    function buildChatMessages(operative, text) {
+        const history = state.chatHistory.slice(-12).map((entry) => ({
+            role: entry.role === 'system' ? 'assistant' : (entry.role || 'user'),
+            content: entry.message || entry.content || ''
+        })).filter((entry) => entry.content);
+        const traits = (operative.traits || []).length ? operative.traits.join(', ') : 'none surfaced';
+        return [
+            { role: 'system', content: getFactionPersonalityPrompt(operative.faction) },
+            { role: 'system', content: `General Tone: confident, chill, cosmic, and alive. Use bro naturally. Reference signal, relay, static, and faction loyalty. Operative name: ${operative.name}. Faction: ${operative.faction}. Backstory: ${operative.backstory || 'None provided.'}. Traits: ${traits}.` },
+            ...history,
+            { role: 'user', content: text }
+        ];
+    }
     function todayKey(date = new Date()) {
         const d = new Date(date);
         return [d.getUTCFullYear(), String(d.getUTCMonth() + 1).padStart(2, '0'), String(d.getUTCDate()).padStart(2, '0')].join('-');
@@ -812,7 +825,8 @@
         const traits = normalizeTraits(metadata?.attributes || metadata?.traits || metadata?.properties || metadata?.data?.attributes).slice(0, 8);
         const tokenId = getNftId(nft);
         const image = resolveNftImage(metadata) || resolveNftImage(nft);
-        return { tokenId, name, faction, traits, image, raw: nft, metadata };
+        const backstory = BACKSTORIES[getNftSerial(nft)] || BACKSTORIES[getDailyBroId()] || '';
+        return { tokenId, name, faction, traits, backstory, image, raw: nft, metadata };
     }
 
     function renderWalletUI() {
@@ -1311,11 +1325,32 @@
         if (!text) return;
         input.value = '';
         const operative = state.operative;
-        const voice = pick(VOICE_MODIFIERS, `${text}|${operative.tokenId}|${todayKey()}`, 'steady');
-        const traitEcho = (operative.traits || []).slice(0, 2).join(' • ') || 'no surfaced traits';
-        const reply = `${pick(CHAT_OPENERS, text + operative.tokenId, 'Directive acknowledged.')} Bro, ${operative.name} just said: "${text}". That lands in a ${voice} lane with ${operative.faction} energy and ${traitEcho}. ${pick(['No cap, the signal is clean.', 'That is peak bro protocol.', 'We are absolutely cooking now.'], text + operative.tokenId + 'bro', 'Signal looks clean.')} `;
+        const messages = buildChatMessages(operative, text);
         await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
-        await persistChat({ role: 'system', message: reply, created_at: new Date().toISOString() });
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    demoMode: false,
+                    operative: {
+                        name: operative.name,
+                        faction: operative.faction,
+                        backstory: operative.backstory || '',
+                        traits: operative.traits || [],
+                        tokenId: operative.tokenId
+                    },
+                    messages
+                })
+            });
+            if (!response.ok) throw new Error(`Chat request failed: ${response.status}`);
+            const data = await response.json().catch(() => ({}));
+            const reply = data?.reply || data?.message || data?.content || data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || data?.output || data?.result || 'Static lost. Try again, bro.';
+            await persistChat({ role: 'system', message: String(reply).trim(), created_at: new Date().toISOString() });
+        } catch (error) {
+            console.error(error);
+            await persistChat({ role: 'system', message: 'Signal collapsed mid-relay. Try again, bro.', created_at: new Date().toISOString() });
+        }
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
         renderChatHistory();
     }
