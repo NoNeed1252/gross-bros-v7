@@ -283,8 +283,7 @@
                 </div>
             </div>
         </div>
-
-                <div id="content-2" class="tab-content">
+        <div id="content-2" class="tab-content">
             <div class="max-w-6xl mx-auto space-y-4">
                 <div class="inner-panel rounded-[1.75rem] p-3 sm:p-4">
                     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between portrait-stack">
@@ -385,6 +384,7 @@
                     </div>
                 </div>
             </div>
+        </div>
         </div>
 
         <div id="content-3" class="tab-content">
@@ -507,7 +507,7 @@
         'a clean window for signal extraction'
     ];
     const CHAT_OPENERS = [
-        'I\'m on it, bro.',
+        'I'm on it, bro.',
         'Bet, bro.',
         'Locked in, bro.',
         'Say less, bro.',
@@ -551,7 +551,7 @@
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
-            .replace(/\"/g, '&quot;')
+            .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
     }
 
@@ -969,13 +969,13 @@
             const active = tokenId === state.selectedTokenId;
             return `
                 <button class="text-left rounded-[18px] overflow-hidden border ${active ? 'border-[#00ffc8] shadow-[0_0_0_1px_rgba(0,255,200,0.22),0_0_26px_rgba(0,255,200,0.14)]' : 'border-[#00ffc8]/15'} bg-black/35 transition-transform hover:-translate-y-0.5" onclick="selectNft('${escapeHtml(tokenId)}')">
-                    <div class="flex gap-2 p-2 sm:p-3 items-start">
-                        <div class="shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-black/45 border border-[#00ffc8]/12 flex items-center justify-center">
+                    <div class="flex gap-2 p-1.5 sm:p-2.5 items-start">
+                        <div class="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-black/45 border border-[#00ffc8]/12 flex items-center justify-center">
                             ${img ? `<img src="${escapeHtml(img)}" class="nft-thumb" alt="${escapeHtml(name)}" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden')" />` : ''}
                             <div class="hidden text-[10px] text-[#00ffc8]/55 px-2 text-center">NO IMAGE</div>
                         </div>
                         <div class="min-w-0 flex-1 py-0.5">
-                            <div class="header-font text-sm sm:text-base font-bold text-[#effffb] leading-tight break-words">${escapeHtml(name)}</div>
+                            <div class="header-font text-xs sm:text-sm font-bold text-[#effffb] leading-tight break-words">${escapeHtml(name)}</div>
                             <div class="mt-1 text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 break-words">${escapeHtml(faction)}</div>
                             <div class="mt-2 text-[10px] text-[#d7fff7]/70">#${escapeHtml(serial)}</div>
                         </div>
@@ -1118,7 +1118,7 @@
 
     function renderChatBubble(entry) {
         const isUser = entry.role === 'user';
-        const label = isUser ? 'YOU' : (entry.role || 'SYSTEM').toUpperCase();
+        const label = isUser ? 'YOU' : 'OPERATIVE';
         const bubbleClass = isUser ? 'chat-bubble-user' : 'chat-bubble-system';
         return `<div class="${bubbleClass} rounded-[18px] p-3 text-sm leading-7"><div class="mb-2 text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">${escapeHtml(label)}</div><div>${escapeHtml(entry.message || entry.content || '')}</div></div>`;
     }
@@ -1159,7 +1159,8 @@
         if (!force) {
             const cached = local(key, null);
             if (cached?.report) {
-                panel.innerHTML = `<div class="space-y-3"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Cached intelligence</div><div>${escapeHtml(cached.report).replace(/\n/g, '<br>')}</div></div>`;
+                panel.innerHTML = `<div class="space-y-3"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Cached intelligence</div><div>${escapeHtml(cached.report).replace(/\
+/g, '<br>')}</div></div>`;
                 if (dayEl) dayEl.textContent = `Day ${dayKey} • Token ${active.tokenId}`;
                 state.report = cached.report;
                 return;
@@ -1168,7 +1169,8 @@
         const report = generateFieldReport(buildOperativeFromMetadata(active.nft, active.metadata || {}), dayKey);
         state.report = report;
         awardOperatorPoints('daily-activity', OPERATOR_POINTS_BASE_ACTIVITY).catch(() => null);
-        panel.innerHTML = `<div class="space-y-3"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Briefing ${dayKey}</div><div>${escapeHtml(report).replace(/\n/g, '<br>')}</div></div>`;
+        panel.innerHTML = `<div class="space-y-3"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Briefing ${dayKey}</div><div>${escapeHtml(report).replace(/\
+/g, '<br>')}</div></div>`;
         if (dayEl) dayEl.textContent = `Day ${dayKey} • Token ${active.tokenId}`;
         store(key, { report, day_key: dayKey, updated_at: new Date().toISOString() });
         supabaseUpsert(REPORT_TABLE, {
@@ -1344,8 +1346,7 @@
         if (!text) return;
         input.value = '';
         const operative = state.operative;
-        const voice = pick(VOICE_MODIFIERS, `${text}|${operative.tokenId}|${todayKey()}`, 'steady');
-        const reply = `${pick(CHAT_OPENERS, text + operative.tokenId, 'Directive acknowledged.')} ${operative.name} answers in a ${voice} voice shaped by ${operative.faction} and a stable channel.`;
+        const reply = pick(CHAT_OPENERS, text + operative.tokenId, 'I'm on it, bro.');
         await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
         await persistChat({ role: 'system', message: reply, created_at: new Date().toISOString() });
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
@@ -1467,4 +1468,4 @@
 })();
 </script>
 </body>
-</html>"}}}
+</html>
