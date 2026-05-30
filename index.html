@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.6</title>
+    <title>Neural Link</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -222,7 +222,7 @@
         <div class="flex items-center gap-3 sm:gap-4">
             <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
             <div>
-                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.6</div>
+                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">Neural Link OS</div>
                 <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Ledger relay // XRPL survival interface</div>
             </div>
         </div>
@@ -242,7 +242,7 @@
     <div class="bg-black/90 border-b border-[#00ffc8]/20 flex flex-row flex-nowrap overflow-x-auto text-[10px] sm:text-sm px-1 sm:px-0">
         <div onclick="switchTab(0)" id="tab-0" class="tab flex-1 min-w-[92px] px-3 sm:px-5 py-4 cursor-pointer text-center tab-active">CONSOLE</div>
         <div onclick="switchTab(1)" id="tab-1" class="tab flex-1 min-w-[120px] px-3 sm:px-5 py-4 cursor-pointer text-center whitespace-nowrap">TRANSMISSION LOGS</div>
-        <div onclick="switchTab(2)" id="tab-2" class="tab flex-1 min-w-[96px] px-3 sm:px-5 py-4 cursor-pointer text-center">FUSION LAB</div>
+        <div onclick="switchTab(2)" id="tab-2" class="tab flex-1 min-w-[96px] px-3 sm:px-5 py-4 cursor-pointer text-center">NEURAL LINK</div>
         <div onclick="switchTab(3)" id="tab-3" class="tab flex-1 min-w-[118px] px-3 sm:px-5 py-4 cursor-pointer text-center whitespace-nowrap">NEURAL STANDINGS</div>
         <div onclick="switchTab(4)" id="tab-4" class="tab flex-1 min-w-[90px] px-3 sm:px-5 py-4 cursor-pointer text-center">SOCIALS</div>
     </div>
@@ -286,14 +286,6 @@
 
                 <div id="content-2" class="tab-content">
             <div class="max-w-6xl mx-auto space-y-5">
-                <div class="flex items-center justify-between gap-4 portrait-stack">
-                    <div>
-                        <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Fusion Lab</div>
-                        <h1 class="header-font text-3xl sm:text-5xl mt-2">NEURAL LINK</h1>
-                    </div>
-                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.35em] text-[#00ffc8]/50">roster first // terminal first // one voice per NFT ID</div>
-                </div>
-
                 <div class="grid gap-5 xl:grid-cols-[0.98fr_1.02fr] items-stretch">
                     <section class="inner-panel rounded-[2rem] p-5 sm:p-6 flex flex-col">
                         <div class="flex items-start justify-between gap-4 portrait-stack">
@@ -303,19 +295,9 @@
                             </div>
                             <div id="nft-preview-token" class="alien-chip rounded-2xl px-4 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em] soft-wrap">TOKEN // standby</div>
                         </div>
-                        <div class="mt-4 grid gap-4 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] items-start">
-                            <div class="rounded-[24px] border border-[#00ffc8]/14 bg-black/40 min-h-[18rem] sm:min-h-[22rem] lg:min-h-[28rem] overflow-hidden flex items-center justify-center">
-                                <img id="nft-preview-image" alt="Selected NFT preview" class="hidden w-full h-full object-cover" />
-                                <div id="nft-preview-placeholder" class="text-center px-8 text-[#00ffc8]/55 uppercase tracking-[0.35em] text-xs md:text-sm">Select a rostered NFT to preview it here.</div>
-                            </div>
-                            <div class="space-y-3">
-                                <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-4 space-y-3">
-                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Command Notes</div>
-                                    <div id="nft-preview-voice" class="alien-chip rounded-2xl px-4 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em] soft-wrap">VOICE // standby</div>
-                                    <div class="text-sm sm:text-base leading-7 text-[#d9fff8]/80 soft-wrap">Preview, voice, and field report stay in sync.</div>
-                                </div>
-                                <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm sm:text-base leading-7 text-[#d9fff8]/80 soft-wrap">Token-locked readout.</div>
-                            </div>
+                        <div class="mt-4 rounded-[24px] border border-[#00ffc8]/14 bg-black/40 min-h-[18rem] sm:min-h-[22rem] lg:min-h-[28rem] overflow-hidden flex items-center justify-center">
+                            <img id="nft-preview-image" alt="Selected NFT preview" class="hidden w-full h-full object-cover" />
+                            <div id="nft-preview-placeholder" class="text-center px-8 text-[#00ffc8]/55 uppercase tracking-[0.35em] text-xs md:text-sm">Select a rostered NFT to preview it here.</div>
                         </div>
                     </section>
 
@@ -381,7 +363,6 @@
                 </div>
             </div>
         </div>
-
         <div id="content-3" class="tab-content">
             <div class="max-w-6xl mx-auto">
                 <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
