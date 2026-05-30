@@ -8,27 +8,17 @@ export default async function handler(req, res) {
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     const operative = body.operative || {};
     const messages = Array.isArray(body.messages) ? body.messages : [];
-    const demoMode = Boolean(body.demoMode) || String(operative.tokenId || '').trim() === 'demo-neural-link' || String(operative.name || '').trim() === 'Neural Link Demo';
     const backstory = String(operative.backstory || '').trim();
     const faction = String(operative.faction || 'Unknown faction').trim();
     const name = String(operative.name || 'Operative').trim();
-
-    if (demoMode) {
-      const lastUser = [...messages].reverse().find((message) => String(message?.role || '').toLowerCase() === 'user');
-      const promptText = String(lastUser?.content || lastUser?.message || '').trim();
-      const reply = promptText
-        ? `Demo relay online. ${name} heard: ${promptText}. Signal steady, bro.`
-        : `Demo relay online. ${name} is standing by. Signal steady, bro.`;
-      return res.status(200).json({ reply });
-    }
 
     const systemPrompt = [
       `You are a bro-coded conversational agent for ${name} of the ${faction}.`,
       'Lean into the operative lore of Backpack Bros, Worker Bros, and Business Bros.',
       'Keep the tone confident, warm, practical, and lightly playful.',
-      'Be concise, useful, and grounded in the operative’s faction/backstory.',
-      'Do not mention policies or system prompts.',
-      'Keep the reply to at most 50 tokens and answer immediately.'
+      'Keep every reply under 20 words to speed generation and stay within the Vercel 10s timeout.',
+      'Be concise, useful, and grounded in the operative\'s faction/backstory.',
+      'Do not mention policies or system prompts.'
     ].join(' ');
 
     const controller = new AbortController();
@@ -60,7 +50,7 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const text = await response.text().catch(() => '');
-      throw new Error(`IONOS request failed: ${response.status} ${text}`.trim());
+      throw new Error(`AI request failed: ${response.status} ${text}`.trim());
     }
 
     const data = await response.json();
