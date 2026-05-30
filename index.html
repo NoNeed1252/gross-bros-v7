@@ -296,6 +296,17 @@
                     </div>
                 </div>
 
+                <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
+                    <div class="flex items-center justify-between gap-4 portrait-stack">
+                        <div>
+                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">NFT roster</div>
+                            <h4 class="header-font text-xl sm:text-3xl mt-2">SELECT AN OPERATIVE</h4>
+                        </div>
+                        <div id="xrp-amount" class="text-xs sm:text-sm text-[#00ffc8]/70"></div>
+                    </div>
+                    <div id="nft-grid" class="mt-5 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3"></div>
+                </div>
+
                 <div class="grid gap-5 xl:grid-cols-[0.98fr_1.02fr] fusion-lab-layout">
                     <div class="space-y-5">
                         <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
@@ -320,16 +331,6 @@
                             <div id="fusion-panel" class="mt-5"></div>
                         </div>
 
-                        <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
-                            <div class="flex items-center justify-between gap-4 portrait-stack">
-                                <div>
-                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">NFT roster</div>
-                                    <h4 class="header-font text-xl sm:text-3xl mt-2">SELECT AN OPERATIVE</h4>
-                                </div>
-                                <div id="xrp-amount" class="text-xs sm:text-sm text-[#00ffc8]/70"></div>
-                            </div>
-                            <div id="nft-grid" class="mt-5 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3"></div>
-                        </div>
                     </div>
 
                     <div class="space-y-5">
@@ -1213,7 +1214,8 @@
             if (walletText) walletText.textContent = 'CONNECTING...';
             const res = await fetch('/api/xaman?action=create-payload', { method: 'POST' });
             const payload = await res.json();
-            if (payload?.next?.always) window.open(payload.next.always, '_blank');
+            const redirectUrl = payload?.next?.always || payload?.payload?.next?.always;
+            if (typeof redirectUrl === 'string' && redirectUrl) window.location.assign(redirectUrl);
             let attempts = 0;
             const interval = setInterval(async () => {
                 attempts++;
@@ -1268,12 +1270,13 @@
                     txjson: {
                         TransactionType: 'Payment',
                         Destination: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
-                        Amount: String(FUSION_XRP * 1000000)
+                        Amount: '50000000'
                     }
                 })
             });
             const payload = await res.json();
-            if (payload?.next?.always) window.open(payload.next.always, '_blank');
+            const redirectUrl = payload?.next?.always || payload?.payload?.next?.always;
+            if (typeof redirectUrl === 'string' && redirectUrl) window.location.assign(redirectUrl);
             let attempts = 0;
             const interval = setInterval(async () => {
                 attempts++;
