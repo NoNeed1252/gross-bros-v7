@@ -1,291 +1,383 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neural Link OS</title>
+    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;family=Share+Tech+Mono&display=swap');
-        :root { --cyan: #00ffc8; }
-        body { font-family: 'Share Tech Mono', monospace; background: #000; }
-        .header-font { font-family: 'Orbitron', sans-serif; }
-
-        .alien-monitor {
-            background: #050505;
-            border: 1px solid #333;
-            box-shadow: 0 0 0 18px #0a0a0a, 0 30px 70px -15px rgba(0,0,0,0.95), 0 0 100px -20px var(--cyan);
-            border-radius: 24px;
-            overflow: hidden;
-            max-width: 1640px;
-            margin: 0 auto;
-            width: min(1640px, calc(100vw - 24px));
+        .hidden-tab { display: none !important; }
+        .terminal-glow { text-shadow: 0 0 10px rgba(0,255,200,0.3), 0 0 28px rgba(0,255,200,0.15); }
+        .inner-panel {
+            background: linear-gradient(180deg, rgba(7, 18, 17, 0.96), rgba(3, 10, 10, 0.96));
+            border: 1px solid rgba(0,255,200,0.18);
+            box-shadow: inset 0 0 50px rgba(0,255,200,0.04);
         }
-
-        .tab-active { border-bottom: 5px solid #00ffc8; color: #00ffc8; background: #1a1a1a; }
-        .neural-terminal {
-            background:
-                radial-gradient(circle at top, rgba(0, 255, 200, 0.12), transparent 34%),
-                linear-gradient(180deg, rgba(2, 20, 15, 0.96), rgba(0, 0, 0, 0.98));
-            backdrop-filter: blur(14px);
+        .terminal-scroll::-webkit-scrollbar { width: 10px; }
+        .terminal-scroll::-webkit-scrollbar-track { background: #081111; }
+        .terminal-scroll::-webkit-scrollbar-thumb { background: rgba(0,255,200,0.35); border-radius: 999px; }
+        .terminal-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,255,200,0.55); }
+        .neural-pill {
+            border: 1px solid rgba(0,255,200,0.2);
+            background: rgba(0,255,200,0.03);
         }
-        .neural-terminal-log {
-            background:
-                linear-gradient(180deg, rgba(0, 255, 200, 0.03), rgba(0, 0, 0, 0.02)),
-                radial-gradient(circle at center top, rgba(0, 255, 200, 0.04), transparent 42%);
+        .neural-pill.is-active {
+            background: rgba(0,255,200,0.12);
+            border-color: rgba(0,255,200,0.7);
+            box-shadow: 0 0 18px rgba(0,255,200,0.16);
         }
-        .neural-line {
-            border: 1px solid rgba(0, 255, 200, 0.14);
-            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+        .neural-button {
+            background: linear-gradient(180deg, rgba(0,255,200,0.16), rgba(0,255,200,0.06));
+            border: 1px solid rgba(0,255,200,0.42);
+            box-shadow: 0 0 24px rgba(0,255,200,0.08);
         }
-        .neural-line--system { background: rgba(0, 255, 200, 0.04); }
-        .neural-line--user { background: rgba(0, 255, 200, 0.08); }
-        .neural-line--assistant { background: rgba(0, 255, 200, 0.05); }
-        .operative-card { transition: transform 140ms ease, border-color 140ms ease, background 140ms ease; }
-        .operative-card:hover { transform: translateY(-1px); }
-        .operative-card--active { border-color: rgba(0, 255, 200, 0.95) !important; background: rgba(0, 255, 200, 0.08) !important; }
-        .neural-input::placeholder { color: rgba(0, 255, 200, 0.35); }
-
-        @media (max-width: 768px) {
-            .alien-monitor {
-                width: calc(100vw - 12px);
-                box-shadow: 0 0 0 10px #0a0a0a, 0 24px 50px -20px rgba(0, 0, 0, 0.9), 0 0 70px -30px var(--cyan);
-                border-radius: 18px;
-            }
-            .neural-terminal-log {
-                min-height: 18rem;
-            }
+        .neural-button:hover { background: rgba(0,255,200,0.18); }
+        .neural-grid {
+            background-image:
+                linear-gradient(rgba(0,255,200,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,200,0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
         }
-
-        @media (max-width: 1024px) and (orientation: portrait) {
-            .neural-terminal-log {
-                min-height: 16rem;
-            }
+        .terminal-badge {
+            border: 1px solid rgba(0,255,200,0.18);
+            background: rgba(0,255,200,0.06);
         }
-
     </style>
 </head>
-<body class="bg-black min-h-[100dvh] flex items-start md:items-center justify-start md:justify-center p-2 md:p-4">
-
-<div class="alien-monitor min-h-[100dvh] md:h-[94dvh] flex flex-col shadow-2xl relative w-full max-w-[1480px]">
-
-    <!-- HEADER -->
-    <div class="bg-[#151515] border-b-8 border-[#0a0a0a] px-6 py-5 flex items-center justify-between gap-6">
-        <div class="flex items-center gap-4">
-            <div class="w-5 h-5 bg-[#00ffc8] rounded-full animate-pulse"></div>
-            <div class="header-font text-3xl tracking-widest text-[#00ffc8]">Neural Link OS <span class="text-xs align-top tracking-[0.4em] text-[#00ffc8]/70">v8.11</span></div>
-        </div>
-        <div class="hidden md:flex items-center gap-8 text-sm font-mono text-[#00ffc8]">
-            <div>CACHE 2.4TB</div>
-            <div>CPU 69.1%</div>
-            <div>NEURAL 99.4%</div>
-            <div class="text-[#00ffc8]">XRP RELAY ACTIVE</div>
-        </div>
-        <div class="flex flex-col items-end gap-1">
-            <button id="wallet-button" type="button" class="cursor-pointer px-4 py-2 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-2 text-xs md:text-sm text-[#00ffc8]">
-                <i class="fa-solid fa-wallet"></i>
-                <span id="wallet-text">CONNECT XAMAN</span>
-            </button>
-            <p id="xaman-status" class="text-[11px] text-[#00ffc8]/60 text-right max-w-[220px]">Wallet disconnected.</p>
-        </div>
-    </div>
-
-    <!-- TABS -->
-    <div class="bg-[#0f0f0f] border-b border-[#333] flex text-sm overflow-x-auto">
-        <div onclick="switchTab(0)" id="tab-0" class="tab px-6 py-5 cursor-pointer tab-active">MAIN CONSOLE</div>
-        <div onclick="switchTab(1)" id="tab-1" class="tab px-6 py-5 cursor-pointer">STORYLINE</div>
-        <div onclick="switchTab(2)" id="tab-2" class="tab px-6 py-5 cursor-pointer">NEURAL LINK</div>
-        <div onclick="switchTab(3)" id="tab-3" class="tab px-6 py-5 cursor-pointer">GROSS REWARDS</div>
-    </div>
-
-    <!-- CONTENT -->
-    <div class="flex-1 overflow-auto crt bg-[#050505] p-6 md:p-10 relative text-[#00ffc8]">
-
-        <!-- TAB 0: MAIN CONSOLE -->
-        <div id="content-0" class="tab-content hidden">
-            <h1 class="header-font text-5xl md:text-6xl text-center text-[#00ffc8] tracking-widest mb-8">BRO OF THE DAY</h1>
-            <div class="max-w-3xl mx-auto text-center text-[#00ffc8]/90 mb-12 space-y-6">
-                <p>RECOVERED TRANSMISSION: The collective remains machine-linked. New data arriving weekly.</p>
-                <button type="button" onclick="switchTab(2)" class="px-6 py-3 rounded-full border border-[#00ffc8]/40 text-[#00ffc8] hover:bg-[#00ffc8] hover:text-black transition-colors">
-                    DECODE FULL LOGS
-                </button>
-            </div>
-            <div class="border-4 border-[#00ffc8] bg-black/70 rounded-3xl p-8 space-y-8">
-                <div class="flex flex-col lg:flex-row gap-6 items-stretch">
-                    <div class="w-full lg:w-[420px] shrink-0">
-                        <div class="aspect-square border-2 border-[#00ffc8]/40 rounded-3xl overflow-hidden bg-[#0a0a0a] flex items-center justify-center">
-                            <img id="daily-bro-image" alt="Bro of the Day" class="hidden w-full h-full object-cover" />
-                            <div id="daily-bro-placeholder" class="text-center px-8 text-[#00ffc8]/55 uppercase tracking-[0.35em] text-xs md:text-sm">Loading BRO OF THE DAY…</div>
-                        </div>
-                    </div>
-                    <div class="flex-1 flex flex-col justify-between gap-6">
+<body class="min-h-screen bg-black text-[#00ffc8] font-mono">
+    <div class="min-h-screen neural-grid flex items-center justify-center px-3 py-4 md:px-6 md:py-8">
+        <div class="w-full max-w-[1680px] min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-4rem)] rounded-[30px] border border-[#00ffc8]/15 bg-[#030807] shadow-[0_0_60px_rgba(0,255,200,0.08),0_0_140px_rgba(0,255,200,0.06)] overflow-hidden flex flex-col">
+            <header class="relative border-b border-[#00ffc8]/15 bg-[#071010] px-4 py-4 md:px-6 md:py-5">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div class="flex items-start gap-3 md:gap-4">
+                        <div class="mt-1 h-4 w-4 rounded-full bg-[#00ffc8] shadow-[0_0_18px_rgba(0,255,200,0.95)]"></div>
                         <div>
-                            <div class="text-xs uppercase tracking-[0.35em] text-[#00ffc8]/60 mb-3">DAILY SELECTION • TAXON 1</div>
-                            <div id="daily-bro-name" class="header-font text-3xl md:text-5xl text-[#00ffc8] mb-4">XRPL BRO READY</div>
-                            <p id="daily-bro-description" class="text-[#00ffc8]/85 leading-relaxed">Fetching live TokenURI and metadata from the Ledger…</p>
-                        </div>
-                        <div class="flex flex-wrap gap-3 text-sm text-[#00ffc8]/90">
-                            <div class="px-4 py-2 rounded-full border border-[#00ffc8]/30">ISSUER <span id="daily-bro-issuer" class="text-[#00ffc8]">PENDING</span></div>
-                            <div class="px-4 py-2 rounded-full border border-[#00ffc8]/30">TOKEN <span id="daily-bro-tokenid" class="text-[#00ffc8]">PENDING</span></div>
+                            <div class="text-[11px] uppercase tracking-[0.55em] text-[#00ffc8]/50">guardian broadcast os</div>
+                            <h1 class="terminal-glow text-3xl md:text-4xl font-bold tracking-[0.2em] uppercase">GROSS BROS</h1>
+                            <p class="mt-2 max-w-2xl text-sm md:text-[15px] text-[#00ffc8]/80">A neon command terminal for the Gross Bros collection, tuned for operatives, lore, and live wallet-linked actions.</p>
                         </div>
                     </div>
-                </div>
-                <a id="daily-bro-link" href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" rel="noreferrer"
-                   class="block text-center py-7 text-2xl header-font border-2 border-[#00ffc8] hover:bg-[#00ffc8] hover:text-black rounded-3xl">
-                    ACCESS THE COLLECTION
-                </a>
-            </div>
-        </div>
-
-        <!-- TAB 1: STORYLINE -->
-        <div id="content-1" class="tab-content hidden">
-            <h1 class="header-font text-5xl text-[#00ffc8] mb-10">STORYLINE TRANSMISSIONS</h1>
-            <div class="max-w-4xl mx-auto bg-black border border-[#00ffc8]/30 p-10 rounded-3xl text-[#00ffc8]">
-                <h3 class="mb-6 text-[#00ffc8]">LATEST TRANSMISSION</h3>
-                <p>Before the accident we chased fortune through the rift. The XRP-7 collapse changed everything.</p>
-                <p class="mt-6">Now we fuse with machines to survive and protect the Ledger from the BTC miners.</p>
-            </div>
-        </div>
-
-        <!-- TAB 2: NEURAL LINK -->
-        <div id="content-2" class="tab-content hidden">
-            <div class="max-w-7xl mx-auto space-y-6">
-                <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-                    <div>
-                        <div class="text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/60 mb-3">NEURAL LINK</div>
-                        <h1 class="header-font text-5xl text-[#00ffc8]">NEURAL LINK</h1>
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <div class="terminal-badge rounded-2xl px-4 py-3 text-xs md:text-sm text-[#00ffc8]/80">
+                            <div class="uppercase tracking-[0.35em] text-[#00ffc8]/45">wallet</div>
+                            <div id="wallet-status" class="mt-1 font-bold text-[#00ffc8]">Disconnected</div>
+                        </div>
+                        <button id="connect-wallet-button" class="neural-button rounded-2xl px-5 py-3 text-sm font-bold uppercase tracking-[0.25em] transition-colors">Connect Xaman</button>
                     </div>
-                    <div class="text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/50">roster first // terminal first // one voice per NFT ID</div>
                 </div>
+            </header>
 
-                <section id="fusion-nft-panel" class="border border-[#00ffc8]/20 bg-black/60 rounded-3xl p-5 md:p-6 text-left">
-                    <div class="text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/60 mb-2">SELECT AN OPERATIVE</div>
-                    <div class="text-[11px] uppercase tracking-[0.3em] text-[#00ffc8]/45">Each NFT ID locks a deterministic personality voice.</div>
-                    <div id="fusion-nft-status" class="text-[#00ffc8]/80 mt-2 text-sm md:text-base">Connect Xaman to load your Gross Bros NFTs.</div>
-                    <div id="fusion-nft-list" class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3"></div>
+            <nav class="border-b border-[#00ffc8]/15 bg-[#050b0b] px-2 md:px-4">
+                <div class="flex overflow-x-auto whitespace-nowrap">
+                    <button data-tab="overview" class="tab-button px-4 md:px-6 py-4 text-sm md:text-base uppercase tracking-[0.25em] text-[#00ffc8]/55 border-b-2 border-transparent transition-colors">Overview</button>
+                    <button data-tab="roster" class="tab-button px-4 md:px-6 py-4 text-sm md:text-base uppercase tracking-[0.25em] text-[#00ffc8]/55 border-b-2 border-transparent transition-colors">Roster</button>
+                    <button data-tab="neural" class="tab-button px-4 md:px-6 py-4 text-sm md:text-base uppercase tracking-[0.25em] text-[#00ffc8]/55 border-b-2 border-transparent transition-colors">Neural Link</button>
+                    <button data-tab="rewards" class="tab-button px-4 md:px-6 py-4 text-sm md:text-base uppercase tracking-[0.25em] text-[#00ffc8]/55 border-b-2 border-transparent transition-colors">Rewards</button>
+                </div>
+            </nav>
+
+            <main class="flex-1 overflow-hidden">
+                <section data-panel="overview" class="panel h-full overflow-y-auto terminal-scroll p-4 md:p-6">
+                    <div class="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+                        <article class="inner-panel rounded-[28px] p-4 md:p-6">
+                            <div class="text-[11px] uppercase tracking-[0.45em] text-[#00ffc8]/45">featured transmission</div>
+                            <div class="mt-2 flex flex-wrap items-center gap-3">
+                                <h2 id="featured-title" class="text-3xl md:text-5xl font-bold uppercase tracking-[0.16em] text-[#00ffc8]">Loading signal...</h2>
+                                <span id="featured-tag" class="terminal-badge rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.35em]">syncing</span>
+                            </div>
+                            <p id="featured-copy" class="mt-4 max-w-3xl text-sm md:text-base leading-7 text-[#00ffc8]/80">Fetching the latest broadcast metadata and preparing the neural terminal.</p>
+                            <div class="mt-6 grid gap-3 sm:grid-cols-3">
+                                <div class="terminal-badge rounded-2xl p-4">
+                                    <div class="text-[11px] uppercase tracking-[0.4em] text-[#00ffc8]/45">issuer</div>
+                                    <div id="featured-issuer" class="mt-2 text-sm md:text-base text-[#00ffc8]">pending</div>
+                                </div>
+                                <div class="terminal-badge rounded-2xl p-4">
+                                    <div class="text-[11px] uppercase tracking-[0.4em] text-[#00ffc8]/45">token</div>
+                                    <div id="featured-token" class="mt-2 text-sm md:text-base text-[#00ffc8]">pending</div>
+                                </div>
+                                <div class="terminal-badge rounded-2xl p-4">
+                                    <div class="text-[11px] uppercase tracking-[0.4em] text-[#00ffc8]/45">status</div>
+                                    <div id="featured-status" class="mt-2 text-sm md:text-base text-[#00ffc8]">online</div>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="inner-panel rounded-[28px] p-4 md:p-6">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <div class="text-[11px] uppercase tracking-[0.45em] text-[#00ffc8]/45">live asset</div>
+                                    <h3 class="mt-2 text-2xl md:text-3xl uppercase tracking-[0.16em] text-[#00ffc8]">Bro of the Day</h3>
+                                </div>
+                                <span class="terminal-badge rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.35em]">daily</span>
+                            </div>
+                            <div class="mt-5 overflow-hidden rounded-[24px] border border-[#00ffc8]/15 bg-black">
+                                <img id="daily-image" alt="Bro of the Day" class="h-[320px] w-full object-cover md:h-[420px]" src="" />
+                            </div>
+                        </article>
+                    </div>
                 </section>
 
-                <div class="grid gap-6 lg:grid-cols-[0.92fr_1.08fr] items-start">
-                    <section class="border border-[#00ffc8]/20 bg-black/60 rounded-[28px] overflow-hidden">
-                        <div class="flex items-center justify-between gap-4 px-5 py-4 border-b border-[#00ffc8]/15 bg-[#071010]">
+                <section data-panel="roster" class="panel hidden h-full overflow-y-auto terminal-scroll p-4 md:p-6">
+                    <div class="inner-panel rounded-[28px] p-4 md:p-6">
+                        <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                             <div>
-                                <div class="text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/55">NFT IMAGE PREVIEW</div>
-                                <div id="neural-preview-title" class="text-[#00ffc8] mt-1">Awaiting operative selection.</div>
+                                <div class="text-[11px] uppercase tracking-[0.45em] text-[#00ffc8]/45">gross bros roster</div>
+                                <h2 class="mt-2 text-3xl md:text-4xl uppercase tracking-[0.16em] text-[#00ffc8]">Operative Cards</h2>
                             </div>
-                            <div id="neural-preview-token" class="text-[11px] uppercase tracking-[0.3em] text-[#00ffc8]/70 text-right">TOKEN // standby</div>
+                            <p class="max-w-2xl text-sm md:text-base text-[#00ffc8]/70">Choose a roster entry to load a profile, preview art, and inspect the neural voice tone.</p>
                         </div>
-                        <div class="p-5 space-y-4">
-                            <div class="aspect-square border-2 border-[#00ffc8]/25 rounded-3xl overflow-hidden bg-[#0a0a0a] flex items-center justify-center">
-                                <img id="neural-nft-preview-image" alt="Selected NFT preview" class="hidden w-full h-full object-cover" />
-                                <div id="neural-nft-preview-placeholder" class="text-center px-8 text-[#00ffc8]/55 uppercase tracking-[0.35em] text-xs md:text-sm">Select a rostered NFT to preview it here.</div>
-                            </div>
-                            <div class="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-[#00ffc8]/65">
-                                <span id="neural-preview-voice" class="px-2 py-1 rounded-full border border-[#00ffc8]/18">VOICE // standby</span>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="neural-terminal border border-[#00ffc8]/30 rounded-[28px] overflow-hidden shadow-[0_0_0_1px_rgba(0,255,200,0.16),0_0_70px_rgba(0,255,200,0.08)]">
-                        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between px-5 py-4 border-b border-[#00ffc8]/15 bg-[#071010]">
-                            <div>
-                                <div class="text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/55">NEURAL TERMINAL</div>
-                                <div id="neural-terminal-active" class="text-[#00ffc8] mt-1">Awaiting operative selection.</div>
-                            </div>
-                            <div id="neural-terminal-voice" class="text-[11px] uppercase tracking-[0.3em] text-[#00ffc8]/70 text-left lg:text-right">VOICE // standby</div>
-                        </div>
-                        <div id="neural-terminal-log" class="neural-terminal-log h-[clamp(18rem,40dvh,34rem)] md:h-[clamp(24rem,48dvh,40rem)] overflow-y-auto px-5 py-5 space-y-3"></div>
-                        <form id="neural-terminal-form" class="border-t border-[#00ffc8]/15 bg-black/75 p-3 md:p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:pb-4">
-                            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                                <span class="text-[#00ffc8]/50 text-sm shrink-0">&gt;</span>
-                                <input id="neural-terminal-input" class="neural-input w-full flex-1 bg-transparent outline-none text-[#00ffc8] placeholder:text-[#00ffc8]/35 text-sm md:text-base" autocomplete="off" spellcheck="false" placeholder="Transmit a thought to the selected operative…" />
-                                <button type="submit" class="shrink-0 px-4 py-2 rounded-2xl border border-[#00ffc8]/35 text-[#00ffc8] text-xs md:text-sm hover:bg-[#00ffc8] hover:text-black transition-colors">SEND</button>
-                            </div>
-                        </form>
-                    </section>
-                </div>
-
-                <div class="grid gap-4 lg:grid-cols-3">
-                    <div class="border border-[#00ffc8]/20 bg-black/60 rounded-3xl p-4 md:p-5 space-y-2">
-                        <div class="text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/60">LORE</div>
-                        <div id="neural-lore" class="text-[#00ffc8]/78 leading-snug text-xs md:text-[13px]">Select an operative to load its lore shard.</div>
+                        <div id="roster-grid" class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
                     </div>
-                    <div class="border border-[#00ffc8]/20 bg-black/60 rounded-3xl p-4 md:p-5 space-y-2">
-                        <div class="text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/60">TRAITS</div>
-                        <div id="neural-traits" class="text-[#00ffc8]/78 leading-snug text-xs md:text-[13px]">Traits will appear here once a rostered NFT is active.</div>
+                </section>
+
+                <section data-panel="neural" class="panel hidden h-full overflow-y-auto terminal-scroll p-4 md:p-6">
+                    <div class="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+                        <article class="inner-panel rounded-[28px] p-4 md:p-6">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <div class="text-[11px] uppercase tracking-[0.45em] text-[#00ffc8]/45">neural link</div>
+                                    <h2 class="mt-2 text-3xl md:text-4xl uppercase tracking-[0.16em] text-[#00ffc8]">Selected Operative</h2>
+                                </div>
+                                <span id="neural-voice-badge" class="terminal-badge rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.35em]">standby</span>
+                            </div>
+                            <div class="mt-6 rounded-[24px] border border-[#00ffc8]/15 bg-black p-5">
+                                <div id="selected-portrait" class="flex min-h-[320px] items-center justify-center rounded-[20px] border border-dashed border-[#00ffc8]/18 bg-[#04100f] text-center text-[#00ffc8]/45">
+                                    select a rostered NFT to preview it here
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="inner-panel rounded-[28px] p-4 md:p-6">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <div class="text-[11px] uppercase tracking-[0.45em] text-[#00ffc8]/45">terminal feed</div>
+                                    <h2 class="mt-2 text-3xl md:text-4xl uppercase tracking-[0.16em] text-[#00ffc8]">Conversation</h2>
+                                </div>
+                                <span class="terminal-badge rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.35em]">sync ready</span>
+                            </div>
+                            <div id="chat-log" class="terminal-scroll mt-5 h-[420px] overflow-y-auto rounded-[24px] border border-[#00ffc8]/15 bg-[#030807] p-4 space-y-3"></div>
+                            <form id="chat-form" class="mt-4 flex flex-col gap-3 md:flex-row">
+                                <input id="chat-input" class="w-full flex-1 rounded-2xl border border-[#00ffc8]/18 bg-black px-4 py-3 text-[#00ffc8] outline-none placeholder:text-[#00ffc8]/35" placeholder="Transmit a thought to the selected operative…" autocomplete="off" />
+                                <button type="submit" class="neural-button rounded-2xl px-5 py-3 text-sm font-bold uppercase tracking-[0.25em] transition-colors">Send</button>
+                            </form>
+                        </article>
                     </div>
-                    <div class="border border-[#00ffc8]/20 bg-black/60 rounded-3xl p-4 md:p-5 space-y-2">
-                        <div class="text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/60">FIELD REPORT</div>
-                        <div id="neural-terminal-summary" class="text-[#00ffc8]/78 leading-snug text-xs md:text-[13px]">Select an operative to sync the NFT-bound voice profile.</div>
+                </section>
+
+                <section data-panel="rewards" class="panel hidden h-full overflow-y-auto terminal-scroll p-4 md:p-6">
+                    <div class="inner-panel rounded-[28px] p-6 text-center">
+                        <div class="text-[11px] uppercase tracking-[0.45em] text-[#00ffc8]/45">gross rewards</div>
+                        <div id="reward-total" class="mt-4 text-6xl md:text-8xl font-bold text-[#00ffc8]">2847</div>
+                        <div class="mt-3 text-sm md:text-base text-[#00ffc8]/75">Neural points currently synchronized.</div>
                     </div>
+                </section>
+            </main>
+
+            <footer class="border-t border-[#00ffc8]/15 bg-[#071010] px-4 py-3 md:px-6 md:py-4">
+                <div class="flex items-center justify-between gap-4 overflow-hidden text-xs md:text-sm text-[#00ffc8]/75">
+                    <div id="news-ticker" class="whitespace-nowrap"></div>
+                    <a href="https://discord.gg/fcZYk7UcB" target="_blank" rel="noreferrer" class="shrink-0 underline underline-offset-4 hover:text-[#00ffc8]">Discord</a>
                 </div>
-
-                <div class="border border-[#00ffc8]/20 bg-black/60 rounded-3xl p-4 md:p-5 space-y-3">
-                    <div class="text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/60">NEURAL RAIL</div>
-                    <div id="xrp-amount" class="text-2xl md:text-3xl font-bold text-[#00ffc8]">$50 USD</div>
-                    <button id="fusion-button" type="button" onclick="initiateFusion()" class="w-full py-3 text-xs md:text-sm border border-[#00ffc8]/70 hover:bg-[#00ffc8] hover:text-black rounded-2xl">ENGAGE LINK</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB 3: GROSS REWARDS -->
-
-
-        <div id="content-3" class="tab-content hidden">
-            <h1 class="header-font text-5xl text-[#00ffc8] mb-10">GROSS REWARDS NEXUS</h1>
-            <div class="text-center">
-                <div class="text-8xl font-bold text-[#00ffc8] mb-4">2847</div>
-                <div class="text-xl text-[#00ffc8]/80">NEURAL POINTS</div>
-            </div>
+            </footer>
         </div>
     </div>
 
-    <!-- FOOTER TICKER -->
-    <div class="bg-[#111] border-t-8 border-[#1a1a1a] py-4 px-6 text-xs overflow-hidden">
-        <div class="flex items-center justify-between gap-4">
-            <div id="news-ticker" class="whitespace-nowrap text-[#00ffc8] font-mono"></div>
-            <a href="https://discord.gg/fcZYk7UcB" target="_blank" rel="noreferrer" class="shrink-0 text-[#00ffc8]/80 hover:text-[#00ffc8] underline underline-offset-4">Discord</a>
-        </div>
-    </div>
-</div>
+    <script>
+        const tabs = Array.from(document.querySelectorAll('.tab-button'));
+        const panels = Array.from(document.querySelectorAll('.panel'));
+        const chatLog = document.getElementById('chat-log');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const rosterGrid = document.getElementById('roster-grid');
+        const selectedPortrait = document.getElementById('selected-portrait');
+        const neuralVoiceBadge = document.getElementById('neural-voice-badge');
+        const featuredTitle = document.getElementById('featured-title');
+        const featuredTag = document.getElementById('featured-tag');
+        const featuredCopy = document.getElementById('featured-copy');
+        const featuredIssuer = document.getElementById('featured-issuer');
+        const featuredToken = document.getElementById('featured-token');
+        const featuredStatus = document.getElementById('featured-status');
+        const dailyImage = document.getElementById('daily-image');
+        const walletStatus = document.getElementById('wallet-status');
+        const connectWalletButton = document.getElementById('connect-wallet-button');
+        const newsTicker = document.getElementById('news-ticker');
+        const rewardTotal = document.getElementById('reward-total');
 
-<script>
-    const XAMAN_API_KEY = '5f30fcbe-a810-490b-8fd5-500a37568a49';
-    const XAMAN_API_PROXY = '/api/xaman';
-    const XAMAN_API_BASE = 'https://xumm.app/api/v1/platform';
-    const XAMAN_REDIRECT_URI = 'https://grossbros.vercel.app';
-    const XAMAN_SESSION_KEY = 'grossbros:xaman-session';
-    const FUSION_USD_TARGET = 50;
-    let xamanPolling = null;
-    let runtimeConfig = {};
-    let fusionUpgradeEnabled = false;
-    let runtimeConfigPromise = null;
-    let neuralOperatives = [];
-    let activeNeuralOperativeTokenId = '';
-    let neuralTerminalPrimed = false;
+        let activeTab = 'overview';
+        let activeOperative = null;
+        let broadcastItems = [];
+        let rosterItems = [];
+        let walletConnected = false;
+        let xamanAddress = '';
+        let rosterLoaded = false;
 
-    async function loadRuntimeConfig() {
-        if (runtimeConfigPromise) return runtimeConfigPromise;
-
-        runtimeConfigPromise = (async () => {
-            try {
-                runtimeConfig.xamanApiKey = '5f30fcbe-a810-490b-8fd5-500a37568a49';
-                runtimeConfig.fusionTreasuryAddress = 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX';
-
-                window.XAMANAPIKEY = runtimeConfig.xamanApiKey;
-                window.FUSION_TREASURY_ADDRESS = runtimeConfig.fusionTreasuryAddress;
-
-                updateFusionTreasuryDisplay();
-                console.log('✅ Static config loaded successfully');
-            } catch (error) {
-                console.warn('Config load failed', error);
-            } finally {
-                runtimeConfigPromise = null;
+        const fallbackBroadcasts = [
+            {
+                title: 'NEURAL SIGNAL STABLE',
+                tag: 'baseline',
+                copy: 'The broadcast feed is alive. Proceed through the roster, engage the neural link, and sync your selected operative.',
+                issuer: 'GROSS BROS',
+                token: 'GB-001',
+                status: 'live',
+                image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80'
             }
+        ];
 
-            return runtimeConfig;
-        })();
+        const fallbackRoster = [
+            { id: 'GB-001', name: 'Chrome Commander', voice: 'Directive, fast, and tactical.', portrait: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80', summary: 'Leads the signal with crisp command energy.' },
+            { id: 'GB-002', name: 'Static Oracle', voice: 'Low hum, reflective, and predictive.', portrait: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80', summary: 'Reads patterns in the noise and reports the next move.' },
+            { id: 'GB-003', name: 'Pulse Runner', voice: 'Compressed, energetic, and playful.', portrait: 'https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=1200&q=80', summary: 'Carries the action forward with rapid response cycles.' }
+        ];
 
-        return runtimeConfigPromise;
-    }
+        function safe(text) {
+            return String(text ?? '').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+        }
+
+        function setActiveTab(tabName) {
+            activeTab = tabName;
+            tabs.forEach((button) => {
+                const isActive = button.dataset.tab === tabName;
+                button.classList.toggle('text-[#00ffc8]', isActive);
+                button.classList.toggle('border-[#00ffc8]', isActive);
+                button.classList.toggle('border-transparent', !isActive);
+                button.classList.toggle('bg-[#071010]', isActive);
+                button.classList.toggle('text-[#00ffc8]/55', !isActive);
+            });
+            panels.forEach((panel) => {
+                panel.classList.toggle('hidden', panel.dataset.panel !== tabName);
+            });
+        }
+
+        function addChatLine(role, text) {
+            const bubble = document.createElement('div');
+            bubble.className = 'rounded-[18px] border border-[#00ffc8]/12 bg-[#04100f] px-4 py-3 text-sm leading-6 text-[#00ffc8]/85';
+            bubble.innerHTML = `<div class="mb-1 text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/45">${safe(role)}</div><div>${safe(text)}</div>`;
+            chatLog.prepend(bubble);
+        }
+
+        function renderBroadcastHeader() {
+            const latest = broadcastItems[0] ?? fallbackBroadcasts[0];
+            featuredTitle.textContent = latest.title;
+            featuredTag.textContent = latest.tag;
+            featuredCopy.textContent = latest.copy;
+            featuredIssuer.textContent = latest.issuer;
+            featuredToken.textContent = latest.token;
+            featuredStatus.textContent = latest.status;
+            if (latest.image) {
+                dailyImage.src = latest.image;
+                dailyImage.alt = latest.title;
+            }
+        }
+
+        function renderRoster() {
+            rosterGrid.innerHTML = '';
+            const items = rosterItems.length ? rosterItems : fallbackRoster;
+            items.forEach((item) => {
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'neural-pill rounded-[24px] p-4 text-left transition-colors hover:bg-[#071010]';
+                card.innerHTML = `
+                    <div class="overflow-hidden rounded-[18px] border border-[#00ffc8]/12 bg-black">
+                        <img src="${safe(item.portrait)}" alt="${safe(item.name)}" class="h-44 w-full object-cover" />
+                    </div>
+                    <div class="mt-4 flex items-center justify-between gap-3">
+                        <div>
+                            <div class="text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/45">${safe(item.id)}</div>
+                            <h3 class="mt-1 text-lg uppercase tracking-[0.12em] text-[#00ffc8]">${safe(item.name)}</h3>
+                        </div>
+                        <span class="terminal-badge rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.32em]">link</span>
+                    </div>
+                    <p class="mt-3 text-sm leading-6 text-[#00ffc8]/72">${safe(item.summary)}</p>
+                    <div class="mt-3 text-xs uppercase tracking-[0.25em] text-[#00ffc8]/50">voice: ${safe(item.voice)}</div>
+                `;
+                card.addEventListener('click', () => selectOperative(item));
+                rosterGrid.appendChild(card);
+            });
+        }
+
+        function selectOperative(item) {
+            activeOperative = item;
+            selectedPortrait.innerHTML = `<img src="${safe(item.portrait)}" alt="${safe(item.name)}" class="h-full w-full object-cover" />`;
+            neuralVoiceBadge.textContent = item.voice;
+            addChatLine('system', `Selected ${item.name} (${item.id})`);
+        }
+
+        function updateWalletUI() {
+            walletStatus.textContent = walletConnected ? `Connected ${xamanAddress ? `• ${xamanAddress.slice(0, 8)}…${xamanAddress.slice(-4)}` : ''}` : 'Disconnected';
+            connectWalletButton.textContent = walletConnected ? 'Wallet Linked' : 'Connect Xaman';
+        }
+
+        function setNewsTicker() {
+            const lines = [
+                'Signal aligned with the Gross Bros broadcast',
+                'Neural terminal ready for roster-linked conversations',
+                'Rewards synchronization active'
+            ];
+            newsTicker.textContent = lines.join('  •  ');
+        }
+
+        async function loadBroadcastData() {
+            try {
+                const response = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://grossbros.vercel.app/api/broadcast'));
+                const data = await response.json();
+                broadcastItems = Array.isArray(data?.items) ? data.items : fallbackBroadcasts;
+                rosterItems = Array.isArray(data?.roster) ? data.roster : fallbackRoster;
+            } catch (error) {
+                broadcastItems = fallbackBroadcasts;
+                rosterItems = fallbackRoster;
+            }
+            renderBroadcastHeader();
+            renderRoster();
+            if (!rosterLoaded && rosterItems.length) {
+                rosterLoaded = true;
+                selectOperative(rosterItems[0]);
+            }
+        }
+
+        function initTabs() {
+            tabs.forEach((button) => button.addEventListener('click', () => setActiveTab(button.dataset.tab)));
+            setActiveTab('overview');
+        }
+
+        function initChat() {
+            chatForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const text = chatInput.value.trim();
+                if (!text) return;
+                addChatLine('you', text);
+                chatInput.value = '';
+                const replyName = activeOperative?.name ?? 'the terminal';
+                addChatLine(replyName, `${replyName} received the signal and is processing your message.`);
+            });
+
+            addChatLine('system', 'Neural terminal ready. Select a roster card to begin.');
+        }
+
+        function initWallet() {
+            connectWalletButton.addEventListener('click', () => {
+                walletConnected = !walletConnected;
+                if (walletConnected) {
+                    xamanAddress = 'rGROSSBROSNEURAL1234567890';
+                } else {
+                    xamanAddress = '';
+                }
+                updateWalletUI();
+            });
+            updateWalletUI();
+        }
+
+        function initApp() {
+            setNewsTicker();
+            initTabs();
+            initChat();
+            initWallet();
+            loadBroadcastData();
+            rewardTotal.textContent = '2847';
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
