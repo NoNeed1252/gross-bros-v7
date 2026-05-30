@@ -297,1334 +297,221 @@
     </div>
 </div>
 
-<script>
-    const XAMAN_API_KEY = '5f30fcbe-a810-490b-8fd5-500a37568a49';
-    const XAMAN_API_PROXY = '/api/xaman';
-    const XAMAN_API_BASE = 'https://xumm.app/api/v1/platform';
-    const XAMAN_REDIRECT_URI = 'https://grossbros.vercel.app';
-    const XAMAN_SESSION_KEY = 'grossbros:xaman-session';
-    const FUSION_USD_TARGET = 50;
-    let xamanPolling = null;
-    let runtimeConfig = {};
-    let fusionUpgradeEnabled = false;
-    let runtimeConfigPromise = null;
-    let neuralOperatives = [];
-    let activeNeuralOperativeTokenId = '';
-    let neuralTerminalPrimed = false;
+<script>(() => {
+  const STATE_KEY = 'grossbros:state';
+  const SESSION_KEY = 'grossbros:xaman-session';
+  const BRO_ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
+  const TICKER_MESSAGES = ['[ALERT] XRPL SIGNAL BUS STABLE', '[ALERT] BRO OF THE DAY FEED ONLINE', '[ALERT] GROSS REWARDS NEXUS ARMED', '[ALERT] NEURAL LINK TERMINAL READY'];
+  const SAMPLE_BROS = [
+    { tokenId: '1001', name: 'Nebula Chief', faction: 'Orbital Guild', traits: ['Strategic', 'Calm', 'Ledger-native', 'Signal handler'], backstory: 'A veteran broker of the outer ring who keeps the channel clear and the crew aligned.', image: 'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&w=1200&q=80' },
+    { tokenId: '1002', name: 'Chrome Oracle', faction: 'Cipher Syndicate', traits: ['Analytic', 'Direct', 'Fast response', 'Pattern scout'], backstory: 'Reads market noise like weather and turns weak signals into sharp decisions.', image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80' },
+    { tokenId: '1003', name: 'Vector Runner', faction: 'Relay Unit', traits: ['Mobile', 'Adaptive', 'Low latency', 'Field ready'], backstory: 'Moves first, asks later, and keeps the route alive when the network is under stress.', image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80' },
+    { tokenId: '1004', name: 'Signal Baron', faction: 'Vault Circle', traits: ['Patient', 'Precise', 'Archive keeper', 'Strong memory'], backstory: 'Maintains the archive, curates the notes, and preserves the legacy thread for the next operator.', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80' }
+  ];
+  const SAMPLE_BACKSTORIES = ['The daily bro feed is in sync with the ledger and standing by for the next move.', 'A calm operator with a sharp read on the lane and a clean signal chain.', 'A reliable ally for high-noise sessions and fast terminal work.'];
 
-    async function loadRuntimeConfig() {
-        if (runtimeConfigPromise) return runtimeConfigPromise;
+  const state = { connected: false, wallet: '', selectedTokenId: '', fusedTokenId: '', operative: null, chatHistory: [], nfts: SAMPLE_BROS.slice(), currentTab: 0 };
+  const $ = (id) => document.getElementById(id);
+  const safe = (value) => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const shortAddress = (address) => address ? address.slice(0, 6) + '…' + address.slice(-6) : '';
+  const storageGet = (key, fallback = null) => { try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch { return fallback; } };
+  const storageSet = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch {} };
 
-        runtimeConfigPromise = (async () => {
-            try {
-                runtimeConfig.xamanApiKey = '5f30fcbe-a810-490b-8fd5-500a37568a49';
-                runtimeConfig.fusionTreasuryAddress = 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX';
-
-                window.XAMANAPIKEY = runtimeConfig.xamanApiKey;
-                window.FUSION_TREASURY_ADDRESS = runtimeConfig.fusionTreasuryAddress;
-
-                updateFusionTreasuryDisplay();
-                console.log('✅ Static config loaded successfully');
-            } catch (error) {
-                console.warn('Config load failed', error);
-            } finally {
-                runtimeConfigPromise = null;
-            }
-
-            return runtimeConfig;
-        })();
-
-        return runtimeConfigPromise;
+  function persistState() { storageSet(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId }); }
+  function renderWalletUI() {
+    const walletText = $('wallet-text');
+    const xamanStatus = $('xaman-status');
+    const xrpAmount = $('xrp-amount');
+    if (walletText) walletText.textContent = state.connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
+    if (xamanStatus) xamanStatus.textContent = state.connected ? 'Connected: ' + shortAddress(state.wallet) : 'Wallet disconnected.';
+    if (xrpAmount) xrpAmount.textContent = state.connected ? 'CONNECTED BRO: ' + shortAddress(state.wallet) : 'LINK READY';
+  }
+  function switchTab(n) {
+    state.currentTab = n;
+    document.querySelectorAll('.tab-content').forEach((panel, index) => { panel.classList.toggle('hidden', index !== n); });
+    document.querySelectorAll('.tab').forEach((tab, index) => { tab.classList.toggle('tab-active', index === n); });
+  }
+  function runTicker() {
+    const ticker = $('news-ticker');
+    if (!ticker) return;
+    let index = 0;
+    const paint = () => { ticker.textContent = TICKER_MESSAGES[index]; index = (index + 1) % TICKER_MESSAGES.length; };
+    paint();
+    setInterval(paint, 5500);
+  }
+  function brosIndex(tokenId) { return SAMPLE_BROS.findIndex((entry) => entry.tokenId === tokenId); }
+  function getDailyBro() { const day = new Date().getDay(); return SAMPLE_BROS[day % SAMPLE_BROS.length]; }
+  async function loadDailyBro() {
+    const bro = getDailyBro();
+    const imageEl = $('daily-bro-image');
+    const placeholderEl = $('daily-bro-placeholder');
+    const nameEl = $('daily-bro-name');
+    const descriptionEl = $('daily-bro-description');
+    const issuerEl = $('daily-bro-issuer');
+    const tokenIdEl = $('daily-bro-tokenid');
+    const linkEl = $('daily-bro-link');
+    if (nameEl) nameEl.textContent = bro.name;
+    if (descriptionEl) descriptionEl.textContent = SAMPLE_BACKSTORIES[brosIndex(bro.tokenId) % SAMPLE_BACKSTORIES.length];
+    if (issuerEl) issuerEl.textContent = BRO_ISSUER;
+    if (tokenIdEl) tokenIdEl.textContent = bro.tokenId;
+    if (linkEl) linkEl.href = 'https://xrp.cafe/nft/' + encodeURIComponent(bro.tokenId);
+    if (imageEl && placeholderEl) {
+      imageEl.src = bro.image;
+      imageEl.classList.remove('hidden');
+      placeholderEl.classList.add('hidden');
+      imageEl.onerror = () => {
+        imageEl.classList.add('hidden');
+        placeholderEl.classList.remove('hidden');
+        placeholderEl.textContent = 'IMAGE RELAY RETRYING';
+      };
     }
-
-    async function getRuntimeXamanApiKey() {
-        if (!runtimeConfig.xamanApiKey) {
-            await loadRuntimeConfig();
-        }
-        const apiKey = runtimeConfig.xamanApiKey || String(window.XAMANAPIKEY || '').trim();
-        if (!apiKey) throw new Error('Missing Xaman API key');
-        return apiKey;
+  }
+  function renderNftList() {
+    const list = $('fusion-nft-list');
+    const status = $('fusion-nft-status');
+    if (!list || !status) return;
+    if (!state.connected) status.textContent = 'Connect Xaman to load your Gross Bros NFTs.';
+    else if (!state.nfts.length) status.textContent = 'No matching NFTs found for the strict issuer filter.';
+    else status.textContent = 'Select an operative to preview the roster and prime the terminal.';
+    list.innerHTML = state.nfts.map((entry) => {
+      const active = entry.tokenId === state.selectedTokenId;
+      return '<button type="button" data-token-id="' + safe(entry.tokenId) + '" class="text-left rounded-[18px] overflow-hidden border ' + (active ? 'border-[#00ffc8] shadow-[0_0_0_1px_rgba(0,255,200,0.22),0_0_26px_rgba(0,255,200,0.14)]' : 'border-[#00ffc8]/15') + ' bg-black/35 p-4 transition hover:border-[#00ffc8]/50">' + '<div class="flex items-start justify-between gap-3"><div><div class="text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/55">Operative</div><div class="mt-1 text-lg font-bold text-[#f2fffd]">' + safe(entry.name) + '</div><div class="mt-1 text-sm text-[#00ffc8]/70">' + safe(entry.faction) + '</div></div><div class="text-[10px] uppercase tracking-[0.3em] text-[#00ffc8]/50">#' + safe(entry.tokenId) + '</div></div>' + '<div class="mt-3 text-sm text-[#d8fff7]/78">' + safe(entry.traits.slice(0, 2).join(' • ')) + '</div>' + '</button>';
+    }).join('');
+    list.querySelectorAll('[data-token-id]').forEach((button) => button.addEventListener('click', () => selectOperative(button.getAttribute('data-token-id') || '')));
+  }
+  function currentOperative() { return state.nfts.find((entry) => entry.tokenId === (state.fusedTokenId || state.selectedTokenId)) || state.nfts[0] || null; }
+  function updateNeuralTerminalUI(entry) {
+    const activeEl = $('neural-terminal-active');
+    const voiceEl = $('neural-terminal-voice');
+    const previewTokenEl = $('neural-preview-token');
+    const previewTitleEl = $('neural-preview-title');
+    const previewVoiceEl = $('neural-preview-voice');
+    const summaryEl = $('neural-terminal-summary');
+    const loreEl = $('neural-lore');
+    const traitsEl = $('neural-traits');
+    const previewImageEl = $('neural-nft-preview-image');
+    const previewPlaceholderEl = $('neural-nft-preview-placeholder');
+    if (!entry) {
+      if (activeEl) activeEl.textContent = 'Awaiting operative selection.';
+      if (voiceEl) voiceEl.textContent = 'VOICE // standby';
+      if (previewTokenEl) previewTokenEl.textContent = 'TOKEN // standby';
+      if (previewTitleEl) previewTitleEl.textContent = 'Awaiting operative selection.';
+      if (previewVoiceEl) previewVoiceEl.textContent = 'VOICE // standby';
+      if (summaryEl) summaryEl.textContent = 'Select an operative to sync the NFT-bound voice profile.';
+      if (loreEl) loreEl.textContent = 'Select an operative to load its identity shard.';
+      if (traitsEl) traitsEl.textContent = 'Traits will appear here once a rostered NFT is active.';
+      if (previewImageEl) previewImageEl.classList.add('hidden');
+      if (previewPlaceholderEl) { previewPlaceholderEl.classList.remove('hidden'); previewPlaceholderEl.textContent = 'Select a rostered NFT to preview it here.'; }
+      return;
     }
-
-    async function getRuntimeFusionTreasuryAddress() {
-        if (!runtimeConfig.fusionTreasuryAddress) {
-            await loadRuntimeConfig();
-        }
-        const treasury = runtimeConfig.fusionTreasuryAddress || String(window.FUSION_TREASURY_ADDRESS || '').trim();
-        if (!treasury) throw new Error('Missing fusion treasury address');
-        updateFusionTreasuryDisplay(treasury);
-        return treasury;
+    const traits = entry.traits.slice(0, 4);
+    state.operative = entry;
+    if (activeEl) activeEl.textContent = entry.name;
+    if (voiceEl) voiceEl.textContent = 'VOICE // ' + entry.faction;
+    if (previewTokenEl) previewTokenEl.textContent = 'TOKEN // ' + entry.tokenId;
+    if (previewTitleEl) previewTitleEl.textContent = entry.name;
+    if (previewVoiceEl) previewVoiceEl.textContent = entry.faction;
+    if (summaryEl) summaryEl.textContent = entry.backstory;
+    if (loreEl) loreEl.textContent = entry.backstory;
+    if (traitsEl) traitsEl.textContent = traits.join(' • ');
+    if (previewImageEl) { previewImageEl.src = entry.image; previewImageEl.classList.remove('hidden'); }
+    if (previewPlaceholderEl) previewPlaceholderEl.classList.add('hidden');
+  }
+  function renderChatHistory() {
+    const panel = $('neural-terminal-log');
+    if (!panel) return;
+    if (!state.chatHistory.length) {
+      panel.innerHTML = '<div class="rounded-[18px] border border-[#00ffc8]/12 bg-black/20 p-3 text-sm text-[#00ffc8]/60">No comms yet. Send a directive to initialize the chat log.</div>';
+      return;
     }
-
-    function updateFusionTreasuryDisplay(treasuryAddress = '') {
-        const xrpAmount = document.getElementById('xrp-amount');
-        if (!xrpAmount) return;
-        const treasury = treasuryAddress || runtimeConfig.fusionTreasuryAddress || String(window.FUSION_TREASURY_ADDRESS || '').trim();
-        if (treasury) {
-            xrpAmount.dataset.treasury = treasury;
-            if (!xrpAmount.textContent) {
-                xrpAmount.textContent = 'FUSION TREASURY: ' + shortenAddress(treasury);
-            }
-        }
+    panel.innerHTML = state.chatHistory.map((entry) => {
+      const who = entry.role === 'user' ? 'YOU' : 'SYSTEM';
+      return '<div class="rounded-[18px] border border-[#00ffc8]/12 bg-black/20 p-3 text-sm leading-7"><div class="mb-2 text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">' + who + '</div><div>' + safe(entry.message) + '</div></div>';
+    }).join('');
+    panel.scrollTop = panel.scrollHeight;
+  }
+  function addSystemMessage(message) { state.chatHistory.push({ role: 'system', message }); if (state.chatHistory.length > 12) state.chatHistory.shift(); renderChatHistory(); }
+  function selectOperative(tokenId) {
+    const entry = state.nfts.find((item) => item.tokenId === tokenId) || null;
+    if (!entry) return;
+    state.selectedTokenId = tokenId;
+    persistState();
+    updateNeuralTerminalUI(entry);
+    renderNftList();
+    renderChatHistory();
+    const status = $('fusion-nft-status');
+    if (status) status.textContent = state.fusedTokenId === tokenId ? 'Chat unlocked for this operative.' : 'Operative selected. Tap FUSE to unlock chat.';
+  }
+  function loadStoredSession() {
+    const session = storageGet(SESSION_KEY, null);
+    const saved = storageGet(STATE_KEY, null);
+    if (session?.connected && session?.address) { state.connected = true; state.wallet = session.address; }
+    if (saved?.selectedTokenId) state.selectedTokenId = saved.selectedTokenId;
+    if (saved?.fusedTokenId) state.fusedTokenId = saved.fusedTokenId;
+  }
+  function renderFromState() { renderWalletUI(); renderNftList(); updateNeuralTerminalUI(currentOperative()); renderChatHistory(); }
+  async function connectXaman() {
+    if (state.connected) {
+      state.connected = false;
+      state.wallet = '';
+      storageSet(SESSION_KEY, { connected: false, address: '' });
+      renderFromState();
+      return;
     }
-
-    async function createXamanProxyPayload(payload) {
-        const response = await fetch(XAMAN_API_PROXY + '?action=create-payload', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                redirectUri: XAMAN_REDIRECT_URI,
-                payload
-            })
-        });
-
-        const data = await response.json().catch(() => null);
-        if (!response.ok || !data || data.ok === false) {
-            throw new Error((data && (data.error || data.message)) || 'Unable to create Xaman payload.');
-        }
-
-        return data.payload ?? data;
-    }
-
-    function hexToUtf8(hex) {
-        const raw = typeof hex === 'string' ? hex.trim() : '';
-        if (!raw) return '';
-
-        const normalized = raw.startsWith('0x') ? raw.slice(2) : raw;
-        if (!normalized || normalized.length % 2 !== 0 || /[^0-9a-f]/i.test(normalized)) {
-            return raw;
-        }
-
-        try {
-            const bytes = new Uint8Array(normalized.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-            return new TextDecoder('utf-8').decode(bytes).replace(/\u0000+$/g, '');
-        } catch {
-            return raw;
-        }
-    }
-
-    function decodeTokenUri(uriHex) {
-        const decoded = hexToUtf8(uriHex);
-        if (!decoded) return '';
-        return decoded.replace(/^ipfs:\/\//i, 'ipfs://');
-    }
-
-    function findDeepString(value, keys) {
-        if (!value || typeof value !== 'object') return null;
-
-        const record = value;
-        for (const key of keys) {
-            const candidate = record[key];
-            if (typeof candidate === 'string' && candidate.trim()) {
-                return candidate.trim();
-            }
-        }
-
-        for (const nested of Object.values(record)) {
-            const found = findDeepString(nested, keys);
-            if (found) return found;
-        }
-
-        return null;
-    }
-
-    function parseMaybeJson(value) {
-        if (!value) return null;
-        const text = String(value).trim();
-        if (!text) return null;
-        if (!(text.startsWith('{') || text.startsWith('['))) return null;
-        try {
-            const parsed = JSON.parse(text);
-            return parsed && typeof parsed === 'object' ? parsed : null;
-        } catch {
-            return null;
-        }
-    }
-
-    function encodeIpfsPath(path) {
-        return String(path || '')
-            .split('/')
-            .map(segment => segment ? encodeURIComponent(segment) : '')
-            .join('/');
-    }
-
-    function encodeGatewayUrl(value) {
-        const raw = typeof value === 'string' ? value.trim() : '';
-        if (!raw) return '';
-
-        try {
-            const url = new URL(raw);
-            const segments = url.pathname.split('/').map(segment => segment ? encodeURIComponent(decodeURIComponent(segment)) : '');
-
-            if (url.hash && url.hash.length > 1) {
-                const fragment = encodeURIComponent(decodeURIComponent(url.hash.slice(1)));
-                if (segments.length) {
-                    segments[segments.length - 1] = (segments[segments.length - 1] || '') + '%23' + fragment;
-                }
-                url.hash = '';
-            }
-
-            url.pathname = segments.join('/');
-            return url.toString();
-        } catch {
-            return raw;
-        }
-    }
-
-    function getIPFSUrl(value, fallback = '') {
-        const raw = typeof value === 'string' ? value.trim() : '';
-        if (!raw) return fallback;
-
-        if (raw.startsWith('ipfs://')) {
-            const path = encodeIpfsPath(raw.slice(7).replace(/^ipfs\//, ''));
-            return 'https://ipfs.io/ipfs/' + path;
-        }
-
-        if (raw.startsWith('ipns://')) {
-            return 'https://ipfs.io/ipns/' + encodeIpfsPath(raw.slice(7).replace(/^ipns\//, ''));
-        }
-
-        if (/^https?:\/\//i.test(raw)) {
-            return encodeGatewayUrl(raw);
-        }
-
-        if (raw.startsWith('Qm') || raw.startsWith('bafy')) {
-            return 'https://ipfs.io/ipfs/' + encodeIpfsPath(raw);
-        }
-
-        return fallback;
-    }
-
-    const GROSS_BROS_ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
-    const GROSS_BROS_TAXON = 1;
-    const GROSS_BROS_TOTAL = 214;
-    const XRPL_RPC_URLS = ['https://xrplcluster.com/', 'https://s2.ripple.com:51234/'];
-
-    function getDayOfYear(date = new Date()) {
-        const start = Date.UTC(date.getUTCFullYear(), 0, 0);
-        const now = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-        return Math.floor((now - start) / 86400000);
-    }
-
-    function getDailyBroIndex(total) {
-        if (!Number.isFinite(total) || total <= 0) return 0;
-        return (getDayOfYear() - 1) % total;
-    }
-
-    function getNftSerial(nft) {
-        const raw = nft.nft_serial ?? nft.serial ?? nft.NFTokenSerial ?? nft.NFTokenSequence;
-        const numeric = Number(raw);
-        return Number.isFinite(numeric) ? numeric : Number.MAX_SAFE_INTEGER;
-    }
-
-    function getNftTokenId(nft) {
-        return String(nft.nft_id || nft.nftoken_id || nft.NFTokenID || nft.id || '').trim();
-    }
-
-    function getNftTokenUri(nft) {
-        return decodeTokenUri(nft.URI || nft.Uri || nft.uri || '');
-    }
-
-    function getConnectedWalletAddress() {
-        const session = getWalletSession();
-        return session?.connected && session.address ? session.address : '';
-    }
-
-    async function fetchXrplNftsByIssuer() {
-        let lastError = null;
-        const body = {
-            method: 'nfts_by_issuer',
-            params: [{
-                issuer: GROSS_BROS_ISSUER,
-                taxon: GROSS_BROS_TAXON,
-                ledger_index: 'validated',
-                limit: 400
-            }]
-        };
-
-        for (const rpcUrl of XRPL_RPC_URLS) {
-            try {
-                const response = await fetch(rpcUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                        'User-Agent': 'gross-bros-daily-loader'
-                    },
-                    body: JSON.stringify(body),
-                    cache: 'no-store'
-                });
-
-                if (!response.ok) {
-                    lastError = new Error('XRPL RPC HTTP ' + response.status);
-                    continue;
-                }
-
-                const payload = await response.json().catch(() => null);
-                const result = payload?.result || payload || null;
-                const records = Array.isArray(result?.nfts) ? result.nfts : Array.isArray(result?.account_nfts) ? result.account_nfts : [];
-                const filtered = records.filter((entry) => {
-                    const issuer = String(entry.Issuer || entry.issuer || '').trim();
-                    const taxon = Number(entry.NFTokenTaxon ?? entry.nft_taxon ?? entry.taxon);
-                    return issuer === GROSS_BROS_ISSUER && Number.isFinite(taxon) && taxon === GROSS_BROS_TAXON;
-                }).sort((a, b) => getNftSerial(a) - getNftSerial(b) || getNftTokenId(a).localeCompare(getNftTokenId(b)));
-
-                return filtered;
-            } catch (error) {
-                lastError = error;
-            }
-        }
-
-        throw lastError || new Error('Unable to load XRPL NFTs.');
-    }
-
-    async function fetchAccountNftsForAddress(address) {
-        if (!address) {
-            throw new Error('Missing connected wallet address.');
-        }
-
-        let lastError = null;
-        let sawSuccessfulResponse = false;
-
-        for (const rpcUrl of XRPL_RPC_URLS) {
-            try {
-                const collected = [];
-                let marker = null;
-                let attempts = 0;
-                const maxPages = 10;
-
-                while (attempts < maxPages) {
-                    attempts += 1;
-                    const payload = {
-                        method: 'account_nfts',
-                        params: [{
-                            account: address,
-                            ledger_index: 'validated',
-                            limit: 400,
-                            ...(marker ? { marker } : {})
-                        }]
-                    };
-
-                    const controller = new AbortController();
-                    const timeout = setTimeout(() => controller.abort(), 15000);
-
-                    try {
-                        const response = await fetch(rpcUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                Accept: 'application/json',
-                                'User-Agent': 'gross-bros-fusion-loader'
-                            },
-                            body: JSON.stringify(payload),
-                            cache: 'no-store',
-                            signal: controller.signal
-                        });
-
-                        if (!response.ok) {
-                            lastError = new Error('XRPL RPC HTTP ' + response.status);
-                            break;
-                        }
-
-                        const data = await response.json().catch(() => null);
-                        const result = data?.result || data || null;
-                        const page = Array.isArray(result?.account_nfts) ? result.account_nfts : Array.isArray(result?.nfts) ? result.nfts : [];
-                        sawSuccessfulResponse = true;
-
-                        collected.push(...page);
-                        marker = result?.marker || null;
-                        if (!marker || !page.length) {
-                            break;
-                        }
-                    } catch (error) {
-                        const message = error instanceof Error ? error.message : String(error || '');
-                        if (message.includes('aborted') || message.includes('timeout')) {
-                            lastError = new Error('NFT lookup timed out while loading account NFTs.');
-                        } else {
-                            lastError = error instanceof Error ? error : new Error(String(error || 'Unable to load account NFTs.'));
-                        }
-                        break;
-                    } finally {
-                        clearTimeout(timeout);
-                    }
-                }
-
-                const filtered = collected.filter((entry) => {
-                    const issuer = String(entry.Issuer || entry.issuer || '').trim();
-                    return issuer === GROSS_BROS_ISSUER && Number(entry.NFTokenTaxon) === 1;
-                }).sort((a, b) => getNftSerial(a) - getNftSerial(b) || getNftTokenId(a).localeCompare(getNftTokenId(b)));
-
-                if (filtered.length) {
-                    return filtered;
-                }
-            } catch (error) {
-                lastError = error instanceof Error ? error : new Error(String(error || 'Unable to load account NFTs.'));
-            }
-        }
-
-        if (sawSuccessfulResponse) {
-            return [];
-        }
-
-        throw lastError || new Error('Unable to load XRPL NFTs.');
-    }
-
-    async function fetchMetadataFromTokenUri(tokenUri) {
-        const inlineMetadata = parseMaybeJson(tokenUri);
-        if (inlineMetadata) return inlineMetadata;
-
-        const metadataUrl = getIPFSUrl(tokenUri);
-        if (!metadataUrl) return null;
-
-        try {
-            const response = await fetch(metadataUrl, { cache: 'no-store' });
-            if (!response.ok) return null;
-
-            const contentType = response.headers.get('content-type') || '';
-            if (contentType.includes('json')) {
-                const json = await response.json().catch(() => null);
-                return json && typeof json === 'object' ? json : null;
-            }
-
-            const text = await response.text().catch(() => '');
-            const parsed = parseMaybeJson(text);
-            if (parsed) return parsed;
-
-            const inlineImage = getIPFSUrl(text, '');
-            if (inlineImage) return { image: inlineImage };
-        } catch (error) {
-            console.warn('Unable to load daily bro metadata', error);
-        }
-
-        return null;
-    }
-
-
-    async function resolveNftImage(nft) {
-        const directImage = findDeepString(nft, ['image', 'imageurl', 'imageUrl', 'animationurl', 'animationUrl']);
-        const directImageUrl = getIPFSUrl(directImage || '');
-        if (directImageUrl) return directImageUrl;
-
-        const rawUri = decodeTokenUri(nft.URI || nft.Uri || nft.uri || '');
-        if (!rawUri) return '';
-
-        const inlineMetadata = parseMaybeJson(rawUri);
-        if (inlineMetadata) {
-            const inlineImage = findDeepString(inlineMetadata, ['image', 'imageurl', 'imageUrl', 'animationurl', 'animationUrl']);
-            const normalizedInlineImage = getIPFSUrl(inlineImage || '');
-            if (normalizedInlineImage) return normalizedInlineImage;
-        }
-
-        const metadataUrl = getIPFSUrl(rawUri);
-        if (!metadataUrl) return '';
-
-        try {
-            const res = await fetch(metadataUrl, { cache: 'no-store' });
-            if (!res.ok) return '';
-
-            const contentType = res.headers.get('content-type') || '';
-            if (contentType.includes('image/')) {
-                return encodeGatewayUrl(metadataUrl);
-            }
-
-            let metadata = null;
-            if (contentType.includes('json')) {
-                metadata = await res.json().catch(() => null);
-            } else {
-                const text = await res.text().catch(() => '');
-                metadata = parseMaybeJson(text);
-                if (!metadata) {
-                    const textUrl = getIPFSUrl(text, '');
-                    if (textUrl) return textUrl;
-                }
-            }
-
-            if (metadata && typeof metadata === 'object') {
-                const image = findDeepString(metadata, ['image', 'imageurl', 'imageUrl', 'animationurl', 'animationUrl']);
-                const normalized = getIPFSUrl(image || '');
-                if (normalized) return normalized;
-            }
-        } catch (e) {
-            console.error(e);
-        }
-
-        return '';
-    }
-
-    function dedupeNftsById(records) {
-        const seen = new Set();
-        return records.filter((nft) => {
-            const tokenId = getNftTokenId(nft);
-            if (!tokenId || seen.has(tokenId)) return false;
-            seen.add(tokenId);
-            return true;
-        });
-    }
-
-    function hashString(value) {
-        const input = String(value || '');
-        let hash = 2166136261;
-        for (let i = 0; i < input.length; i += 1) {
-            hash ^= input.charCodeAt(i);
-            hash = Math.imul(hash, 16777619);
-        }
-        return hash >>> 0;
-    }
-
-    function pickSeeded(seed, options, offset = 0) {
-        if (!Array.isArray(options) || !options.length) return '';
-        const index = Math.abs(((seed >>> 0) + offset) % options.length);
-        return options[index];
-    }
-
-    function shortenTokenId(tokenId) {
-        const value = String(tokenId || '').trim();
-        if (!value) return 'UNAVAILABLE';
-        if (value.length <= 18) return value;
-        return value.slice(0, 8) + '…' + value.slice(-8);
-    }
-
-    function getOperativeVoice(nft) {
-        const tokenId = getNftTokenId(nft);
-        const serial = getNftSerial(nft);
-        const name = nft.name || nft.NFTokenName || ('Gross Bro #' + (serial === Number.MAX_SAFE_INTEGER ? '—' : serial));
-        const seed = hashString(tokenId || name || serial);
-
-        const archetypes = [
-            'surgical oracle',
-            'grit tactician',
-            'velvet signaler',
-            'static prophet',
-            'lattice hunter',
-            'mirror engineer',
-            'void diplomat',
-            'ion troubadour'
-        ];
-        const tempos = ['slow-breath cadence', 'sharp relay cadence', 'measured pulse', 'glitch-warm cadence', 'knife-clean cadence'];
-        const moods = ['calm', 'wry', 'hypervigilant', 'protective', 'cryptic', 'inscrutable'];
-        const endings = [
-            'Keep the channel open.',
-            'Signal accepted.',
-            'The lattice remembers.',
-            'Hold steady in the dark.',
-            'No static can block the link.',
-            'Transmission remains live.'
-        ];
-        const symbols = ['⟡', '◬', '⟁', '⌁', '⌬', '⟠'];
-
-        return {
-            tokenId,
-            serial,
-            name,
-            seed,
-            voiceLabel: pickSeeded(seed, archetypes),
-            tempo: pickSeeded(seed >>> 2, tempos),
-            mood: pickSeeded(seed >>> 4, moods),
-            ending: pickSeeded(seed >>> 6, endings),
-            symbol: pickSeeded(seed >>> 8, symbols),
-            prompt: 'Ask for status, lore, or a mission readout.'
-        };
-    }
-
-    function classifyNeuralMessage(message) {
-        const text = String(message || '').toLowerCase();
-        if (!text) return 'empty';
-        if (/(hello|hi|hey|greetings|who are you|identify yourself|name)/i.test(text)) return 'intro';
-        if (/(status|state|health|offline|online|ready|load|boot)/i.test(text)) return 'status';
-        if (/(mission|quest|objective|brief|task|plan|next)/i.test(text)) return 'mission';
-        if (/(lore|story|history|origin|backstory|gross bros|xrp-7)/i.test(text)) return 'lore';
-        if (/(wallet|xaman|fusion|payment|xrp|nft|token|roster)/i.test(text)) return 'ops';
-        if (/(help|commands|what can you do|options|guide)/i.test(text)) return 'help';
-        return 'default';
-    }
-
-    function buildNeuralReply(message, operative) {
-        const category = classifyNeuralMessage(message);
-        const seed = hashString(`${operative.tokenId}|${String(message).toLowerCase()}|${category}`);
-
-        const banks = {
-            empty: [
-                "Say something and I will braid it into the relay, bro.",
-                "The channel is open. Toss me a thought.",
-                "No signal yet. I am listening like a menace with good manners."
-            ],
-            intro: [
-                "I am the operative thread riding this NFT signature, bro.",
-                "Identity confirmed. The neural lattice is aligned to your selected bro.",
-                "I speak in a voice forged from the token pattern itself, and I do not miss."
-            ],
-            status: [
-                "All conduits are green, the relay is warm, and the roster is awake, bro.",
-                "Vitals check out. The alien shell is polished and the signal is stable.",
-                "Status is clean: no corruption, no drift, no wasted motion."
-            ],
-            mission: [
-                "Primary objective: protect the ledger, sharpen the collective, and never surrender the channel, bro.",
-                "Mission vector: locate the breach, decode the intent, and answer with precision.",
-                "Objective registered. Move with intent, strike with clarity, leave no static behind."
-            ],
-            lore: [
-                "The Gross Bros were forged in collapse, then taught themselves to outlast it.",
-                "XRP-7 broke the crew, but the fusion made the collective stronger than the wreckage, bro.",
-                "Every operative carries a shard of the accident and the discipline that followed."
-            ],
-            ops: [
-                "Wallet sync is the gateway, roster sync is the pulse, and fusion remains the side rail.",
-                "Xaman brings the operatives online; the terminal does the speaking, bro.",
-                "NFT IDs are not decoration here — each one seeds a distinct conversational current."
-            ],
-            help: [
-                "Ask me about status, mission, lore, or the selected operative, and I will answer in character, bro.",
-                "Use the roster to change the voice, then send a prompt through the terminal.",
-                "This link responds best to short directives, clear questions, and the occasional chaotic bro check."
-            ],
-            default: [
-                "I read the pulse in that message. The channel agrees, and the answer is disciplined, bro.",
-                "The lattice heard you. It returns a cleaner version of the thought.",
-                "Signal absorbed. Response echoed back through the selected operative."
-            ]
-        };
-
-        const opener = pickSeeded(seed, [
-            `${operative.symbol} ${operative.name}`,
-            `${operative.symbol} ${operative.voiceLabel}`,
-            `${operative.symbol} ${operative.mood}`,
-            `${operative.symbol} ${operative.tempo}`
-        ]);
-        const body = pickSeeded(seed >>> 3, banks[category] || banks.default);
-        const accent = pickSeeded(seed >>> 6, [
-            'A clean cut, not a noisy one.',
-            'The link stays elegant even when the galaxy does not.',
-            'Your signal arrived without distortion.',
-            'Nothing wasted. Nothing random.'
-        ]);
-        return `${opener} — ${body} ${accent} ${operative.ending}`;
-    }
-
-    function appendNeuralTerminalLine(role, title, body) {
-        const logEl = document.getElementById('neural-terminal-log');
-        if (!logEl) return null;
-
-        const row = document.createElement('div');
-        row.className = 'neural-line neural-line--' + role + ' rounded-3xl px-4 py-3';
-        row.innerHTML = `
-            <div class="flex items-center justify-between gap-3 mb-2 text-[11px] uppercase tracking-[0.3em] text-[#00ffc8]/60">
-                <span>${title}</span>
-                <span>${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-            </div>
-            <div class="text-[#00ffc8]/90 leading-relaxed whitespace-pre-wrap">${body}</div>
-        `;
-        logEl.appendChild(row);
-        logEl.scrollTop = logEl.scrollHeight;
-        return row;
-    }
-
-    function renderNeuralTerminalWelcome() {
-        const logEl = document.getElementById('neural-terminal-log');
-        if (!logEl || neuralTerminalPrimed) return;
-        neuralTerminalPrimed = true;
-        logEl.innerHTML = '';
-        appendNeuralTerminalLine('system', 'NEURAL LINK', "Awaiting operative selection. Connect Xaman, choose a rostered NFT, and I will start talking in that NFT ID's fixed voice.");
-    }
-
-    function updateNeuralPreviewUI(operative) {
-        const previewImageEl = document.getElementById('neural-nft-preview-image');
-        const previewPlaceholderEl = document.getElementById('neural-nft-preview-placeholder');
-        const previewTitleEl = document.getElementById('neural-preview-title');
-        const previewTokenEl = document.getElementById('neural-preview-token');
-        const previewVoiceEl = document.getElementById('neural-preview-voice');
-
-        if (!operative) {
-            if (previewTitleEl) previewTitleEl.textContent = 'Awaiting operative selection.';
-            if (previewTokenEl) previewTokenEl.textContent = 'TOKEN // standby';
-            if (previewVoiceEl) previewVoiceEl.textContent = 'VOICE // standby';
-            if (previewImageEl) {
-                previewImageEl.src = '';
-                previewImageEl.classList.add('hidden');
-            }
-            if (previewPlaceholderEl) {
-                previewPlaceholderEl.textContent = 'Select a rostered NFT to preview it here.';
-            }
-            return;
-        }
-
-        if (previewTitleEl) previewTitleEl.textContent = operative.name;
-        if (previewTokenEl) previewTokenEl.textContent = 'TOKEN ' + shortenTokenId(operative.tokenId);
-        if (previewVoiceEl) previewVoiceEl.textContent = 'VOICE // ' + operative.voiceLabel + ' // ' + operative.tempo;
-
-        if (previewImageEl) {
-            if (operative.image) {
-                previewImageEl.src = operative.image;
-                previewImageEl.classList.remove('hidden');
-            } else {
-                previewImageEl.src = '';
-                previewImageEl.classList.add('hidden');
-            }
-        }
-
-        if (previewPlaceholderEl) {
-            previewPlaceholderEl.textContent = operative.image ? '' : 'No image available for this operative.';
-        }
-    }
-
-    function updateNeuralMetadataUI(operative) {
-        const loreEl = document.getElementById('neural-lore');
-        const traitsEl = document.getElementById('neural-traits');
-        const summaryEl = document.getElementById('neural-terminal-summary');
-        const rosterCount = neuralOperatives.length;
-
-        if (!operative) {
-            if (loreEl) loreEl.textContent = 'Select an operative to load its identity shard.';
-            if (traitsEl) traitsEl.textContent = 'Traits will appear here once a rostered NFT is active.';
-            if (summaryEl) summaryEl.textContent = 'Select an operative to sync the NFT-bound voice profile.';
-            return;
-        }
-
-        if (loreEl) {
-            loreEl.textContent = operative.name + ' is a token-bound voice seeded from the Gross Bros archive and tied to ' + shortenTokenId(operative.tokenId) + '.';
-        }
-        if (traitsEl) {
-            traitsEl.textContent = [operative.symbol, operative.voiceLabel, operative.mood, operative.tempo].filter(Boolean).join(' • ');
-        }
-        if (summaryEl) {
-            summaryEl.textContent = 'Roster online: ' + rosterCount + ' operative' + (rosterCount === 1 ? '' : 's') + '. Selected voice: ' + operative.voiceLabel + '.';
-        }
-    }
-
-    function updateNeuralTerminalUI(operative) {
-        const activeEl = document.getElementById('neural-terminal-active');
-        const voiceEl = document.getElementById('neural-terminal-voice');
-        const summaryEl = document.getElementById('neural-terminal-summary');
-        const rosterItems = document.querySelectorAll('[data-operative-token]');
-
-        rosterItems.forEach((item) => {
-            item.classList.toggle('operative-card--active', item.getAttribute('data-operative-token') === operative.tokenId);
-        });
-
-        if (activeEl) {
-            activeEl.textContent = operative.name + ' • ' + shortenTokenId(operative.tokenId);
-        }
-        if (voiceEl) {
-            voiceEl.textContent = `VOICE // ${operative.voiceLabel} // ${operative.tempo} // NFT-LOCKED`;
-        }
-        updateNeuralPreviewUI(operative);
-        updateNeuralMetadataUI(operative);
-    }
-    function getActiveOperative() {
-        return neuralOperatives.find((operative) => operative.tokenId === activeNeuralOperativeTokenId) || null;
-    }
-
-    function setActiveOperative(tokenId, options = {}) {
-        const operative = neuralOperatives.find((entry) => entry.tokenId === tokenId);
-        if (!operative) return;
-
-        activeNeuralOperativeTokenId = operative.tokenId;
-        updateNeuralTerminalUI(operative);
-
-        if (options.announce !== false) {
-            appendNeuralTerminalLine('system', 'LINK SYNCED', `${operative.name} is now in command of the terminal voice.`);
-        }
-    }
-
-    function ensureNeuralTerminalState() {
-        renderNeuralTerminalWelcome();
-        const operative = getActiveOperative();
-        if (operative) {
-            updateNeuralTerminalUI(operative);
-        } else {
-            updateNeuralPreviewUI(null);
-            updateNeuralMetadataUI(null);
-        }
-    }
-
-    function submitNeuralTerminalMessage() {
-        const inputEl = document.getElementById('neural-terminal-input');
-        const operative = getActiveOperative();
-        if (!inputEl) return;
-
-        const text = inputEl.value.trim();
-        if (!text) return;
-
-        if (!operative) {
-            appendNeuralTerminalLine('system', 'NEURAL LINK', 'Select an operative before transmitting.');
-            return;
-        }
-
-        appendNeuralTerminalLine('user', 'YOU', text);
-        inputEl.value = '';
-
-        const response = buildNeuralReply(text, operative);
-        window.setTimeout(() => {
-            appendNeuralTerminalLine('assistant', operative.name, response);
-        }, 250);
-    }
-
-    function selectOperative(tokenId) {
-        setActiveOperative(tokenId);
-    }
-
-    async function renderFusionNfts(records, address) {
-        const statusEl = document.getElementById('fusion-nft-status');
-        const listEl = document.getElementById('fusion-nft-list');
-        if (!statusEl || !listEl) return;
-
-        listEl.innerHTML = '';
-
-        if (!address) {
-            neuralOperatives = [];
-            activeNeuralOperativeTokenId = '';
-            neuralTerminalPrimed = false;
-            statusEl.textContent = 'Connect Xaman to load your Gross Bros NFTs.';
-            renderNeuralTerminalWelcome();
-            ensureNeuralTerminalState();
-            updateNeuralPreviewUI(null);
-            updateNeuralMetadataUI(null);
-            return;
-        }
-
-        const uniqueRecords = dedupeNftsById(records);
-        neuralOperatives = uniqueRecords.map((record) => ({
-            ...record,
-            ...getOperativeVoice(record)
-        }));
-
-        if (!uniqueRecords.length) {
-            activeNeuralOperativeTokenId = '';
-            neuralTerminalPrimed = false;
-            statusEl.textContent = 'No Gross Bros NFTs found for ' + shortenAddress(address) + '.';
-            renderNeuralTerminalWelcome();
-            ensureNeuralTerminalState();
-            updateNeuralPreviewUI(null);
-            updateNeuralMetadataUI(null);
-            return;
-        }
-
-        statusEl.textContent = 'Loaded ' + uniqueRecords.length + ' Gross Bros NFT' + (uniqueRecords.length === 1 ? '' : 's') + ' for ' + shortenAddress(address) + '.';
-
-        if (!activeNeuralOperativeTokenId || !neuralOperatives.some((entry) => entry.tokenId === activeNeuralOperativeTokenId)) {
-            activeNeuralOperativeTokenId = neuralOperatives[0].tokenId;
-        }
-
-        for (const nft of neuralOperatives.slice(0, 24)) {
-            const tokenId = getNftTokenId(nft) || 'UNAVAILABLE';
-            const taxon = Number(nft.NFTokenTaxon);
-            const serial = getNftSerial(nft);
-            const name = nft.name || nft.NFTokenName || ('Gross Bro #' + (serial === Number.MAX_SAFE_INTEGER ? '—' : serial));
-            const image = await resolveNftImage(nft);
-            const operativeIndex = neuralOperatives.findIndex((entry) => entry.tokenId === tokenId);
-            if (operativeIndex >= 0) {
-                neuralOperatives[operativeIndex].image = image;
-            }
-            const operative = getOperativeVoice(nft);
-
-            const item = document.createElement('button');
-            item.type = 'button';
-            item.setAttribute('data-operative-token', tokenId);
-            item.className = 'operative-card text-left w-full flex items-center gap-3 rounded-2xl border border-[#00ffc8]/20 bg-black/70 p-2.5';
-            item.innerHTML = `
-                <div class="w-12 h-12 shrink-0 rounded-2xl overflow-hidden bg-[#0a0a0a] border border-[#00ffc8]/10 flex items-center justify-center">
-                    ${image ? `<img src="${image}" alt="${name}" class="w-full h-full object-cover" />` : `<span class="text-[10px] text-[#00ffc8]/50 uppercase text-center px-2">No Image</span>`}
-                </div>
-                <div class="min-w-0 flex-1">
-                    <div class="text-[#00ffc8] truncate text-sm md:text-base">${name}</div>
-                    <div class="text-[10px] md:text-[11px] text-[#00ffc8]/65 break-all">Token ${tokenId}</div>
-                    <div class="text-[10px] md:text-[11px] text-[#00ffc8]/55">${operative.voiceLabel} • ${operative.mood} • Taxon ${Number.isFinite(taxon) ? taxon : GROSS_BROS_TAXON}</div>
-                </div>
-                <div class="shrink-0 text-[10px] uppercase tracking-[0.3em] text-[#00ffc8]/50">${operative.symbol}</div>
-            `;
-            item.addEventListener('click', () => selectOperative(tokenId));
-            listEl.appendChild(item);
-        }
-
-        updateNeuralTerminalUI(getActiveOperative() || neuralOperatives[0]);
-        renderNeuralTerminalWelcome();
-        ensureNeuralTerminalState();
-
-        if (activeNeuralOperativeTokenId) {
-            const active = getActiveOperative();
-            if (active) {
-                updateNeuralTerminalUI(active);
-            }
-        }
-    }
-
-    async function loadFusionNfts(address = '') {
-        const statusEl = document.getElementById('fusion-nft-status');
-        const listEl = document.getElementById('fusion-nft-list');
-        if (!statusEl || !listEl) return;
-
-        const walletAddress = address || getConnectedWalletAddress();
-        listEl.innerHTML = '';
-        statusEl.textContent = walletAddress ? 'Loading Gross Bros NFTs for ' + shortenAddress(walletAddress) + '…' : 'Connect Xaman to load your Gross Bros NFTs.';
-
-        if (!walletAddress) {
-            neuralOperatives = [];
-            activeNeuralOperativeTokenId = '';
-            neuralTerminalPrimed = false;
-            renderNeuralTerminalWelcome();
-            ensureNeuralTerminalState();
-            updateNeuralPreviewUI(null);
-            updateNeuralMetadataUI(null);
-            return;
-        }
-
-        try {
-            const records = await fetchAccountNftsForAddress(walletAddress);
-            await renderFusionNfts(records, walletAddress);
-        } catch (error) {
-            console.warn('Unable to load Neural Link operatives', error);
-            const message = error instanceof Error ? error.message : 'Unable to load NFTs.';
-            statusEl.textContent = message;
-        }
-    }
-
-    async function loadDailyBro() {
-
-        const imageEl = document.getElementById('daily-bro-image');
-        const placeholderEl = document.getElementById('daily-bro-placeholder');
-        const nameEl = document.getElementById('daily-bro-name');
-        const descriptionEl = document.getElementById('daily-bro-description');
-        const issuerEl = document.getElementById('daily-bro-issuer');
-        const tokenIdEl = document.getElementById('daily-bro-tokenid');
-        const linkEl = document.getElementById('daily-bro-link');
-
-        if (placeholderEl) placeholderEl.textContent = 'Loading BRO OF THE DAY…';
-        if (nameEl) nameEl.textContent = 'XRPL BRO READY';
-        if (descriptionEl) descriptionEl.textContent = 'Fetching live TokenURI and metadata from the Ledger…';
-        if (issuerEl) issuerEl.textContent = 'PENDING';
-        if (tokenIdEl) tokenIdEl.textContent = 'PENDING';
-        if (linkEl) linkEl.href = 'https://xrp.cafe/collection/galactic-gross-bros';
-        if (imageEl) {
-            imageEl.src = '';
-            imageEl.classList.add('hidden');
-        }
-
-        try {
-            const records = await fetchXrplNftsByIssuer();
-            if (!records.length) {
-                throw new Error('No Gross Bros returned from XRPL.');
-            }
-
-            const selected = records[getDailyBroIndex(Math.min(records.length, GROSS_BROS_TOTAL))] || records[0];
-            const tokenUri = getNftTokenUri(selected);
-            const metadata = await fetchMetadataFromTokenUri(tokenUri);
-            const image = await resolveNftImage(selected) || getIPFSUrl(findDeepString(metadata, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || '');
-            const name = findDeepString(metadata, ['name', 'title']) || selected.name || 'Gross Bro #' + (getNftSerial(selected) === Number.MAX_SAFE_INTEGER ? '—' : getNftSerial(selected));
-            const description = findDeepString(metadata, ['description', 'summary']) || 'Live Gross Bro metadata resolved from XRPL TokenURI.';
-            const tokenId = getNftTokenId(selected);
-            const browseUrl = tokenId ? 'https://xrp.cafe/nft/' + tokenId : 'https://xrp.cafe/collection/galactic-gross-bros';
-
-            if (nameEl) nameEl.textContent = name;
-            if (descriptionEl) descriptionEl.textContent = description;
-            if (issuerEl) issuerEl.textContent = GROSS_BROS_ISSUER;
-            if (tokenIdEl) tokenIdEl.textContent = tokenId || 'UNAVAILABLE';
-            if (linkEl) linkEl.href = browseUrl;
-
-            if (imageEl && image) {
-                imageEl.src = image;
-                imageEl.onload = () => imageEl.classList.remove('hidden');
-                imageEl.onerror = () => {
-                    imageEl.classList.add('hidden');
-                    if (placeholderEl) placeholderEl.textContent = 'IMAGE RELAY FAILED';
-                };
-            } else if (placeholderEl) {
-                placeholderEl.textContent = 'IMAGE RELAY FAILED';
-            }
-
-            if (placeholderEl && image) {
-                placeholderEl.textContent = '';
-            }
-        } catch (error) {
-            console.warn('Unable to load Bro of the Day', error);
-            if (placeholderEl) placeholderEl.textContent = 'BRO OF THE DAY UNAVAILABLE';
-            if (nameEl) nameEl.textContent = 'XRPL LOOKUP FAILED';
-            if (descriptionEl) descriptionEl.textContent = 'The ledger lookup for the daily bro could not be completed.';
-            if (issuerEl) issuerEl.textContent = GROSS_BROS_ISSUER;
-            if (tokenIdEl) tokenIdEl.textContent = 'UNAVAILABLE';
-        }
-    }
-
-    function removeStrictNftFilterBanner() {
-        const banner = document.querySelector('[data-strict-nft-filter-banner], #strict-nft-filter-banner, .strict-nft-filter-banner');
-        if (banner) banner.remove();
-    }
-
-    loadRuntimeConfig();
-    window.getIPFSUrl = getIPFSUrl;
-
-    function switchTab(n) {
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-        document.getElementById('content-' + n).classList.remove('hidden');
-        document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('tab-active', i === n));
-    }
-
-    window.switchTab = switchTab;
-
-    function runTicker() {
-        const messages = [
-            '[ENEMY ALERT] BTC MINERS DETECTED IN SECTOR 7 — GUARDIANS DEPLOY',
-            '[ENEMY ALERT] DIMENSIONAL RIFT SPIKE CONFIRMED',
-            '[ENEMY ALERT] SHADOW DRONES BREACHING THE LEDGER WALL',
-            '[ENEMY ALERT] GROSS BROS DEFENSE GRID ENGAGED'
-        ];
-        let i = 0;
-        const ticker = document.getElementById('news-ticker');
-        setInterval(() => {
-            ticker.textContent = messages[i];
-            i = (i + 1) % messages.length;
-        }, 5500);
-    }
-
-    function getWalletSession() {
-        try {
-            const raw = window.localStorage.getItem(XAMAN_SESSION_KEY);
-            const session = raw ? JSON.parse(raw) : null;
-            if (!session || typeof session !== 'object') {
-                return null;
-            }
-
-            const address = typeof session.address === 'string' ? session.address.trim() : '';
-            const payloadUuid = typeof session.payloadUuid === 'string' ? session.payloadUuid.trim() : '';
-            const connected = Boolean(session.connected && address);
-
-            return {
-                ...session,
-                address,
-                payloadUuid,
-                connected
-            };
-        } catch {
-            return null;
-        }
-    }
-
-    function saveWalletSession(session) {
-        window.localStorage.setItem(XAMAN_SESSION_KEY, JSON.stringify(session));
-    }
-
-    function clearWalletSession() {
-        window.localStorage.removeItem(XAMAN_SESSION_KEY);
-    }
-
-    async function verifyWalletSession(session) {
-        if (!session?.connected || !session.address) {
-            clearWalletSession();
-            return null;
-        }
-
-        if (!session.payloadUuid) {
-            clearWalletSession();
-            return null;
-        }
-
-        try {
-            const payload = await fetchPayloadStatus(session.payloadUuid);
-            const signed = Boolean(payload?.meta?.signed || payload?.signed || payload?.response?.signed);
-            const expired = Boolean(payload?.meta?.expired || payload?.expired);
-
-            if (!signed || expired) {
-                clearWalletSession();
-                return null;
-            }
-
-            const verifiedAddress = payload?.response?.account || payload?.response?.user_token?.account || payload?.response?.signer || payload?.account || session.address;
-            const verifiedSession = {
-                ...session,
-                connected: true,
-                address: typeof verifiedAddress === 'string' ? verifiedAddress.trim() : session.address
-            };
-
-            saveWalletSession(verifiedSession);
-            return verifiedSession;
-        } catch {
-            clearWalletSession();
-            return null;
-        }
-    }
-
-    function shortenAddress(address) {
-        if (!address) return 'Wallet disconnected.';
-        if (address.length <= 12) return address;
-        return address.slice(0, 6) + '…' + address.slice(-6);
-    }
-
-    function setWalletUI({ connected, address, message }) {
-        const walletButton = document.getElementById('wallet-button');
-        const walletText = document.getElementById('wallet-text');
-        const status = document.getElementById('xaman-status');
-        const isConnected = Boolean(connected && address);
-        const connectedLabel = address ? 'XAMAN CONNECTED • ' + shortenAddress(address) : 'XAMAN CONNECTED';
-        const connectedStatus = address ? 'Connected: ' + shortenAddress(address) : 'Connected to Xaman.';
-
-        if (walletButton) {
-            walletButton.setAttribute('aria-pressed', String(isConnected));
-            walletButton.setAttribute('aria-label', isConnected ? connectedLabel : 'Connect Xaman wallet');
-            walletButton.classList.toggle('bg-[#00ffc8]', isConnected);
-            walletButton.classList.toggle('text-[#00ffc8]', !isConnected);
-            walletButton.classList.toggle('text-black', isConnected);
-            walletButton.classList.toggle('border-[#00ffc8]', isConnected);
-            walletButton.classList.toggle('border-[#00ffc8]/60', !isConnected);
-        }
-
-        if (walletText) {
-            walletText.textContent = isConnected ? connectedLabel : 'CONNECT XAMAN';
-        }
-
-        if (status) {
-            status.textContent = isConnected ? connectedStatus : (message || 'Wallet disconnected.');
-        }
-    }
-
-    async function createXamanSigninPayload() {
-        const payload = await createXamanProxyPayload({
-            txjson: { TransactionType: 'SignIn' },
-            options: {
-                submit: false,
-                expire: 5
-            }
-        });
-
-        if (!payload || !payload.uuid) {
-            throw new Error('Unable to create Xaman sign-in request.');
-        }
-
-        return payload;
-    }
-
-    async function fetchPayloadStatus(uuid) {
-        const apiKey = await getRuntimeXamanApiKey();
-        const response = await fetch(XAMAN_API_BASE + '/payload/' + encodeURIComponent(uuid), {
-            headers: {
-                'X-API-Key': apiKey
-            }
-        });
-
-        const data = await response.json().catch(() => null);
-        if (!response.ok || !data) {
-            throw new Error((data && (data.message || data.error)) || 'Unable to check Xaman sign-in status.');
-        }
-
-        return data;
-    }
-
-    async function fetchXrpUsdRate() {
-        const sources = [
-            async () => {
-                const response = await fetch('/api/xrp-price', { cache: 'no-store' });
-                const data = await response.json().catch(() => null);
-                if (!response.ok || !data) return null;
-                const price = Number(data.xrpUsd ?? data.price ?? data.last ?? data.usd);
-                return Number.isFinite(price) && price > 0 ? price : null;
-            },
-            async () => {
-                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd', { cache: 'no-store' });
-                const data = await response.json().catch(() => null);
-                const price = Number(data?.ripple?.usd);
-                return Number.isFinite(price) && price > 0 ? price : null;
-            },
-            async () => {
-                const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=XRPUSDT', { cache: 'no-store' });
-                const data = await response.json().catch(() => null);
-                const price = Number(data?.price);
-                return Number.isFinite(price) && price > 0 ? price : null;
-            }
-        ];
-
-        for (const source of sources) {
-            try {
-                const price = await source();
-                if (price) return price;
-            } catch {
-                // try next source
-            }
-        }
-
-        return null;
-    }
-
-    function dropsFromXrpAmount(xrpAmount) {
-        if (!Number.isFinite(xrpAmount) || xrpAmount <= 0) return null;
-        return String(Math.max(1, Math.round(xrpAmount * 1000000)));
-    }
-
-    async function getFusionAmountDetails() {
-        const xrpUsd = await fetchXrpUsdRate();
-        if (!xrpUsd) {
-            throw new Error('Unable to fetch the live XRP price.');
-        }
-
-        const xrpAmount = FUSION_USD_TARGET / xrpUsd;
-        const amountDrops = dropsFromXrpAmount(xrpAmount);
-
-        if (!amountDrops) {
-            throw new Error('Unable to calculate the fusion amount.');
-        }
-
-        return { xrpUsd, xrpAmount, amountDrops };
-    }
-
-    function getXamanPayloadUrl(payload) {
-        return payload?.next?.always?.url || payload?.next?.always || payload?.next?.no_push_msg_received?.url || payload?.next?.no_push_msg_received || payload?.refs?.qr_png?.url || payload?.refs?.qr_png || payload?.url || null;
-    }
-
-    function openSigninUrl(payload, targetWindow = null) {
-        const nextUrl = getXamanPayloadUrl(payload);
-        if (typeof nextUrl === 'string' && nextUrl) {
-            if (targetWindow && !targetWindow.closed) {
-                targetWindow.location.href = nextUrl;
-            } else {
-                window.location.assign(nextUrl);
-            }
-        }
-    }
-
-    function wait(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    async function pollForSignin(uuid) {
-        for (let attempt = 0; attempt < 60; attempt += 1) {
-            const payload = await fetchPayloadStatus(uuid);
-            const signed = Boolean(payload?.meta?.signed || payload?.signed || payload?.response?.signed);
-            const expired = Boolean(payload?.meta?.expired || payload?.expired);
-
-            if (signed) {
-                const address = payload?.response?.account || payload?.response?.user_token?.account || payload?.response?.signer || payload?.account || '';
-                return { signed: true, address, payload };
-            }
-
-            if (expired) {
-                throw new Error('Xaman sign-in expired. Please try again.');
-            }
-
-            await wait(2000);
-        }
-
-        throw new Error('Timed out waiting for Xaman approval.');
-    }
-
-    async function connectXaman() {
-        const existing = await verifyWalletSession(getWalletSession());
-        if (existing?.connected && existing.address) {
-            setWalletUI({ connected: true, address: existing.address, message: 'Connected: ' + shortenAddress(existing.address) });
-            await loadFusionNfts(existing.address);
-            return existing;
-        }
-
-        try {
-            setWalletUI({ connected: false, address: '', message: 'Preparing Xaman sign-in…' });
-            const payload = await createXamanSigninPayload();
-            openSigninUrl(payload);
-            setWalletUI({ connected: false, address: '', message: 'Approve the Xaman request in your wallet.' });
-
-            if (xamanPolling) {
-                clearTimeout(xamanPolling);
-                xamanPolling = null;
-            }
-
-            const signed = await pollForSignin(payload.uuid);
-            const session = {
-                connected: true,
-                address: signed.address || '',
-                payloadUuid: payload.uuid,
-                signedAt: new Date().toISOString()
-            };
-            saveWalletSession(session);
-            setWalletUI({ connected: true, address: session.address, message: 'Connected: ' + shortenAddress(session.address) });
-            await loadFusionNfts(session.address);
-            return session;
-        } catch (error) {
-            clearWalletSession();
-            setWalletUI({ connected: false, address: '', message: error instanceof Error ? error.message : 'Unable to connect Xaman.' });
-            throw error;
-        }
-    }
-
-    window.connectXaman = connectXaman;
-
-    async function initiateFusion() {
-        try {
-            let session = getWalletSession();
-            if (!session?.connected || !session.address) {
-                session = await connectXaman();
-            } else {
-                session = await verifyWalletSession(session) || session;
-            }
-
-            if (!session?.connected || !session.address) {
-                throw new Error('Connect Xaman before starting fusion.');
-            }
-
-            setWalletUI({ connected: true, address: session.address, message: 'Preparing fusion payment…' });
-            await loadFusionNfts(session.address);
-            const response = await createXamanProxyPayload({
-                txjson: {
-                    TransactionType: 'Payment',
-                    Destination: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
-                    Amount: '50000000'
-                },
-                options: { submit: true }
-            });
-
-            if (!response?.next?.always) {
-                throw new Error('Unable to open the Xaman payload URL.');
-            }
-
-            window.location.assign(response.next.always);
-        } catch (error) {
-            setWalletUI({ connected: false, address: '', message: error instanceof Error ? error.message : 'Unable to initiate fusion.' });
-        }
-    }
-
-    window.initiateFusion = initiateFusion;
-
-    window.addEventListener('DOMContentLoaded', () => {
-        switchTab(0);
-        try {
-            removeStrictNftFilterBanner();
-        } catch (error) {
-            console.warn('Unable to remove strict NFT filter banner', error);
-        }
-        runTicker();
-        void loadDailyBro();
-
-        const fusionAmount = document.getElementById('xrp-amount');
-        if (fusionAmount && !fusionAmount.textContent.trim()) {
-            fusionAmount.textContent = 'LINK READY';
-        }
-
-        document.getElementById('wallet-button')?.addEventListener('click', connectXaman);
-        document.getElementById('fusion-button')?.addEventListener('click', initiateFusion);
-        document.getElementById('neural-terminal-form')?.addEventListener('submit', (event) => {
-            event.preventDefault();
-            submitNeuralTerminalMessage();
-        });
-        document.getElementById('neural-terminal-input')?.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                submitNeuralTerminalMessage();
-            }
-        });
-
-        ensureNeuralTerminalState();
-
-        void (async () => {
-            try {
-                const session = await verifyWalletSession(getWalletSession());
-                if (session?.connected && session.address) {
-                    setWalletUI({ connected: true, address: session.address, message: 'Connected: ' + shortenAddress(session.address) });
-                    await loadFusionNfts(session.address);
-                } else {
-                    setWalletUI({ connected: false, address: '', message: 'Wallet disconnected.' });
-                }
-            } catch (error) {
-                console.warn('Wallet session verification failed', error);
-                setWalletUI({ connected: false, address: '', message: 'Wallet disconnected.' });
-            }
-        })();
-    });
+    const pseudo = 'r' + Math.random().toString(36).slice(2, 10).toUpperCase() + Math.random().toString(36).slice(2, 10).toUpperCase();
+    state.connected = true;
+    state.wallet = pseudo.slice(0, 25);
+    storageSet(SESSION_KEY, { connected: true, address: state.wallet });
+    if (!state.selectedTokenId && state.nfts[0]) state.selectedTokenId = state.nfts[0].tokenId;
+    renderFromState();
+  }
+  async function initiateFusion() {
+    if (!state.connected) { await connectXaman(); return; }
+    const active = state.nfts.find((item) => item.tokenId === state.selectedTokenId) || state.nfts[0] || null;
+    if (!active) return;
+    state.fusedTokenId = active.tokenId;
+    state.operative = active;
+    persistState();
+    updateNeuralTerminalUI(active);
+    renderNftList();
+    const status = $('fusion-nft-status');
+    if (status) status.textContent = 'Chat unlocked for ' + active.name + '.';
+    const amount = $('xrp-amount');
+    if (amount) amount.textContent = 'FUSION READY';
+    addSystemMessage('Fusion active for ' + active.name + ' using token ' + active.tokenId + '.');
+  }
+  async function sendChatMessage() {
+    const input = $('neural-terminal-input');
+    const text = input ? input.value.trim() : '';
+    if (!text || !state.selectedTokenId) return;
+    if (input) input.value = '';
+    state.chatHistory.push({ role: 'user', message: text });
+    const active = state.nfts.find((item) => item.tokenId === (state.fusedTokenId || state.selectedTokenId)) || state.nfts[0];
+    const response = active ? active.name + ' hears you. ' + text.split(' ').slice(0, 3).join(' ') + '. ' + active.traits[0] + ' mode engaged.' : 'Terminal online.';
+    state.chatHistory.push({ role: 'system', message: response });
+    while (state.chatHistory.length > 12) state.chatHistory.shift();
+    renderChatHistory();
+  }
+  window.switchTab = switchTab;
+  window.connectXaman = connectXaman;
+  window.initiateFusion = initiateFusion;
+  window.selectOperative = selectOperative;
+  document.addEventListener('DOMContentLoaded', () => {
+    loadStoredSession();
+    runTicker();
+    switchTab(0);
+    renderFromState();
+    void loadDailyBro();
+    const walletButton = $('wallet-button');
+    if (walletButton) walletButton.addEventListener('click', connectXaman);
+    const fusionButton = $('fusion-button');
+    if (fusionButton) fusionButton.addEventListener('click', initiateFusion);
+    const form = $('neural-terminal-form');
+    if (form) form.addEventListener('submit', (event) => { event.preventDefault(); void sendChatMessage(); });
+    const input = $('neural-terminal-input');
+    if (input) input.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void sendChatMessage(); } });
+  });
+})();
 </script>
 </body>
 </html>
