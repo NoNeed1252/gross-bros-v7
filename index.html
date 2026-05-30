@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neural Link</title>
+    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -58,36 +58,6 @@
         .chat-bubble-system { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); }
         .cmd-input { background: rgba(0,0,0,0.35); border: 1px solid rgba(0,255,200,0.2); color: #d4fff6; outline: none; }
         .cmd-input:focus { border-color: rgba(0,255,200,0.56); box-shadow: 0 0 0 3px rgba(0,255,200,0.08); }
-        .neural-preview-shell {
-            position: relative;
-            overflow: hidden;
-        }
-        .neural-preview-shell::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(0,255,200,0.14), transparent 28%, transparent 72%, rgba(0,255,200,0.08));
-            animation: neuralSweep 4.8s linear infinite;
-            pointer-events: none;
-            z-index: 2;
-        }
-        .neural-preview-shell::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 50% 35%, rgba(0,255,200,0.14), transparent 60%);
-            animation: pulseGlow 2.8s ease-in-out infinite;
-            pointer-events: none;
-            z-index: 1;
-        }
-        .neural-preview-image {
-            filter: contrast(1.08) saturate(1.08);
-        }
-        @keyframes neuralSweep {
-            0% { transform: translateY(-12%); opacity: 0.18; }
-            50% { opacity: 0.58; }
-            100% { transform: translateY(12%); opacity: 0.2; }
-        }
 
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap');
         :root { --cyan: #00ffc8; }
@@ -252,8 +222,8 @@
         <div class="flex items-center gap-3 sm:gap-4">
             <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
             <div>
-                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">NEURAL LINK OS</div>
-                <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Bro relay // XRPL neural comms</div>
+                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.6</div>
+                <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Ledger relay // XRPL survival interface</div>
             </div>
         </div>
 
@@ -272,7 +242,7 @@
     <div class="bg-black/90 border-b border-[#00ffc8]/20 flex flex-row flex-nowrap overflow-x-auto text-[10px] sm:text-sm px-1 sm:px-0">
         <div onclick="switchTab(0)" id="tab-0" class="tab flex-1 min-w-[92px] px-3 sm:px-5 py-4 cursor-pointer text-center tab-active">CONSOLE</div>
         <div onclick="switchTab(1)" id="tab-1" class="tab flex-1 min-w-[120px] px-3 sm:px-5 py-4 cursor-pointer text-center whitespace-nowrap">TRANSMISSION LOGS</div>
-        <div onclick="switchTab(2)" id="tab-2" class="tab flex-1 min-w-[96px] px-3 sm:px-5 py-4 cursor-pointer text-center">NEURAL LINK</div>
+        <div onclick="switchTab(2)" id="tab-2" class="tab flex-1 min-w-[96px] px-3 sm:px-5 py-4 cursor-pointer text-center">FUSION LAB</div>
         <div onclick="switchTab(3)" id="tab-3" class="tab flex-1 min-w-[118px] px-3 sm:px-5 py-4 cursor-pointer text-center whitespace-nowrap">NEURAL STANDINGS</div>
         <div onclick="switchTab(4)" id="tab-4" class="tab flex-1 min-w-[90px] px-3 sm:px-5 py-4 cursor-pointer text-center">SOCIALS</div>
     </div>
@@ -320,86 +290,82 @@
                     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between portrait-stack">
                         <div class="flex items-center gap-2 text-xs sm:text-sm text-[#00ffc8]/80">
                             <span class="inline-block w-2 h-2 rounded-full bg-[#00ffc8]"></span>
-                            Chat first // roster second // one bro per NFT ID
+                            Strict NFT filter active: Issuer rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY • Taxon 1
                         </div>
-                        <div id="xrp-amount" class="text-xs sm:text-sm text-[#00ffc8]/70"></div>
+                        <div id="nft-summary" class="text-xs text-[#00ffc8]/60"></div>
                     </div>
                 </div>
 
-                <section id="chat-shell" class="inner-panel rounded-[2rem] p-5 sm:p-6">
-                    <div class="flex items-center justify-between gap-4 portrait-stack">
-                        <div>
-                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Link</div>
-                            <h4 class="header-font text-2xl sm:text-4xl mt-2">CHAT TERMINAL</h4>
-                        </div>
-                        <div class="alien-chip rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em] soft-wrap">bro mode</div>
-                    </div>
-                    <div class="mt-5 grid gap-5 xl:grid-cols-[0.86fr_1.14fr] items-stretch">
-                        <div class="neural-preview-shell rounded-[28px] border border-[#00ffc8]/16 bg-black/35 p-3 sm:p-4 min-h-[260px] flex flex-col">
-                            <div class="flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.4em] text-[#00ffc8]/55">
-                                <span>Operative face</span>
-                                <span id="operative-preview-token">TOKEN // standby</span>
-                            </div>
-                            <div class="mt-3 flex-1 rounded-[22px] border border-[#00ffc8]/12 bg-black/65 overflow-hidden relative">
-                                <img id="operative-preview-image" alt="Selected operative preview" class="neural-preview-image hidden w-full h-full object-cover relative z-[3]" />
-                                <div id="operative-preview-placeholder" class="absolute inset-0 z-[3] flex items-center justify-center px-6 text-center text-[11px] sm:text-xs uppercase tracking-[0.35em] text-[#00ffc8]/55">select a bro to light up the feed</div>
-                            </div>
-                            <div class="mt-3 text-sm text-[#d9fff8]/80 relative z-[3]">
-                                <div id="operative-preview-name" class="text-[#00ffc8]">Awaiting operative selection.</div>
-                                <div id="operative-preview-voice" class="mt-1 text-[10px] uppercase tracking-[0.3em] text-[#00ffc8]/55">VOICE // standby</div>
-                            </div>
-                        </div>
-                        <div class="flex flex-col min-h-[260px]">
-                            <div id="chat-history" class="scrollbar-thin flex-1 overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
-                            <div class="mt-4 flex gap-3 items-center">
-                                <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Say it short, bro…" maxlength="240" />
-                                <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">Send</button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="text-center">
-                    <button id="fusion-button" onclick="fuseSelectedNft()" class="button-aura rounded-2xl px-5 py-4 text-xs sm:text-sm uppercase tracking-[0.35em]">ENGAGE LINK</button>
-                </section>
-
-                <section class="inner-panel rounded-[2rem] p-5 sm:p-6">
+                <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
                     <div class="flex items-center justify-between gap-4 portrait-stack">
                         <div>
                             <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">NFT roster</div>
                             <h4 class="header-font text-xl sm:text-3xl mt-2">SELECT AN OPERATIVE</h4>
                         </div>
+                        <div id="xrp-amount" class="text-xs sm:text-sm text-[#00ffc8]/70"></div>
                     </div>
                     <div id="nft-grid" class="mt-5 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3"></div>
-                </section>
+                </div>
 
                 <div class="grid gap-5 xl:grid-cols-[0.98fr_1.02fr] fusion-lab-layout">
-                    <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
-                        <div class="flex items-start justify-between gap-4 portrait-stack">
-                            <div>
-                                <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative identity</div>
-                                <h3 class="header-font text-xl sm:text-2xl mt-3">TRAITS / SIGNALS</h3>
+                    <div class="space-y-5">
+                        <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
+                            <div class="flex items-start justify-between gap-4 portrait-stack">
+                                <div>
+                                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Fusion Lab</div>
+                                    <h3 class="header-font text-2xl sm:text-4xl mt-3">OPERATIVE IDENTITY</h3>
+                                </div>
+                                <div id="operative-badge" class="alien-chip rounded-2xl px-4 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em] soft-wrap">Locked</div>
                             </div>
-                            <div id="operative-badge" class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">Locked</div>
+                            <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                                <div class="data-card rounded-[22px] p-4">
+                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Selected Operative</div>
+                                    <div id="selected-token" class="mt-2 break-all text-sm text-[#d9fff8]/82">None selected</div>
+                                </div>
+                                <div class="data-card rounded-[22px] p-4">
+                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Fusion State</div>
+                                    <div id="operative-token" class="mt-2 break-all text-sm text-[#d9fff8]/82">Not fused</div>
+                                </div>
+                            </div>
+                            <div id="operative-panel" class="mt-4 space-y-3 text-sm sm:text-base text-[#d9fff8]/85 leading-7"></div>
+                            <div id="fusion-panel" class="mt-5"></div>
                         </div>
-                        <div id="operative-panel" class="mt-4 space-y-2 text-[11px] sm:text-sm text-[#d9fff8]/78 leading-6"></div>
-                        <div id="fusion-panel" class="mt-4 text-[11px] sm:text-sm text-[#d9fff8]/72 leading-6"></div>
+
                     </div>
 
-                    <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
-                        <div class="flex items-center justify-between gap-4 portrait-stack">
-                            <div>
-                                <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Daily Intelligence Briefing</div>
-                                <h4 class="header-font text-xl sm:text-2xl mt-2">FIELD REPORT</h4>
+                    <div class="space-y-5">
+                        <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
+                            <div class="flex items-center justify-between gap-4 portrait-stack">
+                                <div>
+                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Daily Intelligence Briefing</div>
+                                    <h4 class="header-font text-xl sm:text-3xl mt-2">FIELD REPORT</h4>
+                                </div>
+                                <button onclick="loadFieldReport(true)" class="button-aura rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Refresh</button>
                             </div>
-                            <button onclick="loadFieldReport(true)" class="button-aura rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Refresh</button>
+                            <div id="report-day" class="mt-4 text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/55"></div>
+                            <div id="field-report" class="mt-4 rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-4 sm:p-5 text-sm sm:text-base leading-7 text-[#ddfff9]/85 min-h-[160px]"></div>
                         </div>
-                        <div id="report-day" class="mt-4 text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/55"></div>
-                        <div id="field-report" class="mt-4 rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-4 sm:p-5 text-xs sm:text-sm leading-6 text-[#ddfff9]/85 min-h-[160px]"></div>
+
+                        <div id="chat-shell" class="inner-panel rounded-[2rem] p-5 sm:p-6 hidden-tab">
+                            <div class="flex items-center justify-between gap-4 portrait-stack">
+                                <div>
+                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">In-world comms terminal</div>
+                                    <h4 class="header-font text-xl sm:text-3xl mt-2">CHAT TERMINAL</h4>
+                                </div>
+                                <div class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">Fused</div>
+                            </div>
+                            <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
+                            <div class="mt-4 flex gap-3">
+                                <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
+                                <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">Send</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>        <div id="content-3" class="tab-content">
+        </div>
+
+        <div id="content-3" class="tab-content">
             <div class="max-w-6xl mx-auto">
                 <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural standings</div>
@@ -874,11 +840,6 @@
         const operativeTokenEl = document.getElementById('operative-token');
         const fusionPanel = document.getElementById('fusion-panel');
         const chatShell = document.getElementById('chat-shell');
-        const previewImageEl = document.getElementById('operative-preview-image');
-        const previewPlaceholderEl = document.getElementById('operative-preview-placeholder');
-        const previewNameEl = document.getElementById('operative-preview-name');
-        const previewTokenEl = document.getElementById('operative-preview-token');
-        const previewVoiceEl = document.getElementById('operative-preview-voice');
         if (!panel || !badge || !selectedTokenEl || !operativeTokenEl || !fusionPanel || !chatShell) return;
         const selectedEntry = state.selectedTokenId ? state.nfts.find((item) => item.tokenId === state.selectedTokenId) : null;
         const fusedEntry = state.fusedTokenId ? state.nfts.find((item) => item.tokenId === state.fusedTokenId) : null;
@@ -888,46 +849,246 @@
         selectedTokenEl.textContent = state.selectedTokenId ? 'Selection ready' : 'None selected';
         operativeTokenEl.textContent = state.fusedTokenId ? 'Fusion active' : 'Not fused';
         badge.textContent = state.operative ? (state.fusedTokenId ? 'Fused' : 'Selected') : 'Locked';
-        chatShell.classList.remove('hidden-tab');
-
-        if (previewImageEl && previewPlaceholderEl && previewNameEl && previewTokenEl && previewVoiceEl) {
-            if (!state.operative) {
-                previewImageEl.src = '';
-                previewImageEl.classList.add('hidden');
-                previewNameEl.textContent = 'Awaiting operative selection.';
-                previewTokenEl.textContent = 'TOKEN // standby';
-                previewVoiceEl.textContent = 'VOICE // standby';
-                previewPlaceholderEl.textContent = state.wallet ? 'Select a bro from the roster to light up the feed.' : 'Connect Xaman, bro.';
-            } else {
-                previewNameEl.textContent = state.operative.name;
-                previewTokenEl.textContent = 'TOKEN ' + shortenTokenId(activeEntry.tokenId);
-                previewVoiceEl.textContent = state.operative.faction + ' // ' + state.operative.traits.slice(0, 2).join(' • ');
-                if (activeEntry.image) {
-                    previewImageEl.src = activeEntry.image;
-                    previewImageEl.classList.remove('hidden');
-                    previewPlaceholderEl.textContent = '';
-                } else {
-                    previewImageEl.src = '';
-                    previewImageEl.classList.add('hidden');
-                    previewPlaceholderEl.textContent = 'No image available for this bro.';
-                }
-            }
-        }
 
         if (!state.wallet) {
-            panel.innerHTML = '<div class="text-[11px] sm:text-sm text-[#00ffc8]/60">Connect Xaman, bro, and the roster wakes up.</div>';
-            fusionPanel.innerHTML = '<div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4 text-[11px] sm:text-sm text-[#d8fff7]/78">Wallet disconnected. The chat still sits up top, but the goods come online after wallet sync.</div>';
+            panel.innerHTML = '<div class="text-[#00ffc8]/60">Connect Xaman to expose the operative roster.</div>';
+            fusionPanel.innerHTML = '<div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/78">Wallet disconnected. Connect Xaman to begin token-gated selection.</div>';
+            chatShell.classList.add('hidden-tab');
             return;
         }
 
         if (!activeEntry) {
-            panel.innerHTML = '<div class="text-[11px] sm:text-sm text-[#00ffc8]/60">No matching Gross Bros NFT selected.</div>';
-            fusionPanel.innerHTML = '<div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4 text-[11px] sm:text-sm text-[#d8fff7]/78">Pick a rostered bro, then hit the link button.</div>';
+            panel.innerHTML = '<div class="text-[#00ffc8]/60">No matching Gross Bros NFT selected.</div>';
+            chatShell.classList.add('hidden-tab');
         } else {
-            panel.innerHTML = '<div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative Name</div><div class="mt-2 text-sm sm:text-base font-bold text-[#f2fffd] leading-tight">' + escapeHtml(state.operative.name) + '</div></div><div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Faction</div><div class="mt-2 text-sm sm:text-base font-bold text-[#f2fffd] leading-tight">' + escapeHtml(state.operative.faction) + '</div></div><div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4 text-[11px] sm:text-sm leading-6 sm:leading-7 text-[#d8fff7]/82 soft-wrap">' + escapeHtml(state.operative.backstory) + '</div>';
-            fusionPanel.innerHTML = '<div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4 text-[11px] sm:text-sm text-[#d8fff7]/78">Bro, you're live. Chat stays casual and the selected NFT drives the voice.</div>';
+            panel.innerHTML = `
+                <div class="grid gap-2 sm:grid-cols-2">
+                    <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative Name</div><div class="mt-2 text-base sm:text-lg font-bold text-[#f2fffd] leading-tight">${escapeHtml(state.operative.name)}</div></div>
+                    <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Faction</div><div class="mt-2 text-base sm:text-lg font-bold text-[#f2fffd] leading-tight">${escapeHtml(state.operative.faction)}</div></div>
+                </div>
+                <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4">
+                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Traits</div>
+                    <div class="mt-3 grid gap-2 sm:grid-cols-2">${(state.operative.traits.slice(0, 4).length ? state.operative.traits.slice(0, 4) : ['No traits surfaced']).map((t) => `<div class="rounded-xl border border-[#00ffc8]/12 bg-black/20 px-3 py-2 text-xs sm:text-sm leading-6">${escapeHtml(t)}</div>`).join('')}</div>
+                </div>
+                <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4 text-sm sm:text-base leading-6 sm:leading-7 text-[#d8fff7]/82 soft-wrap">${escapeHtml(state.operative.backstory)}</div>
+            `;
+            chatShell.classList.remove('hidden-tab');
+        }
+
+        if (!state.fusedTokenId) {
+            fusionPanel.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Trading / Buy Protocol</div>
+                            <div class="mt-2 header-font text-xl sm:text-3xl">Token-gated selection</div>
+                            <div class="mt-2 text-sm leading-7 text-[#d9fff8]/78">Select a matching NFT to chat immediately. Fuse only if you want to enable trading on XRP or other XRPL assets.</div>
+                        </div>
+                        <div class="alien-chip rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Locked</div>
+                    </div>
+                    <div class="flex flex-col gap-3 sm:flex-row">
+                        <button onclick="fuseSelectedNft()" class="button-aura rounded-2xl px-5 py-4 text-sm uppercase tracking-[0.35em]">Enable Trading</button>
+                        <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" rel="noreferrer" class="button-aura rounded-2xl px-5 py-4 text-sm uppercase tracking-[0.35em] text-center">Buy a Bro</a>
+                    </div>
+                </div>
+            `;
+        } else {
+            fusionPanel.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative Online</div>
+                            <div class="mt-2 header-font text-xl sm:text-3xl">${escapeHtml(state.operative?.name || 'Unknown operative')}</div>
+                            <div class="mt-2 text-sm leading-7 text-[#d9fff8]/78">Voice signature: ${escapeHtml(state.operative?.faction || 'unknown faction')} • ${escapeHtml((state.operative?.traits || []).slice(0, 3).join(' • ') || 'No traits surfaced')}</div>
+                        </div>
+                        <div class="alien-chip rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Chat unlocked</div>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/78">Wallet: ${escapeHtml(shortAddress(state.wallet))}</div>
+                        <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/78">Token: ${escapeHtml(state.fusedTokenId)}</div>
+                    </div>
+                </div>
+            `;
+            chatShell.classList.remove('hidden-tab');
         }
     }
+
+    function renderNftGrid() {
+        const grid = document.getElementById('nft-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        if (!state.wallet) {
+            grid.innerHTML = '<div class="col-span-full rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-5 text-center text-sm text-[#00ffc8]/60">Connect a wallet to scan NFT inventory.</div>';
+            return;
+        }
+        if (!state.nfts.length) {
+            grid.innerHTML = '<div class="col-span-full rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-5 text-center text-sm text-[#00ffc8]/60">No matching NFTs found for the strict issuer/taxon filter.</div>';
+            return;
+        }
+        grid.innerHTML = state.nfts.map((entry, index) => {
+            const meta = entry.metadata || {};
+            const tokenId = entry.tokenId;
+            const name = meta.name || meta.title || `Operative ${index + 1}`;
+            const faction = meta.faction || meta.collection?.name || 'Collective';
+            const serial = getNftSerial(entry.nft);
+            const img = resolveNftImage(meta) || resolveNftImage(entry.nft) || '';
+            const active = tokenId === state.selectedTokenId;
+            return `
+                <button class="text-left rounded-[18px] overflow-hidden border ${active ? 'border-[#00ffc8] shadow-[0_0_0_1px_rgba(0,255,200,0.22),0_0_26px_rgba(0,255,200,0.14)]' : 'border-[#00ffc8]/15'} bg-black/35 transition-transform hover:-translate-y-0.5" onclick="selectNft('${escapeHtml(tokenId)}')">
+                    <div class="flex gap-2 p-2 sm:p-3 items-start">
+                        <div class="shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-black/45 border border-[#00ffc8]/12 flex items-center justify-center">
+                            ${img ? `<img src="${escapeHtml(img)}" class="nft-thumb" alt="${escapeHtml(name)}" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden')" />` : ''}
+                            <div class="hidden text-[10px] text-[#00ffc8]/55 px-2 text-center">NO IMAGE</div>
+                        </div>
+                        <div class="min-w-0 flex-1 py-0.5">
+                            <div class="header-font text-sm sm:text-base font-bold text-[#effffb] leading-tight break-words">${escapeHtml(name)}</div>
+                            <div class="mt-1 text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 break-words">${escapeHtml(faction)}</div>
+                            <div class="mt-2 text-[10px] text-[#d7fff7]/70">#${escapeHtml(serial)}</div>
+                        </div>
+                    </div>
+                </button>
+            `;
+        }).join('');
+    }
+
+    async function loadDailyBro() {
+        const imageEl = document.getElementById('daily-bro-image');
+        const placeholderEl = document.getElementById('daily-bro-placeholder');
+        const nameEl = document.getElementById('daily-bro-name');
+        const descriptionEl = document.getElementById('daily-bro-description');
+        const issuerEl = document.getElementById('daily-bro-issuer');
+        const tokenIdEl = document.getElementById('daily-bro-tokenid');
+        const linkEl = document.getElementById('daily-bro-link');
+        if (!imageEl || !placeholderEl || !nameEl || !descriptionEl || !issuerEl || !tokenIdEl || !linkEl) return;
+        const localFallback = state.nfts.find((entry) => entry && isStrictMatch(entry.nft || entry)) || state.nfts[0] || null;
+        try {
+            const records = await fetchXrplNftsByIssuer();
+            const dailyBroId = getDailyBroId();
+            const selected = records[(dailyBroId - 1) % records.length] || records[0] || localFallback?.nft || localFallback;
+            const tokenUri = getTokenUri(selected);
+            const metadata = await fetchMetadataFromTokenUri(tokenUri);
+            let image = resolveNftImage(selected) || getIPFSUrl(findDeepString(metadata, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || '') || getIPFSUrl(tokenUri) || '';
+            if (!image && localFallback) {
+                image = resolveNftImage(localFallback.metadata || localFallback.nft || localFallback) || getIPFSUrl(findDeepString(localFallback.metadata, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || '') || '';
+            }
+            const name = findDeepString(metadata, ['name', 'title']) || selected?.name || localFallback?.metadata?.name || localFallback?.nft?.name || 'Gross Bro #' + (getNftSerial(selected) === 999999999 ? '—' : getNftSerial(selected));
+            const tokenId = getNftId(selected) || localFallback?.tokenId || '';
+            if (name) nameEl.textContent = name;
+            if (descriptionEl) descriptionEl.textContent = BACKSTORIES[dailyBroId] || BACKSTORIES.default;
+            if (issuerEl) issuerEl.textContent = STRICT_ISSUER;
+            if (tokenIdEl) tokenIdEl.textContent = tokenId ? 'Ready' : 'Pending';
+            if (linkEl) linkEl.href = tokenId ? 'https://xrp.cafe/nft/' + tokenId : 'https://xrp.cafe/collection/galactic-gross-bros';
+            if (image) {
+                imageEl.src = image;
+                imageEl.onload = () => imageEl.classList.remove('hidden');
+                imageEl.onerror = () => {
+                    imageEl.classList.add('hidden');
+                    placeholderEl.textContent = 'IMAGE RELAY RETRYING';
+                };
+            } else {
+                placeholderEl.textContent = 'IMAGE RELAY RETRYING';
+            }
+            placeholderEl.textContent = '';
+        } catch (error) {
+            console.warn('Unable to load console asset', error);
+            if (localFallback) {
+                const fallbackImage = resolveNftImage(localFallback.metadata || localFallback.nft || localFallback) || '';
+                const fallbackName = localFallback.metadata?.name || localFallback.nft?.name || 'Gross Bro';
+                if (fallbackName) nameEl.textContent = fallbackName;
+                descriptionEl.textContent = BACKSTORIES[getDailyBroId()] || BACKSTORIES.default;
+                issuerEl.textContent = STRICT_ISSUER;
+                tokenIdEl.textContent = 'Ready';
+                if (fallbackImage) {
+                    imageEl.src = fallbackImage;
+                    imageEl.classList.remove('hidden');
+                } else {
+                    placeholderEl.textContent = 'IMAGE RELAY RETRYING';
+                }
+            } else {
+                placeholderEl.textContent = 'IMAGE RELAY RETRYING';
+            }
+        }
+    }
+
+    async function loadNfts() {
+
+        if (!state.wallet) return;
+        state.loadingNfts = true;
+        const grid = document.getElementById('nft-grid');
+        if (grid) grid.innerHTML = '<div class="col-span-full rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-5 text-center text-sm text-[#00ffc8]/60">Loading token roster…</div>';
+        try {
+            const rawNfts = await fetchXrplNftsByWallet(state.wallet);
+            const filtered = rawNfts.filter(isStrictMatch).sort((a, b) => getNftSerial(a) - getNftSerial(b));
+            state.nfts = [];
+            for (const nft of filtered) {
+                const tokenId = getNftId(nft);
+                const metadata = await fetchMetadataFromTokenUri(getTokenUri(nft));
+                state.nfts.push({ nft, metadata, tokenId });
+            }
+            const saved = getStoredState();
+            state.selectedTokenId = saved.selectedTokenId || state.selectedTokenId || (state.nfts[0]?.tokenId || '');
+            state.fusedTokenId = saved.fusedTokenId || state.fusedTokenId || '';
+            if (!state.fusedTokenId && state.selectedTokenId) {
+                const fused = local(`${operativeKey(state.selectedTokenId)}`, null);
+                if (fused?.tokenId) state.fusedTokenId = fused.tokenId;
+            }
+            renderNftGrid();
+            renderOperativePanel();
+            renderChatHistory();
+            loadFieldReport();
+            bindChatInput();
+            if (state.currentTab === 2) renderFusionLabState();
+        } catch (error) {
+            console.error(error);
+            if (grid) grid.innerHTML = '<div class="col-span-full rounded-[24px] border border-red-400/30 bg-black/35 p-5 text-center text-sm text-red-300">Could not load NFTs.</div>';
+        } finally {
+            state.loadingNfts = false;
+        }
+    }
+
+    function renderFusionLabState() {
+        renderOperativePanel();
+    }
+
+    async function loadLeaderboard() {
+        const body = document.getElementById('leaderboard-body');
+        if (!body) return;
+        try {
+            let rows = [];
+            if (SUPABASE_URL && SUPABASE_KEY) {
+                const data = await supabaseSelect(STATS_TABLE, 'select=holder,points,chat_time,win_loss&order=points.desc&limit=10').catch(() => null);
+                if (Array.isArray(data) && data.length) rows = data;
+            }
+            if (!rows.length) {
+                rows = Array.from({ length: 10 }, (_, i) => ({
+                    holder: `Operative ${i + 1}`,
+                    points: 1000 - i * 61,
+                    chat_time: `${String((i + 1) * 6).padStart(2, '0')}m`,
+                    win_loss: `${Math.max(51, 91 - i * 3)}%`
+                }));
+            }
+            body.innerHTML = rows.slice(0, 10).map((row, i) => `
+                <div class="leaderboard-row grid grid-cols-[72px,1.4fr,110px,120px,120px] gap-2 px-4 py-4 text-sm sm:text-base items-center">
+                    <div class="text-[#00ffc8]/70">#${i + 1}</div>
+                    <div class="font-medium text-[#f1fffd]">${escapeHtml(row.holder || row.name || `Holder ${i + 1}`)}</div>
+                    <div class="text-[#00ffc8]">${escapeHtml(row.points ?? 0)}</div>
+                    <div class="text-[#d6fff7]/80">${escapeHtml(row.chat_time || row.chatTime || `${String((i + 1) * 6).padStart(2, '0')}m`)}</div>
+                    <div class="text-[#d6fff7]/80">${escapeHtml(row.win_loss || row.winLoss || `${Math.max(51, 91 - i * 3)}%`)}</div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error(error);
+            body.innerHTML = '<div class="px-4 py-5 text-sm text-[#00ffc8]/60">Leaderboard data unavailable.</div>';
+        }
+    }
+
+    function renderChatBubble(entry) {
+        const isUser = entry.role === 'user';
+        const label = isUser ? 'YOU' : (entry.role || 'SYSTEM').toUpperCase();
+        const bubbleClass = isUser ? 'chat-bubble-user' : 'chat-bubble-system';
+        return `<div class="${bubbleClass} rounded-[18px] p-3 text-sm leading-7"><div class="mb-2 text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">${escapeHtml(label)}</div><div>${escapeHtml(entry.message || entry.content || '')}</div></div>`;
+    }
+
     function renderChatHistory() {
         const panel = document.getElementById('chat-history');
         if (!panel) return;
@@ -1147,25 +1308,19 @@
     async function sendChatMessage() {
         const input = document.getElementById('chat-input');
         if (!input || !state.operative?.tokenId) return;
-        const textValue = input.value.trim();
-        if (!textValue) return;
+        const text = input.value.trim();
+        if (!text) return;
         input.value = '';
         const operative = state.operative;
-        const seed = hashString(textValue + '|' + operative.tokenId + '|' + todayKey());
-        const replies = [
-            'Yeah bro, that tracks.',
-            'Low-key, bro, I'm with it.',
-            'Bro, clean signal.',
-            'Easy. We're on it, bro.',
-            'No drama, bro — that hits.',
-            'Bro, solid move.'
-        ];
-        const reply = pick(replies, seed, 'Yeah bro.');
-        await persistChat({ role: 'user', message: textValue, created_at: new Date().toISOString() });
+        const voice = pick(VOICE_MODIFIERS, `${text}|${operative.tokenId}|${todayKey()}`, 'steady');
+        const traitEcho = (operative.traits || []).slice(0, 2).join(' • ') || 'no surfaced traits';
+        const reply = `${pick(CHAT_OPENERS, text + operative.tokenId, 'Directive acknowledged.')} ${operative.name} answers in a ${voice} voice shaped by ${operative.faction} and ${traitEcho}.`;
+        await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
         await persistChat({ role: 'system', message: reply, created_at: new Date().toISOString() });
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
         renderChatHistory();
-    }    window.sendChatMessage = sendChatMessage;
+    }
+    window.sendChatMessage = sendChatMessage;
     function bindChatInput() {
         const input = document.getElementById('chat-input');
         if (!input || input.dataset.boundEnter === '1') return;
