@@ -1260,6 +1260,8 @@
         document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('tab-active', i === n));
     }
 
+    window.switchTab = switchTab;
+
     function runTicker() {
         const messages = [
             '[ENEMY ALERT] BTC MINERS DETECTED IN SECTOR 7 — GUARDIANS DEPLOY',
@@ -1539,6 +1541,9 @@
             throw error;
         }
     }
+
+    window.connectXaman = connectXaman;
+
     async function initiateFusion() {
         try {
             let session = getWalletSession();
@@ -1573,7 +1578,9 @@
         }
     }
 
-    window.addEventListener('load', () => {
+    window.initiateFusion = initiateFusion;
+
+    window.addEventListener('DOMContentLoaded', () => {
         switchTab(0);
         try {
             removeStrictNftFilterBanner();
