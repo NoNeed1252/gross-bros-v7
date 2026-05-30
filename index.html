@@ -937,29 +937,17 @@
             grid.innerHTML = '<div class="col-span-full rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-5 text-center text-sm text-[#00ffc8]/60">No matching NFTs found for the strict issuer/taxon filter.</div>';
             return;
         }
-        grid.innerHTML = state.nfts.map((entry, index) => {
-            const meta = entry.metadata || {};
+        grid.innerHTML = state.nfts.map((entry) => {
             const tokenId = entry.tokenId;
-            const name = meta.name || meta.title || `Operative ${index + 1}`;
-            const faction = meta.faction || meta.collection?.name || 'Collective';
-            const serial = getNftSerial(entry.nft);
-            const img = resolveNftImage(meta) || resolveNftImage(entry.nft) || '';
+            const img = resolveNftImage(entry.metadata || {}) || resolveNftImage(entry.nft) || '';
             const active = tokenId === state.selectedTokenId;
-            return `
-                <button class="text-left rounded-[18px] overflow-hidden border ${active ? 'border-[#00ffc8] shadow-[0_0_0_1px_rgba(0,255,200,0.22),0_0_26px_rgba(0,255,200,0.14)]' : 'border-[#00ffc8]/15'} bg-black/35 transition-transform hover:-translate-y-0.5" onclick="selectNft('${escapeHtml(tokenId)}')">
-                    <div class="flex gap-2 p-2 sm:p-3 items-start">
-                        <div class="shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-black/45 border border-[#00ffc8]/12 flex items-center justify-center">
-                            ${img ? `<img src="${escapeHtml(img)}" class="nft-thumb" alt="${escapeHtml(name)}" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden')" />` : ''}
-                            <div class="hidden text-[10px] text-[#00ffc8]/55 px-2 text-center">NO IMAGE</div>
-                        </div>
-                        <div class="min-w-0 flex-1 py-0.5">
-                            <div class="header-font text-sm sm:text-base font-bold text-[#effffb] leading-tight break-words">${escapeHtml(name)}</div>
-                            <div class="mt-1 text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 break-words">${escapeHtml(faction)}</div>
-                            <div class="mt-2 text-[10px] text-[#d7fff7]/70">#${escapeHtml(serial)}</div>
-                        </div>
-                    </div>
-                </button>
-            `;
+            return [
+                '                <button class="text-left rounded-[18px] overflow-hidden border ' + (active ? 'border-[#00ffc8] shadow-[0_0_0_1px_rgba(0,255,200,0.22),0_0_26px_rgba(0,255,200,0.14)]' : 'border-[#00ffc8]/15') + ' bg-black/35 transition-transform hover:-translate-y-0.5" onclick="selectNft(\'' + escapeHtml(tokenId) + '\')">',
+                '                    <div class="w-full aspect-square overflow-hidden bg-black/45">',
+                img ? '                        <img src="' + escapeHtml(img) + '" class="w-full h-full object-cover" alt="" onerror="this.remove()" />' : '',
+                '                    </div>',
+                '                </button>'
+            ].filter(Boolean).join('\n');
         }).join('');
     }
 
