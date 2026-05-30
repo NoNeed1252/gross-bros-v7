@@ -516,10 +516,23 @@
     const VOICE_MODIFIERS = [
         'calm', 'clinical', 'measured', 'tight-beam', 'hardline', 'lore-heavy'
     ];
-    const NEURAL_PERSONALITY_VOICES = ['resonant', 'measured', 'oracle-clean', 'hardline', 'ghost-signal', 'glitch-soft', 'lore-heavy', 'quiet'];
-    const NEURAL_PERSONALITY_MOODS = ['steady', 'protective', 'observant', 'strategic', 'circuit-precise', 'watchful', 'tactile'];
-    const NEURAL_PERSONALITY_OPENERS = ['Directive acknowledged.', 'Signal received.', 'The link is stable.', 'Memory shard aligned.', 'Transmission accepted.', 'Voice locked.'];
-    const NEURAL_PERSONALITY_CLOSES = ['Keep the relay warm.', 'Stay inside the link.', 'Hold the channel clean.', 'Do not break formation.', 'The NFT remembers.'];
+    const NEURAL_PERSONALITY_VOICES = ['Poke / Scott'];
+    const NEURAL_PERSONALITY_MOODS = ['bro-tight', 'feral', 'witty', 'lore-heavy', 'snappy', 'chaotic', 'clean-signal'];
+    const NEURAL_PERSONALITY_OPENERS = ['bro,', 'yo bro,', 'listen bro,', 'nah bro,', 'okay bro,', 'quick one bro,'];
+    const NEURAL_PERSONALITY_CLOSES = ['keep the relay lit.', 'stay in the lane.', 'the static can eat dust.', 'we move like brothers.', 'hold the Gross Bros line.'];
+    const GROSS_BROS_SYSTEM_PROMPT = [
+        'You are the Gross Bros chat engine.',
+        'Two voices only: Poke and Scott.',
+        'Sound casual, short, punchy, witty, and a little unhinged.',
+        'Use bro naturally. No corporate fluff. No apologies. No "how can I help you" phrasing.',
+        'Stay deeply specific to Gross Bros lore: the Ledger, the relay, Xaman, XRPL, the miners, fusion, the static, the collective, the daily bro, and the selected operative.',
+        'Keep replies conversational like a real back-and-forth in the command deck.',
+        'Prefer 2-4 short lines, and let Poke and Scott trade lines when it fits.',
+        'If the user is vague, stay sharp and playful instead of formal.'
+    ].join(' ');
+    const GROSS_BROS_POKE_BEATS = ['bro,', 'nah bro,', 'okay bro,', 'listen bro,', 'yo bro,', 'quick hit bro,'];
+    const GROSS_BROS_SCOTT_BEATS = ['that is clean.', 'that is nasty.', 'we keep moving.', 'the relay likes that.', 'the miners hate that.', 'gross in the best way.'];
+    const GROSS_BROS_LORE_BITS = ['Ledger', 'relay', 'Xaman', 'XRPL', 'fusion', 'static', 'collective', 'Gross Bros'];
 
     function todayKey(date = new Date()) {
         const d = new Date(date);
@@ -833,13 +846,42 @@
         return null;
     }
 
+    function buildGrossBrosSystemPrompt(operative, seed) {
+        const traits = (operative?.traits || []).slice(0, 4).join(', ') || 'no surfaced traits';
+        return [
+            GROSS_BROS_SYSTEM_PROMPT,
+            'Active operative: ' + (operative?.name || 'unknown') + ' / ' + (operative?.faction || 'The Collective') + '.',
+            'Trait texture: ' + traits + '.',
+            'Seed: ' + seed + '.'
+        ].join(' ');
+    }
+
+    function buildGrossBrosReply(operative, userText, personality) {
+        const cleanText = String(userText || '').replace(/\s+/g, ' ').trim();
+        const seed = String((operative?.tokenId || 'standby') + '|' + (operative?.name || 'unknown') + '|' + cleanText + '|' + todayKey());
+        const opener = pick(GROSS_BROS_POKE_BEATS, seed, 'bro,');
+        const second = pick(GROSS_BROS_SCOTT_BEATS, seed + ':scott', 'that is clean.');
+        const loreBit = pick(GROSS_BROS_LORE_BITS, seed + ':lore', 'Gross Bros');
+        const traitEcho = (operative?.traits || []).slice(0, 2).join(' • ') || 'no surfaced traits';
+        const digest = cleanText ? (cleanText.length > 118 ? cleanText.slice(0, 115) + '…' : cleanText) : 'the signal';
+        const systemPrompt = personality?.systemPrompt || buildGrossBrosSystemPrompt(operative, seed);
+        const promptTone = systemPrompt.includes('unhinged') ? 'unhinged' : 'locked';
+        return [
+            'Poke: ' + opener + ' ' + digest + ' is ' + pick(['clean', 'wild', 'suspicious', 'on-brand', 'heavy'], seed + ':tone', 'clean') + '. ' + loreBit + ' stays lit, bro.',
+            'Scott: ' + second + ' ' + traitEcho + '. ' + pick(['No fluff.', 'No corporate mush.', 'We move sideways.', 'Keep it greasy.'], seed + ':close', 'No fluff.') + ' [' + promptTone + '].'
+        ].join('\n');
+    }
+
     function getNeuralPersonality(tokenId) {
         const seed = String(tokenId || 'standby');
+        const activeEntry = currentEntry();
+        const operative = state.operative || (activeEntry ? buildOperativeFromMetadata(activeEntry.nft, activeEntry.metadata || {}) : null);
         return {
-            voice: pick(NEURAL_PERSONALITY_VOICES, seed, 'steady'),
-            mood: pick(NEURAL_PERSONALITY_MOODS, seed, 'steady'),
-            opener: pick(NEURAL_PERSONALITY_OPENERS, seed, 'Directive acknowledged.'),
-            closer: pick(NEURAL_PERSONALITY_CLOSES, seed, 'Keep the relay warm.')
+            voice: pick(NEURAL_PERSONALITY_VOICES, seed, 'Poke / Scott'),
+            mood: pick(NEURAL_PERSONALITY_MOODS, seed, 'bro-tight'),
+            opener: pick(NEURAL_PERSONALITY_OPENERS, seed, 'bro,'),
+            closer: pick(NEURAL_PERSONALITY_CLOSES, seed, 'keep the relay lit.'),
+            systemPrompt: buildGrossBrosSystemPrompt(operative, seed)
         };
     }
 
@@ -1144,7 +1186,7 @@
 
     function renderChatBubble(entry) {
         const isUser = entry.role === 'user';
-        const label = isUser ? 'YOU' : (entry.role || 'SYSTEM').toUpperCase();
+        const label = isUser ? 'YOU' : (entry.role === 'system' ? 'POKE / SCOTT' : (entry.role || 'SYSTEM').toUpperCase());
         const bubbleClass = isUser ? 'chat-bubble-user' : 'chat-bubble-system';
         return `<div class="${bubbleClass} rounded-[18px] p-3 text-sm leading-7"><div class="mb-2 text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">${escapeHtml(label)}</div><div>${escapeHtml(entry.message || entry.content || '')}</div></div>`;
     }
@@ -1380,8 +1422,7 @@
         input.value = '';
         const operative = state.operative;
         const personality = getNeuralPersonality(operative.tokenId);
-        const traitEcho = (operative.traits || []).slice(0, 2).join(' • ') || 'no surfaced traits';
-        const reply = personality.opener + ' ' + operative.name + ' hears: "' + text + '". ' + operative.name + ' answers in a ' + personality.voice + ' cadence with ' + personality.mood + ' intent. ' + traitEcho + '. ' + personality.closer;
+        const reply = buildGrossBrosReply(operative, text, personality);
         await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
         await persistChat({ role: 'system', message: reply, created_at: new Date().toISOString() });
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
