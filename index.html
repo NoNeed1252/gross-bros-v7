@@ -284,28 +284,57 @@
             </div>
         </div>
 
-                <div id="content-2" class="tab-content">
-            <div class="max-w-6xl mx-auto space-y-4">
-                <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-3">
-                    <div>
-                        <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/60 mb-2">NEURAL LINK</div>
-                        <h1 class="header-font text-4xl sm:text-5xl text-[#00ffc8]">NEURAL LINK</h1>
+        <div id="content-2" class="tab-content">
+            <div class="max-w-6xl mx-auto space-y-5">
+                    <div id="chat-shell" class="inner-panel rounded-[2rem] p-5 sm:p-6">
+                        <div class="flex items-center justify-between gap-4 portrait-stack">
+                            <div>
+                                <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Terminal</div>
+                                <h4 class="header-font text-xl sm:text-3xl mt-2">CHAT TERMINAL</h4>
+                            </div>
+                            <div id="neural-terminal-voice" class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">VOICE // standby</div>
+                        </div>
+                        <div id="neural-terminal-active" class="mt-4 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-4 text-sm sm:text-base leading-7 text-[#d9fff8]/80 soft-wrap">Awaiting Connection.</div>
+                        <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
+                        <div class="mt-4 flex gap-3">
+                            <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative\u2026" maxlength="240" />
+                            <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">Send</button>
+                        </div>
                     </div>
-                    <div class="text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/50">roster first // terminal first // one voice per NFT ID</div>
+
+                <div class="rounded-[2rem] bg-[#06110f] p-4 sm:p-6">
+                    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between portrait-stack">
+                        <div class="flex items-center gap-2 text-xs sm:text-sm text-[#00ffc8]/80">
+                            <span class="inline-block w-2 h-2 rounded-full bg-[#00ffc8]"></span>
+                            Strict NFT filter active: Issuer rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY • Taxon 1
+                        </div>
+                        <div id="nft-summary" class="text-xs text-[#00ffc8]/60"></div>
+                    </div>
                 </div>
 
-                <div class="grid gap-4 lg:grid-cols-[0.98fr_1.02fr] items-stretch">
-                    <section class="inner-panel rounded-[2rem] p-4 sm:p-5 flex flex-col">
-                        <div class="flex flex-wrap items-start justify-between gap-3">
+                <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
+                    <div class="flex items-center justify-between gap-4 portrait-stack">
+                        <div>
+                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">NFT roster</div>
+                            <h4 class="header-font text-xl sm:text-3xl mt-2">SELECT AN OPERATIVE</h4>
+                        </div>
+                        <div id="xrp-amount" class="text-xs sm:text-sm text-[#00ffc8]/70"></div>
+                    </div>
+                    <div id="nft-grid" class="mt-5 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3"></div>
+                </div>
+
+                <div class="space-y-5">
+                    <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
+                        <div class="flex items-start justify-between gap-4 portrait-stack">
                             <div>
                                 <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">NFT Image Preview</div>
-                                <h3 id="neural-preview-title" class="header-font text-2xl sm:text-4xl mt-2">Awaiting operative selection.</h3>
+                                <h3 id="neural-preview-title" class="header-font text-2xl sm:text-4xl mt-3">Awaiting operative selection.</h3>
                             </div>
                             <div id="neural-preview-token" class="alien-chip rounded-2xl px-4 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em] soft-wrap">TOKEN // standby</div>
                         </div>
-                        <div class="mt-4 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start">
-                            <div class="rounded-[24px] border border-[#00ffc8]/14 bg-black/40 min-h-[18rem] sm:min-h-[22rem] lg:min-h-[28rem] overflow-hidden flex items-center justify-center">
-                                <img id="neural-nft-preview-image" alt="Selected NFT preview" class="hidden w-full h-full object-contain p-3" />
+                        <div class="mt-5 grid gap-4 lg:grid-cols-[0.95fr_1.05fr] items-start">
+                            <div class="rounded-[24px] border border-[#00ffc8]/14 bg-black/40 aspect-square overflow-hidden flex items-center justify-center">
+                                <img id="neural-nft-preview-image" alt="Selected NFT preview" class="hidden w-full h-full object-cover" />
                                 <div id="neural-nft-preview-placeholder" class="text-center px-8 text-[#00ffc8]/55 uppercase tracking-[0.35em] text-xs md:text-sm">Select a rostered NFT to preview it here.</div>
                             </div>
                             <div class="space-y-3">
@@ -319,56 +348,8 @@
                                 </div>
                             </div>
                         </div>
-                    </section>
-
-                    <section id="chat-shell" class="inner-panel rounded-[2rem] p-4 sm:p-5 flex flex-col">
-                        <div class="flex items-center justify-between gap-4 portrait-stack">
-                            <div>
-                                <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Terminal</div>
-                                <h4 class="header-font text-xl sm:text-3xl mt-2">CHAT TERMINAL</h4>
-                            </div>
-                            <div id="neural-terminal-voice" class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">VOICE // standby</div>
-                        </div>
-                        <div id="neural-terminal-active" class="mt-4 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-4 text-sm sm:text-base leading-7 text-[#d9fff8]/80 soft-wrap">Awaiting Connection.</div>
-                        <div id="neural-terminal-log" class="scrollbar-thin mt-4 h-[clamp(15rem,34vh,27rem)] overflow-y-auto rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3 space-y-3"></div>
-                        <form id="neural-terminal-form" class="mt-4 border-t border-[#00ffc8]/12 bg-black/70 p-3 sm:p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-4">
-                            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                                <span class="text-[#00ffc8]/50 text-sm shrink-0">&gt;</span>
-                                <input id="neural-terminal-input" class="neural-input w-full flex-1 bg-transparent outline-none text-[#00ffc8] placeholder:text-[#00ffc8]/35 text-sm md:text-base" autocomplete="off" spellcheck="false" placeholder="Transmit a thought to the selected operative…" />
-                                <button type="submit" class="shrink-0 px-4 py-2 rounded-2xl border border-[#00ffc8]/35 text-[#00ffc8] text-xs md:text-sm hover:bg-[#00ffc8] hover:text-black transition-colors">SEND</button>
-                            </div>
-                        </form>
-                    </section>
-                </div>
-
-                <section id="fusion-nft-panel" class="inner-panel rounded-[2rem] p-4 sm:p-5 text-left">
-                    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                        <div>
-                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">NFT roster</div>
-                            <h4 class="header-font text-xl sm:text-3xl mt-2">SELECT AN OPERATIVE</h4>
-                        </div>
-                        <div class="text-[10px] uppercase tracking-[0.3em] text-[#00ffc8]/55">Roster compressed for rapid sync</div>
                     </div>
-                    <div id="fusion-nft-status" class="mt-2 text-[#00ffc8]/78 text-sm md:text-base">Connect Xaman to load your Gross Bros NFTs.</div>
-                    <div id="fusion-nft-list" class="mt-3 flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory"></div>
-                </section>
 
-                <div class="grid gap-3 lg:grid-cols-3">
-                    <div class="border border-[#00ffc8]/20 bg-black/60 rounded-3xl p-3 sm:p-4 space-y-2">
-                        <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/60">LORE</div>
-                        <div id="neural-lore" class="text-[#00ffc8]/78 leading-snug text-xs sm:text-[13px]">Select an operative to load its lore shard.</div>
-                    </div>
-                    <div class="border border-[#00ffc8]/20 bg-black/60 rounded-3xl p-3 sm:p-4 space-y-2">
-                        <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/60">TRAITS</div>
-                        <div id="neural-traits" class="text-[#00ffc8]/78 leading-snug text-xs sm:text-[13px]">Traits will appear here once a rostered NFT is active.</div>
-                    </div>
-                    <div class="border border-[#00ffc8]/20 bg-black/60 rounded-3xl p-3 sm:p-4 space-y-2">
-                        <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/60">FIELD REPORT</div>
-                        <div id="neural-terminal-summary" class="text-[#00ffc8]/78 leading-snug text-xs sm:text-[13px]">Select an operative to sync the NFT-bound voice profile.</div>
-                    </div>
-                </div>
-
-                <div class="grid gap-3 lg:grid-cols-[1.05fr_0.95fr] items-start">
                     <div class="inner-panel rounded-[1.75rem] p-4 sm:p-5">
                         <div class="flex items-start justify-between gap-4 portrait-stack">
                             <div>
@@ -401,19 +382,11 @@
                         <div id="report-day" class="mt-3 text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55"></div>
                         <div id="field-report" class="mt-3 rounded-[20px] border border-[#00ffc8]/15 bg-black/35 p-3 sm:p-4 text-xs sm:text-sm leading-6 text-[#ddfff9]/85 min-h-[120px]"></div>
                     </div>
-                </div>
 
-                <div class="grid gap-3 lg:grid-cols-[1.05fr_0.95fr] items-stretch">
-                    <div id="fusion-panel" class="inner-panel rounded-[1.75rem] p-4 sm:p-5"></div>
-                    <div class="inner-panel rounded-[1.75rem] p-4 sm:p-5 space-y-3">
-                        <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Rail</div>
-                        <div id="xrp-amount" class="text-2xl md:text-3xl font-bold text-[#00ffc8]">$50 USD</div>
-                        <button id="fusion-button" type="button" onclick="initiateFusion()" class="w-full py-3 text-xs md:text-sm border border-[#00ffc8]/70 hover:bg-[#00ffc8] hover:text-black rounded-2xl">ENGAGE LINK</button>
-                    </div>
+                    <div id="fusion-panel" class="inner-panel rounded-[2rem] p-5 sm:p-6"></div>
                 </div>
             </div>
         </div>
-
 <div id="content-3" class="tab-content">
             <div class="max-w-6xl mx-auto">
                 <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
@@ -885,7 +858,7 @@
             titleEl.textContent = 'Awaiting operative selection.';
             tokenEl.textContent = 'TOKEN // standby';
             voiceEl.textContent = 'VOICE // standby';
-            loreEl.textContent = 'Select an operative to load its lore shard.';
+            loreEl.textContent = 'Select an operative to load its signal.';
             imageEl.classList.add('hidden');
             imageEl.removeAttribute('src');
             placeholderEl.textContent = 'Select a rostered NFT to preview it here.';
@@ -894,7 +867,7 @@
         titleEl.textContent = operative.name || 'Unknown operative';
         tokenEl.textContent = 'TOKEN // ' + shortAddress(operative.tokenId || 'standby');
         voiceEl.textContent = 'VOICE // ' + ((personality && personality.voice) ? personality.voice.toUpperCase() : 'STANDBY');
-        loreEl.textContent = operative.backstory + (personality ? ' Personality mode: ' + personality.mood + '.' : '');
+        loreEl.textContent = operative.backstory ? (operative.backstory.length > 144 ? operative.backstory.slice(0, 144) + '…' : operative.backstory) : 'Compact identity loaded.';
         if (operative.image) {
             imageEl.src = operative.image;
             imageEl.classList.remove('hidden');
@@ -951,83 +924,51 @@
     function renderOperativePanel() {
         const panel = document.getElementById('operative-panel');
         const badge = document.getElementById('operative-badge');
-        const selectedTokenEl = document.getElementById('selected-token');
         const operativeTokenEl = document.getElementById('operative-token');
         const fusionPanel = document.getElementById('fusion-panel');
-        const chatShell = document.getElementById('chat-shell');
-        if (!panel || !badge || !selectedTokenEl || !operativeTokenEl || !fusionPanel || !chatShell) return;
+        if (!panel || !badge || !operativeTokenEl || !fusionPanel) return;
         const selectedEntry = state.selectedTokenId ? state.nfts.find((item) => item.tokenId === state.selectedTokenId) : null;
         const fusedEntry = state.fusedTokenId ? state.nfts.find((item) => item.tokenId === state.fusedTokenId) : null;
         const activeEntry = fusedEntry || selectedEntry || null;
         state.operative = activeEntry ? buildOperativeFromMetadata(activeEntry.nft, activeEntry.metadata || {}) : null;
 
-        selectedTokenEl.textContent = state.selectedTokenId ? 'Selection ready' : 'None selected';
-        operativeTokenEl.textContent = state.fusedTokenId ? 'Fusion active' : 'Not fused';
-        badge.textContent = state.operative ? (state.fusedTokenId ? 'Fused' : 'Selected') : 'Locked';
+        operativeTokenEl.textContent = state.fusedTokenId ? 'Fused' : (state.selectedTokenId ? 'Selected' : 'Not fused');
+        badge.textContent = state.operative ? (state.fusedTokenId ? 'Live' : 'Ready') : 'Locked';
 
         if (!state.wallet) {
-            panel.innerHTML = '<div class="text-[#00ffc8]/60">Connect Xaman to expose the operative roster.</div>';
-            fusionPanel.innerHTML = '<div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/78">Wallet disconnected. Connect Xaman to begin token-gated selection.</div>';
-            chatShell.classList.remove('hidden-tab');
-            renderNeuralTerminalState();
+            panel.innerHTML = '<div class="text-[#00ffc8]/60">Connect Xaman to unlock the selector.</div>';
+            fusionPanel.innerHTML = '<div class="rounded-[20px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/78">Fuse / Buy stays near chat once a wallet is connected.</div>';
             return;
         }
 
         if (!activeEntry) {
-            panel.innerHTML = '<div class="text-[#00ffc8]/60">No matching Gross Bros NFT selected.</div>';
-            chatShell.classList.remove('hidden-tab');
-            renderNeuralTerminalState();
-        } else {
-            panel.innerHTML = `
-                <div class="grid gap-2 sm:grid-cols-2">
-                    <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative Name</div><div class="mt-2 text-base sm:text-lg font-bold text-[#f2fffd] leading-tight">${escapeHtml(state.operative.name)}</div></div>
-                    <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Faction</div><div class="mt-2 text-base sm:text-lg font-bold text-[#f2fffd] leading-tight">${escapeHtml(state.operative.faction)}</div></div>
-                </div>
-                <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4">
-                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Traits</div>
-                    <div class="mt-3 grid gap-2 sm:grid-cols-2">${(state.operative.traits.slice(0, 4).length ? state.operative.traits.slice(0, 4) : ['No traits surfaced']).map((t) => `<div class="rounded-xl border border-[#00ffc8]/12 bg-black/20 px-3 py-2 text-xs sm:text-sm leading-6">${escapeHtml(t)}</div>`).join('')}</div>
-                </div>
-                <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4 text-sm sm:text-base leading-6 sm:leading-7 text-[#d8fff7]/82 soft-wrap">${escapeHtml(state.operative.backstory)}</div>
-            `;
-            chatShell.classList.remove('hidden-tab');
+            panel.innerHTML = '<div class="text-[#00ffc8]/60">Choose a rostered NFT to anchor the chat voice.</div>';
+            fusionPanel.innerHTML = '<div class="rounded-[20px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/78">Select an operative above to unlock the link.</div>';
+            return;
         }
 
-        if (!state.fusedTokenId) {
-            fusionPanel.innerHTML = `
-                <div class="space-y-4">
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Trading / Buy Protocol</div>
-                            <div class="mt-2 header-font text-xl sm:text-3xl">Token-gated selection</div>
-                            <div class="mt-2 text-sm leading-7 text-[#d9fff8]/78">Select a matching NFT to chat immediately. Fuse only if you want to enable trading on XRP or other XRPL assets.</div>
-                        </div>
-                        <div class="alien-chip rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Locked</div>
-                    </div>
-                    <div class="flex flex-col gap-3 sm:flex-row">
-                        <button onclick="fuseSelectedNft()" class="button-aura rounded-2xl px-5 py-4 text-sm uppercase tracking-[0.35em]">Enable Trading</button>
-                        <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" rel="noreferrer" class="button-aura rounded-2xl px-5 py-4 text-sm uppercase tracking-[0.35em] text-center">Buy a Bro</a>
-                    </div>
+        panel.innerHTML = `
+            <div class="grid gap-2 sm:grid-cols-2">
+                <div class="rounded-[18px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4">
+                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Selected Operative</div>
+                    <div class="mt-2 text-sm sm:text-base font-semibold text-[#f2fffd] leading-tight">${escapeHtml(state.operative.name)}</div>
                 </div>
-            `;
-        } else {
-            fusionPanel.innerHTML = `
-                <div class="space-y-4">
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative Online</div>
-                            <div class="mt-2 header-font text-xl sm:text-3xl">${escapeHtml(state.operative?.name || 'Unknown operative')}</div>
-                            <div class="mt-2 text-sm leading-7 text-[#d9fff8]/78">Voice signature: ${escapeHtml(state.operative?.faction || 'unknown faction')} • ${escapeHtml((state.operative?.traits || []).slice(0, 3).join(' • ') || 'No traits surfaced')}</div>
-                        </div>
-                        <div class="alien-chip rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Chat unlocked</div>
-                    </div>
-                    <div class="grid gap-3 sm:grid-cols-2">
-                        <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/78">Wallet: ${escapeHtml(shortAddress(state.wallet))}</div>
-                        <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/78">Token: ${escapeHtml(state.fusedTokenId)}</div>
-                    </div>
+                <div class="rounded-[18px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4">
+                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Signal</div>
+                    <div class="mt-2 text-sm sm:text-base font-semibold text-[#f2fffd] leading-tight">${escapeHtml(state.operative.faction)}</div>
                 </div>
-            `;
-            chatShell.classList.remove('hidden-tab');
-        }
+            </div>
+            <div class="rounded-[18px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4 text-sm sm:text-base leading-7 text-[#d8fff7]/82 soft-wrap">${escapeHtml((state.operative.backstory || '').slice(0, 150) + ((state.operative.backstory || '').length > 150 ? '…' : ''))}</div>
+        `;
+        fusionPanel.innerHTML = `
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Fusion status</div>
+                    <div class="mt-2 text-sm sm:text-base text-[#d8fff7]/82">${state.fusedTokenId ? 'Trade path active for the selected operative.' : 'Use the action bar to fuse or buy the selected operative.'}</div>
+                </div>
+                <div class="alien-chip rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">${state.fusedTokenId ? 'Live' : 'Ready'}</div>
+            </div>
+        `;
     }
 
     function renderNftGrid() {
