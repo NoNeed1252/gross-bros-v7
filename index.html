@@ -104,9 +104,6 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         #content-2 #chat-shell.hidden-tab { display: block !important; }
-        #content-2 #operative-panel,
-        #content-2 .backstory,
-        #content-2 [data-section="backstory"] { display: none !important; }
         .connected-glow { box-shadow: 0 0 30px var(--cyan); }
         .nft-card { min-height: 100%; }
         .nft-card img { width: 100%; height: 11rem; object-fit: cover; }
@@ -818,9 +815,7 @@
         const traits = normalizeTraits(metadata?.attributes || metadata?.traits || metadata?.properties || metadata?.data?.attributes).slice(0, 8);
         const tokenId = getNftId(nft);
         const image = resolveNftImage(metadata) || resolveNftImage(nft);
-        const backstorySeed = `${name}|${faction}|${tokenId}|${todayKey()}`;
-        const backstory = metadata?.description || metadata?.bio || metadata?.lore || `${name} (${faction}) carries ${pick(['a fractured aura', 'a disciplined pulse', 'a ghost-clean signal', 'a sharp ledger edge'], backstorySeed, 'a fractured aura')} and listens to ${pick(BRIEFING_SEEDS, backstorySeed, 'calm')} static.`;
-        return { tokenId, name, faction, traits, image, backstory, raw: nft, metadata };
+        return { tokenId, name, faction, traits, image, raw: nft, metadata };
     }
 
     function renderWalletUI() {
@@ -871,17 +866,17 @@
         badge.textContent = state.operative ? (state.fusedTokenId ? 'Fused' : 'Selected') : 'Locked';
 
         if (!state.wallet) {
-            panel.innerHTML = '<div class="text-[#00ffc8]/60">Connect Xaman to expose the operative roster.</div>';
+            panel.innerHTML = '<div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm sm:text-base text-[#d8fff7]/82">Connect Xaman to expose the operative roster.</div>';
             fusionPanel.innerHTML = '<div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/78">Wallet disconnected. Connect Xaman to begin token-gated selection.</div>';
             chatShell.classList.add('hidden-tab');
             return;
         }
 
         if (!activeEntry) {
-            panel.innerHTML = '<div class="text-[#00ffc8]/60">No matching Gross Bros NFT selected.</div>';
+            panel.innerHTML = '<div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/82">No matching Gross Bros NFT selected.</div>';
             chatShell.classList.add('hidden-tab');
         } else {
-            panel.innerHTML = '<div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm sm:text-base text-[#d8fff7]/82">Operative identity cached. Open the chat terminal for live channel access.</div>';
+            panel.innerHTML = '<div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm sm:text-base text-[#d8fff7]/82">Operative channel ready. Open the chat terminal for live access.</div>';
             chatShell.classList.remove('hidden-tab');
             renderChatFace();
         }
@@ -909,8 +904,7 @@
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative Online</div>
-                            <div class="mt-2 header-font text-xl sm:text-3xl">${escapeHtml(state.operative?.name || 'Unknown operative')}</div>
-                            <div class="mt-2 text-sm leading-7 text-[#d9fff8]/78">Bro mode: ${escapeHtml(state.operative?.faction || 'unknown faction')} is locked in and ready to chat.</div>
+                            <div class="mt-2 text-sm leading-7 text-[#d9fff8]/78">Chat access is unlocked for the selected token.</div>
                         </div>
                         <div class="alien-chip rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Chat unlocked</div>
                     </div>
@@ -1106,14 +1100,13 @@
             face.innerHTML = '<div class="rounded-[18px] border border-[#00ffc8]/12 bg-black/20 p-4 text-sm text-[#00ffc8]/60">Bro face offline. Fuse a token to beam the operative into the terminal.</div>';
             return;
         }
-        face.innerHTML = `<div class="flex flex-col gap-4 sm:flex-row sm:items-center"><div class="mx-auto sm:mx-0 w-28 h-28 sm:w-32 sm:h-32 rounded-[24px] border border-[#00ffc8]/20 bg-black/60 overflow-hidden flex items-center justify-center shrink-0 shadow-[0_0_30px_rgba(0,255,200,0.12)]">${escapeHtml(operative.image) ? `<img src="${escapeHtml(operative.image)}" alt="${escapeHtml(operative.name)}" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')" />` : ''}<div class="hidden text-[10px] text-[#00ffc8]/55 px-2 text-center">FACE LINK LOST</div></div><div class="min-w-0 flex-1 space-y-2"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative face in-terminal</div><div class="header-font text-xl sm:text-3xl leading-tight text-[#f2fffd]">${escapeHtml(operative.name || 'Unknown bro')}</div><div class="text-sm sm:text-base leading-7 text-[#d9fff8]/78">${escapeHtml(operative.faction || 'Unknown faction')} • ${escapeHtml(state.fusedTokenId ? 'fused and talking' : 'selected and standing by')}</div></div></div>`;
+        face.innerHTML = `<div class="flex flex-col gap-4 sm:flex-row sm:items-center"><div class="mx-auto sm:mx-0 w-28 h-28 sm:w-32 sm:h-32 rounded-[24px] border border-[#00ffc8]/20 bg-black/60 overflow-hidden flex items-center justify-center shrink-0 shadow-[0_0_30px_rgba(0,255,200,0.12)]">${escapeHtml(operative.image) ? `<img src="${escapeHtml(operative.image)}" alt="operative link" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')" />` : ''}<div class="hidden text-[10px] text-[#00ffc8]/55 px-2 text-center">FACE LINK LOST</div></div><div class="min-w-0 flex-1 space-y-2"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative face in-terminal</div><div class="text-sm sm:text-base leading-7 text-[#d9fff8]/78">${escapeHtml(state.fusedTokenId ? 'fused and talking' : 'selected and standing by')} • Token ${escapeHtml(operative.tokenId || 'pending')}</div></div></div>`;
     }
 
     function generateFieldReport(operative, dayKey) {
-        const seed = `${operative.tokenId}|${operative.name}|${operative.faction}|${dayKey}`;
+        const seed = `${operative.tokenId}|${dayKey}`;
         return [
-            `${dayKey} intelligence briefing for ${operative.name}.`,
-            `Faction signature: ${operative.faction}.`,
+            `${dayKey} intelligence briefing for the active operative.`,
             `Signal profile: bro-clean and steady.`,
             `The operative remains tethered to the Gross Bros terminal with a ${pick(BRIEFING_SEEDS, seed, 'calm')} posture, reading the grid for fractures before they become events.`,
             `Today’s report indicates ${pick(REPORTEVENTS, seed, 'stable conditions')}.`,
