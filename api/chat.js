@@ -22,9 +22,16 @@ export default async function handler(req, res) {
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
-    const endpoint = process.env.IONOS_CHAT_URL || 'http://216.250.127.169:11434/api/chat';
+    const upstreamBase = 'http://216.250.127.169:11434';
 
-    const response = await fetch(endpoint, {
+    const generatePrompt = [
+      systemPrompt,
+      `Backstory: ${backstory || 'No backstory provided.'}`,
+      '',
+      ...messages.map((message) => `${message.role === 'assistant' ? 'Assistant' : 'User'}: ${String(message.content || message.message || '')}`)
+    ].join('\n');
+
+    const response = await fetch(`${upstreamBase}/api/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -32,14 +39,8 @@ export default async function handler(req, res) {
       signal: controller.signal,
       body: JSON.stringify({
         model: 'llama3',
-        stream: false,
-        messages: [
-          { role: 'system', content: `${systemPrompt} Backstory: ${backstory || 'No backstory provided.'}` },
-          ...messages.map((message) => ({
-            role: message.role === 'assistant' ? 'assistant' : 'user',
-            content: String(message.content || message.message || '')
-          }))
-        ]
+        prompt: generatePrompt,
+        stream: false
       })
     }).finally(() => clearTimeout(timeout));
 
@@ -49,10 +50,13 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    const reply = data?.message?.content?.trim() || data?.response?.trim() || 'Signal lost, bro.';
+    const reply = data?.response?.trim() || data?.message?.content?.trim() || 'Signal lost, bro.';
     return res.status(200).json({ reply });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Chat relay failed' });
+    console.error('Chat relay failed:', error);
+    return res.status(500).json({
+      error: 'Chat relay failed',
+      details: error?.message || String(error)
+    });
   }
 }
