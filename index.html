@@ -88,6 +88,10 @@
                 border-radius: 0;
             }
         }
+        @media (min-width: 769px) {
+            #boot-overlay { padding: 0; }
+            #boot-overlay .boot-panel { width: 100vw; height: 100vh; max-width: none; max-height: none; border-radius: 0; }
+        }
 
         .crt::before {
             content: '';
@@ -114,7 +118,9 @@
             .tab { white-space: nowrap; }
         }
         .fusion-panel { border-color: rgba(0,255,200,0.20); }
-        .news-ticker {
+        #news-ticker {
+            flex: 1;
+            min-width: 0;
             width: 100%;
             max-width: none;
             margin: 0;
@@ -200,7 +206,7 @@
 
 <body class="bg-black min-h-screen p-2 sm:p-4 text-[#00ffc8]">
 <div id="boot-overlay" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 backdrop-blur-sm px-4">
-  <div class="inner-panel ring-lid relative w-[min(94vw,760px)] overflow-hidden rounded-[30px] p-5 sm:p-8">
+  <div class="boot-panel inner-panel ring-lid relative w-full h-full max-w-none max-h-none overflow-hidden rounded-none p-0">
     <div class="flex items-center justify-between gap-4">
       <div class="orbitron text-xs sm:text-sm tracking-[0.6em] text-[#00ffc8] opacity-80">BOOT SEQUENCE</div>
       <div id="boot-progress-label" class="text-[11px] sm:text-xs tracking-[0.35em] text-[#00ffc8]/60">0%</div>
@@ -237,7 +243,7 @@
         <p id="xaman-status" class="text-[11px] sm:text-sm text-[#00ffc8]/60 text-center lg:text-right">Wallet disconnected.</p>
     </div>
 
-    <div class="news-ticker border-b border-[#00ffc8]/20 bg-gradient-to-r from-[#00ffc8]/10 via-transparent to-[#7c3aed]/10 overflow-hidden w-full max-w-none mx-0">
+    <div id="news-ticker" class="news-ticker border-b border-[#00ffc8]/20 bg-gradient-to-r from-[#00ffc8]/10 via-transparent to-[#7c3aed]/10 overflow-hidden w-full max-w-none mx-0">
         <div id="warning-ticker-track" class="news-track"></div>
     </div>
 
