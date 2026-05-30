@@ -301,7 +301,7 @@
                             <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Link demo access</div>
                             <h4 class="header-font text-xl sm:text-3xl mt-2">LAUNCH NEURAL LINK DEMO</h4>
                         </div>
-                        <button onclick="launchNeuralLinkDemo()" class="button-aura rounded-2xl px-5 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em]">LAUNCH NEURAL LINK DEMO</button>
+                        <button id="launch-neural-link-demo" type="button" onclick="launchNeuralLinkDemo()" class="button-aura rounded-2xl px-5 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em]">LAUNCH NEURAL LINK DEMO</button>
                     </div>
                     <p class="mt-4 text-sm sm:text-base leading-7 text-[#00ffc8]/75">Launch the Neural Link terminal without a wallet connection.</p>
                 </div>
@@ -846,6 +846,8 @@
             input.focus();
         }
     }
+
+    window.launchNeuralLinkDemo = launchNeuralLinkDemo;
 
     function renderConsole() {
         return;
@@ -1419,6 +1421,14 @@
         renderChatHistory();
         loadFieldReport();
         bindChatInput();
+        const launchDemoButton = document.getElementById('launch-neural-link-demo');
+        if (launchDemoButton && launchDemoButton.dataset.boundDemo !== '1') {
+            launchDemoButton.dataset.boundDemo = '1';
+            launchDemoButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                launchNeuralLinkDemo();
+            });
+        }
         switchTab(0);
     }
 
