@@ -47,6 +47,19 @@
         .operative-card:hover { transform: translateY(-1px); }
         .operative-card--active { border-color: rgba(0, 255, 200, 0.95) !important; background: rgba(0, 255, 200, 0.08) !important; }
         .neural-input::placeholder { color: rgba(0, 255, 200, 0.35); }
+        .neural-terminal-focus {
+            background:
+                linear-gradient(180deg, rgba(0, 255, 200, 0.05), rgba(0, 0, 0, 0.15)),
+                radial-gradient(circle at top right, rgba(0, 255, 200, 0.12), transparent 42%);
+        }
+        .terminal-image-shell {
+            box-shadow: inset 0 0 0 1px rgba(0, 255, 200, 0.08);
+        }
+        .terminal-image-fallback {
+            background:
+                linear-gradient(135deg, rgba(0, 255, 200, 0.08), rgba(0, 0, 0, 0.92)),
+                radial-gradient(circle at center, rgba(0, 255, 200, 0.18), transparent 55%);
+        }
 
         @media (max-width: 768px) {
             .alien-monitor {
@@ -175,6 +188,26 @@
                         </div>
                         <div id="neural-terminal-voice" class="text-[11px] uppercase tracking-[0.3em] text-[#00ffc8]/70 text-left lg:text-right">VOICE // standby</div>
                     </div>
+                    <div class="border-b border-[#00ffc8]/12 bg-[#020807] px-4 md:px-5 py-4 md:py-5 neural-terminal-focus">
+                        <div class="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(250px,0.6fr)] items-stretch">
+                            <div class="rounded-3xl border border-[#00ffc8]/15 bg-black/45 p-4 md:p-5 space-y-4">
+                                <div class="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-[#00ffc8]/65">
+                                    <span class="px-2 py-1 rounded-full border border-[#00ffc8]/15">Chat First</span>
+                                    <span class="px-2 py-1 rounded-full border border-[#00ffc8]/15">NFT Synced</span>
+                                    <span class="px-2 py-1 rounded-full border border-[#00ffc8]/15">Live Voice</span>
+                                </div>
+                                <div id="neural-terminal-summary" class="text-[#00ffc8]/80 leading-snug text-sm md:text-[13px]">Select an operative to sync the NFT-bound voice profile.</div>
+                            </div>
+                            <div id="neural-terminal-image-shell" class="terminal-image-shell relative min-h-[16rem] md:min-h-[18rem] rounded-3xl border border-[#00ffc8]/18 overflow-hidden bg-black/80">
+                                <img id="neural-terminal-image" alt="Selected NFT preview" class="hidden absolute inset-0 h-full w-full object-cover" />
+                                <div id="neural-terminal-image-placeholder" class="terminal-image-fallback absolute inset-0 flex items-center justify-center px-6 text-center text-[#00ffc8]/55 uppercase tracking-[0.35em] text-xs md:text-sm">SELECT AN OPERATIVE TO RENDER IMAGE</div>
+                                <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent p-4">
+                                    <div class="text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/60">NFT FOCUS</div>
+                                    <div id="neural-terminal-image-caption" class="text-[#00ffc8] mt-1 text-sm md:text-base truncate">Awaiting operative selection.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div id="neural-terminal-log" class="neural-terminal-log h-[clamp(18rem,40dvh,34rem)] md:h-[clamp(24rem,48dvh,40rem)] overflow-y-auto px-5 py-5 space-y-3"></div>
                     <form id="neural-terminal-form" class="border-t border-[#00ffc8]/15 bg-black/75 p-3 md:p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:pb-4">
                         <div class="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -183,12 +216,10 @@
                             <button type="submit" class="shrink-0 px-4 py-2 rounded-2xl border border-[#00ffc8]/35 text-[#00ffc8] text-xs md:text-sm hover:bg-[#00ffc8] hover:text-black transition-colors">SEND</button>
                         </div>
                     </form>
-                </section>
-
-                <div class="grid gap-4 lg:grid-cols-[1.2fr_0.8fr] items-start">
+                </section>                <div class="grid gap-4 lg:grid-cols-[1fr_0.8fr] items-start">
                     <div class="border border-[#00ffc8]/20 bg-black/60 rounded-3xl p-4 md:p-5">
-                        <div class="text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/60 mb-2">ACTIVE OPERATIVE</div>
-                        <div id="neural-terminal-summary" class="text-[#00ffc8]/80 leading-snug text-sm md:text-[13px]">Select an operative to sync the NFT-bound voice profile.</div>
+                        <div class="text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/60 mb-2">LINK NOTES</div>
+                        <div class="text-[#00ffc8]/80 leading-snug text-sm md:text-[13px]">Chat stays primary. The roster and selected NFT image remain compact and synchronized with the active voice profile.</div>
                     </div>
                     <div class="border border-[#00ffc8]/20 bg-black/60 rounded-3xl p-4 md:p-5 space-y-3">
                         <div class="text-[11px] uppercase tracking-[0.35em] text-[#00ffc8]/60">NEURAL RAIL</div>
@@ -855,6 +886,9 @@
         const activeEl = document.getElementById('neural-terminal-active');
         const voiceEl = document.getElementById('neural-terminal-voice');
         const summaryEl = document.getElementById('neural-terminal-summary');
+        const imageEl = document.getElementById('neural-terminal-image');
+        const imagePlaceholderEl = document.getElementById('neural-terminal-image-placeholder');
+        const imageCaptionEl = document.getElementById('neural-terminal-image-caption');
         const rosterItems = document.querySelectorAll('[data-operative-token]');
 
         rosterItems.forEach((item) => {
@@ -865,23 +899,40 @@
             activeEl.textContent = operative.name + ' • ' + shortenTokenId(operative.tokenId);
         }
         if (voiceEl) {
-            voiceEl.textContent = `VOICE // ${operative.voiceLabel} // ${operative.tempo} // NFT-LOCKED`;
-        }        if (summaryEl) {
-            summaryEl.innerHTML = `
-                <div class="space-y-2">
-                    <div class="flex items-center gap-3 flex-wrap">
-                        <div class="text-[#00ffc8] text-base md:text-lg">${operative.name}</div>
-                        <div class="text-[#00ffc8]/60 text-[11px] uppercase tracking-[0.28em]">Token ${shortenTokenId(operative.tokenId)}</div>
-                    </div>
-                    <div class="text-[#00ffc8]/75 text-xs md:text-sm leading-snug">${operative.prompt}</div>
-                    <div class="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-[#00ffc8]/65">
-                        <span class="px-2 py-1 rounded-full border border-[#00ffc8]/18">${operative.symbol}</span>
-                        <span class="px-2 py-1 rounded-full border border-[#00ffc8]/18">${operative.voiceLabel}</span>
-                        <span class="px-2 py-1 rounded-full border border-[#00ffc8]/18">${operative.mood}</span>
-                        <span class="px-2 py-1 rounded-full border border-[#00ffc8]/18">Deterministic</span>
-                    </div>
-                </div>
-            `;
+            voiceEl.textContent = 'VOICE // ' + operative.voiceLabel + ' // ' + operative.tempo + ' // NFT-LOCKED';
+        }
+        if (summaryEl) {
+            summaryEl.innerHTML = [
+                '<div class="space-y-2">',
+                '  <div class="flex items-center gap-3 flex-wrap">',
+                '    <div class="text-[#00ffc8] text-base md:text-lg">' + operative.name + '</div>',
+                '    <div class="text-[#00ffc8]/60 text-[11px] uppercase tracking-[0.28em]">Token ' + shortenTokenId(operative.tokenId) + '</div>',
+                '  </div>',
+                '  <div class="text-[#00ffc8]/75 text-xs md:text-sm leading-snug">' + operative.prompt + '</div>',
+                '  <div class="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-[#00ffc8]/65">',
+                '    <span class="px-2 py-1 rounded-full border border-[#00ffc8]/18">' + operative.symbol + '</span>',
+                '    <span class="px-2 py-1 rounded-full border border-[#00ffc8]/18">' + operative.voiceLabel + '</span>',
+                '    <span class="px-2 py-1 rounded-full border border-[#00ffc8]/18">' + operative.mood + '</span>',
+                '    <span class="px-2 py-1 rounded-full border border-[#00ffc8]/18">Deterministic</span>',
+                '  </div>',
+                '</div>'
+            ].join('');
+        }
+
+        const imageUrl = typeof operative.image === 'string' ? operative.image.trim() : '';
+        if (imageEl && imagePlaceholderEl && imageCaptionEl) {
+            if (imageUrl) {
+                imageEl.src = imageUrl;
+                imageEl.classList.remove('hidden');
+                imagePlaceholderEl.classList.add('hidden');
+                imageCaptionEl.textContent = operative.name + ' • ' + shortenTokenId(operative.tokenId);
+            } else {
+                imageEl.src = '';
+                imageEl.classList.add('hidden');
+                imagePlaceholderEl.classList.remove('hidden');
+                imagePlaceholderEl.textContent = 'IMAGE UNAVAILABLE';
+                imageCaptionEl.textContent = 'Awaiting operative selection.';
+            }
         }
     }
     function getActiveOperative() {
@@ -978,6 +1029,7 @@
             const serial = getNftSerial(nft);
             const name = nft.name || nft.NFTokenName || ('Gross Bro #' + (serial === Number.MAX_SAFE_INTEGER ? '—' : serial));
             const image = await resolveNftImage(nft);
+            nft.image = image;
             const operative = getOperativeVoice(nft);
 
             const item = document.createElement('button');
@@ -1363,17 +1415,26 @@
     }
 
     async function connectXaman() {
+        const signinWindow = window.open('', 'xaman-signin', 'width=480,height=720');
         const existing = await verifyWalletSession(getWalletSession());
         if (existing?.connected && existing.address) {
+            if (signinWindow && !signinWindow.closed) {
+                signinWindow.close();
+            }
             setWalletUI({ connected: true, address: existing.address, message: 'Connected: ' + shortenAddress(existing.address) });
             await loadFusionNfts(existing.address);
             return existing;
         }
 
+        if (!signinWindow) {
+            setWalletUI({ connected: false, address: '', message: 'Allow pop-ups to complete the Xaman sign-in.' });
+            throw new Error('Pop-up blocked while starting the Xaman sign-in.');
+        }
+
         try {
             setWalletUI({ connected: false, address: '', message: 'Preparing Xaman sign-in…' });
             const payload = await createXamanSigninPayload();
-            openSigninUrl(payload);
+            openSigninUrl(payload, signinWindow);
             setWalletUI({ connected: false, address: '', message: 'Approve the Xaman request in your wallet.' });
 
             if (xamanPolling) {
@@ -1393,6 +1454,9 @@
             await loadFusionNfts(session.address);
             return session;
         } catch (error) {
+            if (signinWindow && !signinWindow.closed) {
+                signinWindow.close();
+            }
             clearWalletSession();
             setWalletUI({ connected: false, address: '', message: error instanceof Error ? error.message : 'Unable to connect Xaman.' });
             throw error;
