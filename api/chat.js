@@ -8,9 +8,19 @@ export default async function handler(req, res) {
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     const operative = body.operative || {};
     const messages = Array.isArray(body.messages) ? body.messages : [];
+    const demoMode = Boolean(body.demoMode) || String(operative.tokenId || '').trim() === 'demo-neural-link' || String(operative.name || '').trim() === 'Neural Link Demo';
     const backstory = String(operative.backstory || '').trim();
     const faction = String(operative.faction || 'Unknown faction').trim();
     const name = String(operative.name || 'Operative').trim();
+
+    if (demoMode) {
+      const lastUser = [...messages].reverse().find((message) => String(message?.role || '').toLowerCase() === 'user');
+      const promptText = String(lastUser?.content || lastUser?.message || '').trim();
+      const reply = promptText
+        ? `Demo relay online. ${name} heard: ${promptText}. Signal steady, bro.`
+        : `Demo relay online. ${name} is standing by. Signal steady, bro.`;
+      return res.status(200).json({ reply });
+    }
 
     const systemPrompt = [
       `You are a bro-coded conversational agent for ${name} of the ${faction}.`,
@@ -22,7 +32,7 @@ export default async function handler(req, res) {
     ].join(' ');
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+    const timeout = setTimeout(() => controller.abort(), 20000);
     const upstreamBase = 'http://216.250.127.169:8443';
 
     const generatePrompt = [
@@ -64,4 +74,3 @@ export default async function handler(req, res) {
     });
   }
 }
-
