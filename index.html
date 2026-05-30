@@ -354,24 +354,10 @@
                                 </div>
                                 <div class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">Fused</div>
                             </div>
-                            <div class="mt-4 grid gap-4 xl:grid-cols-[240px_1fr]">
-                                <div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/30 p-3 sm:p-4 flex flex-col items-center text-center">
-                                    <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative face</div>
-                                    <div class="mt-3 w-full max-w-[220px] aspect-square overflow-hidden rounded-[24px] border border-[#00ffc8]/12 bg-black/45 flex items-center justify-center">
-                                        <img id="chat-operative-image" class="hidden h-full w-full object-contain p-3" alt="Operative face" />
-                                        <div id="chat-operative-placeholder" class="px-4 text-center text-xs sm:text-sm text-[#00ffc8]/55 soft-wrap">No operative selected</div>
-                                    </div>
-                                    <div id="chat-operative-name" class="mt-3 header-font text-lg sm:text-xl text-[#f1fffd]"></div>
-                                    <div id="chat-operative-faction" class="mt-1 text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/55"></div>
-                                </div>
-                                <div class="min-w-0 space-y-4">
-                                    <div id="chat-history" class="scrollbar-thin h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
-                                </div>
-                            </div>
+                            <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
                             <div class="mt-4 flex gap-3">
-                                <input id="chat-input" class="cmd-input min-w-0 flex-1 rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
-                                <button onclick="fuseSelectedNft()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
-                                <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
+                                <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
+                                <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">Send</button>
                             </div>
                         </div>
                     </div>
@@ -420,9 +406,6 @@
     </div>
 
     <div class="bg-black/95 border-t border-[#00ffc8]/20 px-4 sm:px-6 py-4 mt-auto sticky bottom-0 z-20 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between text-xs">
-        <div id="news-ticker" class="news-ticker border-b border-[#00ffc8]/20 bg-gradient-to-r from-[#00ffc8]/10 via-transparent to-[#7c3aed]/10 overflow-hidden w-full max-w-none mx-0 mb-3">
-            <div id="warning-ticker-track" class="news-track"></div>
-        </div>
         <div class="flex gap-6">
             <a href="https://x.com/thegrossbros" target="_blank" class="hover:text-white transition-colors">𝕏</a>
             <a href="https://discord.gg/fcZYk7UcB" target="_blank" class="hover:text-white transition-colors">Discord</a>
@@ -502,14 +485,14 @@
         'a clean window for signal extraction'
     ];
     const CHAT_OPENERS = [
-        'Bro, clean pull.',
-        'That lane is smooth.',
-        'Easy, that one lands.',
-        'Low-key a strong read.',
-        'Solid. Keep it moving.'
+        'Directive acknowledged.',
+        'Operative channel stabilized.',
+        'Transmission received.',
+        'Signal fused. Continue.',
+        'Command deck listening.'
     ];
     const VOICE_MODIFIERS = [
-        'chill', 'slick', 'quick', 'dialed', 'snappy', 'grease-light'
+        'calm', 'clinical', 'measured', 'tight-beam', 'hardline', 'lore-heavy'
     ];
 
     function todayKey(date = new Date()) {
@@ -872,10 +855,6 @@
         const operativeTokenEl = document.getElementById('operative-token');
         const fusionPanel = document.getElementById('fusion-panel');
         const chatShell = document.getElementById('chat-shell');
-        const chatFaceImage = document.getElementById('chat-operative-image');
-        const chatFacePlaceholder = document.getElementById('chat-operative-placeholder');
-        const chatFaceName = document.getElementById('chat-operative-name');
-        const chatFaceFaction = document.getElementById('chat-operative-faction');
         if (!panel || !badge || !selectedTokenEl || !operativeTokenEl || !fusionPanel || !chatShell) return;
         const selectedEntry = state.selectedTokenId ? state.nfts.find((item) => item.tokenId === state.selectedTokenId) : null;
         const fusedEntry = state.fusedTokenId ? state.nfts.find((item) => item.tokenId === state.fusedTokenId) : null;
@@ -889,36 +868,15 @@
         if (!state.wallet) {
             panel.innerHTML = '<div class="text-[#00ffc8]/60">Connect Xaman to expose the operative roster.</div>';
             fusionPanel.innerHTML = '<div class="rounded-[24px] border border-[#00ffc8]/12 bg-black/25 p-4 text-sm text-[#d8fff7]/78">Wallet disconnected. Connect Xaman to begin token-gated selection.</div>';
-            if (chatFaceImage) { chatFaceImage.classList.add('hidden'); chatFaceImage.removeAttribute('src'); }
-            if (chatFacePlaceholder) { chatFacePlaceholder.textContent = 'No operative selected'; chatFacePlaceholder.classList.remove('hidden'); }
-            if (chatFaceName) chatFaceName.textContent = '';
-            if (chatFaceFaction) chatFaceFaction.textContent = '';
             chatShell.classList.add('hidden-tab');
             return;
         }
 
         if (!activeEntry) {
             panel.innerHTML = '<div class="text-[#00ffc8]/60">No matching Gross Bros NFT selected.</div>';
-            if (chatFaceImage) { chatFaceImage.classList.add('hidden'); chatFaceImage.removeAttribute('src'); }
-            if (chatFacePlaceholder) { chatFacePlaceholder.textContent = 'No operative selected'; chatFacePlaceholder.classList.remove('hidden'); }
-            if (chatFaceName) chatFaceName.textContent = '';
-            if (chatFaceFaction) chatFaceFaction.textContent = '';
             chatShell.classList.add('hidden-tab');
         } else {
             panel.innerHTML = `
-            if (chatFaceImage) {
-                const faceImage = state.operative?.image || '';
-                if (faceImage) {
-                    chatFaceImage.src = faceImage;
-                    chatFaceImage.classList.remove('hidden');
-                } else {
-                    chatFaceImage.classList.add('hidden');
-                    chatFaceImage.removeAttribute('src');
-                }
-            }
-            if (chatFacePlaceholder) { chatFacePlaceholder.textContent = state.operative?.image ? '' : 'Face relay offline'; chatFacePlaceholder.classList.toggle('hidden', !!state.operative?.image); }
-            if (chatFaceName) chatFaceName.textContent = state.operative?.name || '';
-            if (chatFaceFaction) chatFaceFaction.textContent = state.operative?.faction || '';
                 <div class="grid gap-2 sm:grid-cols-2">
                     <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Operative Name</div><div class="mt-2 text-base sm:text-lg font-bold text-[#f2fffd] leading-tight">${escapeHtml(state.operative.name)}</div></div>
                     <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/25 p-3 sm:p-4"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Faction</div><div class="mt-2 text-base sm:text-lg font-bold text-[#f2fffd] leading-tight">${escapeHtml(state.operative.faction)}</div></div>
@@ -1371,7 +1329,7 @@
         const operative = state.operative;
         const voice = pick(VOICE_MODIFIERS, `${text}|${operative.tokenId}|${todayKey()}`, 'steady');
         const traitEcho = (operative.traits || []).slice(0, 2).join(' • ') || 'no surfaced traits';
-        const reply = `${pick(CHAT_OPENERS, text + operative.tokenId, 'Bro, clean pull.')} ${operative.name} is on a ${voice} wave and the read is ${pick(['clean', 'spicy', 'dialed', 'locked'], `${text}|${operative.tokenId}`, 'clean')}. ${pick(['No cap, that is a W.', 'Keep the signal warm.', 'We stay moving.'], `${text}|${operative.tokenId}|${todayKey()}`, 'Clean signal.')} ${traitEcho}.`;
+        const reply = `${pick(CHAT_OPENERS, text + operative.tokenId, 'Directive acknowledged.')} ${operative.name} answers in a ${voice} voice shaped by ${operative.faction} and ${traitEcho}.`;
         await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
         await persistChat({ role: 'system', message: reply, created_at: new Date().toISOString() });
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
