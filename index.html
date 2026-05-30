@@ -66,7 +66,7 @@
 
         .alien-monitor {
             background: #050505;
-            border: 24px solid #1f1f1f;
+            border: none;
             box-shadow: 0 0 0 14px #0a0a0a, 0 30px 70px -20px rgba(0,0,0,0.95), 0 0 100px -20px var(--cyan);
             border-radius: 24px;
             overflow: hidden;
@@ -222,8 +222,8 @@
         <div class="flex items-center gap-3 sm:gap-4">
             <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
             <div>
-                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">ALIEN BROADCAST OS v8.6</div>
-                <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Ledger relay // XRPL survival interface</div>
+                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">Neural Link OS</div>
+                <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Alien CRT relay // transmission and chat interface</div>
             </div>
         </div>
 
@@ -833,6 +833,21 @@
         return;
     }
 
+    async function loadWarningTicker() {
+        const track = document.getElementById('warning-ticker-track');
+        if (!track) return;
+        try {
+            const rows = SUPABASE_URL && SUPABASE_KEY ? await supabaseSelect('transmissions', 'select=content,message,created_at&order=created_at.desc&limit=10').catch(() => null) : null;
+            const items = Array.isArray(rows) && rows.length ? rows.map((row) => String(row.content || row.message || '').trim()).filter(Boolean) : [];
+            const feedItems = (items.length ? items : ['Transmission stream pending']).concat(items.length ? items : ['Transmission stream pending']);
+            track.innerHTML = feedItems.map((item, index) => '<span class="news-item">' + escapeHtml(item) + '</span>' + (index < feedItems.length - 1 ? '<span class="news-item"> • </span>' : '')).join('');
+            track.style.animationPlayState = 'running';
+        } catch (error) {
+            console.error(error);
+            track.innerHTML = '<span class="news-item">Transmission stream pending</span><span class="news-item"> • </span><span class="news-item">Transmission stream pending</span>';
+        }
+    }
+
     function renderOperativePanel() {
         const panel = document.getElementById('operative-panel');
         const badge = document.getElementById('operative-badge');
@@ -1418,6 +1433,7 @@
         if (savedState?.fusedTokenId) state.fusedTokenId = savedState.fusedTokenId;
         renderWalletUI();
         if (shouldShowBoot()) showBootSequence(); else setBootSeen();
+        await loadWarningTicker();
         await loadLeaderboard();
         if (state.wallet) {
             await loadNfts();
