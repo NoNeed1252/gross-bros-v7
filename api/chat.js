@@ -22,8 +22,6 @@ export default async function handler(req, res) {
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
-    const upstreamBase = 'http://216.250.127.169:11434';
-
     const generatePrompt = [
       systemPrompt,
       `Backstory: ${backstory || 'No backstory provided.'}`,
@@ -31,7 +29,7 @@ export default async function handler(req, res) {
       ...messages.map((message) => `${message.role === 'assistant' ? 'Assistant' : 'User'}: ${String(message.content || message.message || '')}`)
     ].join('\n');
 
-    const response = await fetch(`${upstreamBase}/api/generate`, {
+    const response = await fetch('http://216.250.127.169:8443/api/generate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
