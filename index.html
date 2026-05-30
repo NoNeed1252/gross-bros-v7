@@ -103,6 +103,10 @@
         .tab-active { border-bottom: 5px solid var(--cyan); color: var(--cyan); background: #1a1a1a; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        #content-2 #chat-shell.hidden-tab { display: block !important; }
+        #content-2 #operative-panel,
+        #content-2 .backstory,
+        #content-2 [data-section="backstory"] { display: none !important; }
         .connected-glow { box-shadow: 0 0 30px var(--cyan); }
         .nft-card { min-height: 100%; }
         .nft-card img { width: 100%; height: 11rem; object-fit: cover; }
@@ -313,7 +317,6 @@
                             <div class="flex items-start justify-between gap-4 portrait-stack">
                                 <div>
                                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Fusion Lab</div>
-                                    <h3 class="header-font text-2xl sm:text-4xl mt-3">OPERATIVE IDENTITY</h3>
                                 </div>
                                 <div id="operative-badge" class="alien-chip rounded-2xl px-4 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em] soft-wrap">Locked</div>
                             </div>
