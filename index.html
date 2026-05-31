@@ -228,10 +228,10 @@
             </div>
         </div>
 
-        <div onclick="connectXaman()" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
+        <button id="xaman-connect-button" type="button" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
             <i class="fa-solid fa-wallet"></i>
             <span id="wallet-text">CONNECT XAMAN</span>
-        </div>
+        </button>
 
         <p id="xaman-status" class="text-[11px] sm:text-sm text-[#00ffc8]/60 text-center lg:text-right">Wallet disconnected.</p>
     </div>
@@ -1510,6 +1510,14 @@
             launchDemoButton.addEventListener('click', (event) => {
                 event.preventDefault();
                 launchNeuralLinkDemo();
+            });
+        }
+        const xamanButton = document.getElementById('xaman-connect-button');
+        if (xamanButton && xamanButton.dataset.boundConnect !== '1') {
+            xamanButton.dataset.boundConnect = '1';
+            xamanButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                connectXaman();
             });
         }
         switchTab(0);
