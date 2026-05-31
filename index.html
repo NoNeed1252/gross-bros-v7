@@ -317,7 +317,7 @@
                     <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
                     <div class="mt-4 flex gap-3">
                         <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
-                        <button onclick="fuseSelectedNft()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
+                        <button onclick="triggerFusion()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
                         <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
                     </div>
                 </div>
@@ -385,10 +385,12 @@
         SUPABASE_KEY: '__SUPABASE_KEY__',
         ISSUER_ADDRESS: 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY',
         TREASURY_WALLET: 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY',
+        XAMAN_RETURN_URL: 'https://grossbros.vercel.app',
         STRICT_TAXON: '1',
     };
     const XAMAN_API_KEY = CONFIG.XAMAN_API_KEY;
     const XAMAN_API_SECRET = CONFIG.XAMAN_API_SECRET;
+    const XAMAN_RETURN_URL = CONFIG.XAMAN_RETURN_URL;
     const STRICT_ISSUER = CONFIG.ISSUER_ADDRESS;
     const STRICT_TAXON = CONFIG.STRICT_TAXON;
     const TOTAL_BROS = 214;
@@ -640,6 +642,31 @@
 
     function chatKey(tokenId) {
         return `${STATE_KEY}:chat:${state.wallet}:${tokenId}`;
+    }
+
+    function getXamanPayloadRedirect(payload) {
+        return payload?.next?.always || payload?.payload?.next?.always || payload?.response?.next?.always || '';
+    }
+
+    function getXamanPayloadUuid(payload) {
+        return payload?.uuid || payload?.payload?.uuid || payload?.response?.uuid || payload?.session?.uuid || '';
+    }
+
+    async function createXamanPayload(payloadRequest, onSigned) {
+        if (window.xumm?.payload?.createAndSubscribe) {
+            return await window.xumm.payload.createAndSubscribe(payloadRequest, async (event) => {
+                if ((event?.signed || event?.resolved?.signed || event?.data?.signed) && typeof onSigned === 'function') {
+                    await onSigned(event);
+                }
+            });
+        }
+
+        const res = await fetch('/api/xaman?action=create-payload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payloadRequest)
+        });
+        return await res.json();
     }
 
     function reportKey(tokenId, dayKey) {
@@ -1194,11 +1221,13 @@
         const walletText = document.getElementById('wallet-text');
         try {
             if (walletText) walletText.textContent = 'CONNECTING...';
-            const res = await fetch('/api/xaman?action=create-payload', { method: 'POST' });
-            const payload = await res.json();
-            const redirectUrl = payload?.next?.always || payload?.payload?.next?.always;
+            const payload = await createXamanPayload({
+                return_url: { web: XAMAN_RETURN_URL }
+            });
+            const redirectUrl = getXamanPayloadRedirect(payload);
             if (typeof redirectUrl === 'string' && redirectUrl) window.location.assign(redirectUrl);
             let attempts = 0;
+            const uuid = getXamanPayloadUuid(payload);
             const interval = setInterval(async () => {
                 attempts++;
                 if (attempts > 35) {
@@ -1207,7 +1236,8 @@
                     renderWalletUI();
                     return;
                 }
-                const check = await fetch('/api/xaman?action=check-payload&uuid=' + payload.uuid);
+                if (!uuid) return;
+                const check = await fetch('/api/xaman?action=check-payload&uuid=' + uuid);
                 const status = await check.json();
                 if ((status.meta && status.meta.signed) || status.signed) {
                     clearInterval(interval);
@@ -1221,6 +1251,8 @@
                         await loadLeaderboard();
                         renderFusionLab();
                     }
+                    const returnUrl = getXamanPayloadRedirect(status);
+                    if (returnUrl) window.location.assign(returnUrl);
                 } else if (status.meta && status.meta.expired) {
                     clearInterval(interval);
                     state.connected = false;
@@ -1235,7 +1267,7 @@
     }
     window.connectXaman = connectXaman;
 
-    async function fuseSelectedNft() {
+    async function triggerFusion() {
         if (!state.wallet) {
             connectXaman();
             return;
@@ -1245,47 +1277,59 @@
             return;
         }
         try {
-            const res = await fetch('/api/xaman?action=create-payload', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    txjson: {
-                        TransactionType: 'Payment',
-                        Destination: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
-                        Amount: '50000000'
-                    }
-                })
+            const payloadRequest = {
+                txjson: {
+                    TransactionType: 'Payment',
+                    Destination: CONFIG.TREASURY_WALLET,
+                    Amount: '50000000'
+                },
+                return_url: { web: XAMAN_RETURN_URL }
+            };
+            const payload = await createXamanPayload(payloadRequest, async (event) => {
+                const signed = Boolean(event?.signed || event?.resolved?.signed || event?.data?.signed || event?.meta?.signed);
+                if (!signed) return;
+                state.fusedTokenId = state.selectedTokenId;
+                const active = currentEntry();
+                if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
+                store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
+                store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
+                renderOperativePanel();
+                renderChatTerminal();
             });
-            const payload = await res.json();
-            const redirectUrl = payload?.next?.always || payload?.payload?.next?.always;
+            const redirectUrl = getXamanPayloadRedirect(payload);
             if (typeof redirectUrl === 'string' && redirectUrl) window.location.assign(redirectUrl);
-            let attempts = 0;
-            const interval = setInterval(async () => {
-                attempts++;
-                if (attempts > 35) {
-                    clearInterval(interval);
-                    return;
-                }
-                const check = await fetch('/api/xaman?action=check-payload&uuid=' + payload.uuid);
-                const status = await check.json();
-                if ((status.meta && status.meta.signed) || status.signed) {
-                    clearInterval(interval);
-                    state.fusedTokenId = state.selectedTokenId;
-                    const active = currentEntry();
-                    if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
-                    store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
-                    store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
-                    renderOperativePanel();
-                    renderChatTerminal();
-                } else if (status.meta && status.meta.expired) {
-                    clearInterval(interval);
-                }
-            }, 2500);
+            if (!window.xumm?.payload?.createAndSubscribe) {
+                let attempts = 0;
+                const uuid = getXamanPayloadUuid(payload);
+                const interval = setInterval(async () => {
+                    attempts++;
+                    if (attempts > 35) {
+                        clearInterval(interval);
+                        return;
+                    }
+                    if (!uuid) return;
+                    const check = await fetch('/api/xaman?action=check-payload&uuid=' + uuid);
+                    const status = await check.json();
+                    if ((status.meta && status.meta.signed) || status.signed) {
+                        clearInterval(interval);
+                        state.fusedTokenId = state.selectedTokenId;
+                        const active = currentEntry();
+                        if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
+                        store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
+                        store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
+                        renderOperativePanel();
+                        renderChatTerminal();
+                    } else if (status.meta && status.meta.expired) {
+                        clearInterval(interval);
+                    }
+                }, 2500);
+            }
         } catch (error) {
             console.error(error);
         }
     }
-    window.fuseSelectedNft = fuseSelectedNft;
+    window.triggerFusion = triggerFusion;
+    window.fuseSelectedNft = triggerFusion;
 
     async function sendChatMessage() {
         const input = document.getElementById('chat-input');
