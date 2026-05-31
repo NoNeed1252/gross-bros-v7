@@ -4,84 +4,83 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gross Bros v7</title>
-  <meta name="description" content="Gross Bros v7 - a green-on-black CRT control deck with Xaman wallet connect and NFT inventory scanning." />
+  <meta name="description" content="Green-black CRT terminal with Xaman connect, live chat streaming, and XRP fusion lab." />
   <style>
     :root{
-      --bg:#030805;
-      --panel:rgba(6,18,10,.82);
-      --panel2:rgba(3,12,7,.92);
-      --line:rgba(0,255,145,.22);
-      --line2:rgba(0,255,145,.45);
-      --text:#bbffd5;
-      --muted:#70c89a;
-      --accent:#00ff8c;
-      --accent2:#69ffcf;
-      --danger:#ff6b8b;
-      --shadow:0 0 0 1px rgba(0,255,140,.15), 0 0 40px rgba(0,255,140,.08), inset 0 0 40px rgba(0,255,140,.05);
+      --bg:#020603;
+      --panel:rgba(4,16,8,.92);
+      --panel2:rgba(2,10,5,.95);
+      --line:rgba(0,255,128,.2);
+      --text:#cbffe0;
+      --muted:#7bcf9a;
+      --accent:#00ff80;
+      --shadow:0 0 0 1px rgba(0,255,128,.12), 0 0 42px rgba(0,255,128,.08), inset 0 0 30px rgba(0,255,128,.04);
     }
     *{box-sizing:border-box}
     html,body{margin:0;min-height:100%;background:
-      radial-gradient(circle at top, rgba(0,255,140,.12), transparent 28%),
-      linear-gradient(180deg,#06110a 0%,#030805 100%);
+      radial-gradient(circle at top, rgba(0,255,128,.12), transparent 30%),
+      linear-gradient(180deg,#07150b 0%,#020603 100%);
       color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;overflow-x:hidden}
-    body:before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(180deg,rgba(255,255,255,.035) 0,rgba(255,255,255,.035) 1px,transparent 2px,transparent 4px);mix-blend-mode:soft-light;opacity:.33}
-    body:after{content:"";position:fixed;inset:-20%;pointer-events:none;background:radial-gradient(circle at center, transparent 55%, rgba(0,0,0,.4) 100%);opacity:.9}
-    .wrap{position:relative;max-width:1400px;margin:0 auto;padding:18px}
-    .frame{position:relative;border:1px solid rgba(0,255,140,.25);background:linear-gradient(180deg,rgba(4,15,8,.92),rgba(2,8,5,.98));box-shadow:var(--shadow);border-radius:24px;overflow:hidden}
-    .frame:before{content:"";position:absolute;inset:0;border-radius:24px;pointer-events:none;background:linear-gradient(135deg,rgba(0,255,140,.08),transparent 22%,transparent 78%,rgba(0,255,140,.06));}
-    .topbar{display:flex;gap:14px;justify-content:space-between;align-items:flex-start;padding:18px 18px 12px;border-bottom:1px solid var(--line)}
-    .brand{display:flex;gap:12px;align-items:center}
-    .badge{width:44px;height:44px;border-radius:14px;border:1px solid rgba(0,255,140,.35);display:grid;place-items:center;color:var(--accent);background:rgba(0,255,140,.05);box-shadow:0 0 24px rgba(0,255,140,.12) inset}
-    .brand h1{margin:0;font-size:clamp(22px,4vw,36px);letter-spacing:.18em;text-transform:uppercase;text-shadow:0 0 10px rgba(0,255,140,.35)}
-    .brand p,.status p{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.4}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(180deg,rgba(255,255,255,.04) 0,rgba(255,255,255,.04) 1px,transparent 2px,transparent 4px);opacity:.28}
+    body:after{content:"";position:fixed;inset:-20%;pointer-events:none;background:radial-gradient(circle at center, transparent 56%, rgba(0,0,0,.48) 100%);opacity:.9}
+    .wrap{max-width:1440px;margin:0 auto;padding:18px;position:relative}
+    .frame{border:1px solid rgba(0,255,128,.25);background:linear-gradient(180deg,rgba(4,16,8,.95),rgba(1,6,3,.98));box-shadow:var(--shadow);border-radius:24px;overflow:hidden;position:relative}
+    .frame:before{content:"";position:absolute;inset:0;border-radius:24px;pointer-events:none;background:linear-gradient(135deg,rgba(0,255,128,.07),transparent 22%,transparent 78%,rgba(0,255,128,.06));}
+    .topbar{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:18px;border-bottom:1px solid var(--line)}
+    .brand{display:flex;gap:14px;align-items:center}
+    .badge{width:48px;height:48px;border-radius:16px;border:1px solid rgba(0,255,128,.34);display:grid;place-items:center;color:var(--accent);background:rgba(0,255,128,.05);box-shadow:0 0 24px rgba(0,255,128,.12) inset}
+    h1{margin:0;font-size:clamp(22px,4vw,38px);letter-spacing:.18em;text-transform:uppercase;text-shadow:0 0 12px rgba(0,255,128,.35)}
+    .brand p,.status p,.mini,.card p,.card li,.msg,.row{color:var(--muted)}
     .status{min-width:280px;text-align:right}
-    .status .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:1px solid rgba(0,255,140,.25);background:rgba(0,255,140,.05);color:var(--accent);font-size:12px}
+    .pill{display:inline-flex;gap:10px;align-items:center;padding:10px 14px;border-radius:999px;border:1px solid rgba(0,255,128,.25);background:rgba(0,255,128,.05);color:var(--accent);font-size:12px}
     .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
     .hero{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;padding:16px 18px;border-bottom:1px solid var(--line)}
-    .panel{border:1px solid rgba(0,255,140,.16);border-radius:20px;background:var(--panel);box-shadow:inset 0 0 0 1px rgba(0,0,0,.35)}
+    .panel{border:1px solid rgba(0,255,128,.16);border-radius:20px;background:var(--panel);box-shadow:inset 0 0 0 1px rgba(0,0,0,.35)}
     .monitor{padding:18px;min-height:160px;position:relative;overflow:hidden}
-    .monitor h2{margin:0 0 12px;font-size:clamp(28px,5vw,58px);letter-spacing:.08em;line-height:.9;text-transform:uppercase;color:#d9ffe8;text-shadow:0 0 12px rgba(0,255,140,.35)}
-    .monitor p{margin:0;max-width:64ch;color:#8ff0bc;line-height:1.6;font-size:14px}
-    .scanline{position:absolute;inset:-25% 0 auto 0;height:35%;background:linear-gradient(180deg,transparent,rgba(0,255,140,.11),transparent);animation:scan 6s linear infinite;mix-blend-mode:screen;pointer-events:none}
+    .monitor h2{margin:0 0 12px;font-size:clamp(28px,5vw,58px);letter-spacing:.08em;line-height:.9;text-transform:uppercase;color:#dffff0;text-shadow:0 0 12px rgba(0,255,128,.35)}
+    .monitor p{margin:0;max-width:68ch;line-height:1.6;font-size:14px}
+    .scanline{position:absolute;inset:-25% 0 auto 0;height:35%;background:linear-gradient(180deg,transparent,rgba(0,255,128,.11),transparent);animation:scan 6s linear infinite;mix-blend-mode:screen;pointer-events:none}
     @keyframes scan{0%{transform:translateY(-20%)}100%{transform:translateY(320%)}}
     .controls{display:flex;flex-direction:column;gap:12px;padding:16px}
-    .connect{display:flex;flex-direction:column;gap:10px}
-    button{appearance:none;border:1px solid rgba(0,255,140,.28);background:linear-gradient(180deg,rgba(0,255,140,.14),rgba(0,255,140,.06));color:#dfffee;border-radius:16px;padding:14px 16px;font:inherit;cursor:pointer;text-transform:uppercase;letter-spacing:.14em;box-shadow:0 0 20px rgba(0,255,140,.08);transition:.2s transform,.2s border-color,.2s background}
-    button:hover{transform:translateY(-1px);border-color:rgba(0,255,140,.5);background:linear-gradient(180deg,rgba(0,255,140,.18),rgba(0,255,140,.1))}
+    button{appearance:none;border:1px solid rgba(0,255,128,.28);background:linear-gradient(180deg,rgba(0,255,128,.14),rgba(0,255,128,.06));color:#ecfff3;border-radius:16px;padding:14px 16px;font:inherit;cursor:pointer;text-transform:uppercase;letter-spacing:.14em;box-shadow:0 0 20px rgba(0,255,128,.08);transition:.2s transform,.2s border-color,.2s background}
+    button:hover{transform:translateY(-1px);border-color:rgba(0,255,128,.5);background:linear-gradient(180deg,rgba(0,255,128,.18),rgba(0,255,128,.1))}
     button:disabled{opacity:.6;cursor:wait;transform:none}
-    .mini{padding:12px 14px;border:1px solid rgba(0,255,140,.12);border-radius:14px;background:rgba(0,0,0,.28);color:var(--muted);font-size:12px;line-height:1.6;word-break:break-word}
+    .mini{padding:12px 14px;border:1px solid rgba(0,255,128,.12);border-radius:14px;background:rgba(0,0,0,.28);font-size:12px;line-height:1.6;word-break:break-word}
     .tabs{display:flex;flex-wrap:wrap;gap:8px;padding:0 18px 16px}
-    .tab{flex:1 1 170px;min-width:150px;padding:16px 14px;border-radius:18px;border:1px solid rgba(0,255,140,.18);background:rgba(0,0,0,.25);color:#9cdbb7;text-align:center;cursor:pointer;letter-spacing:.14em;text-transform:uppercase;font-size:13px;transition:.2s}
-    .tab.active{color:#041108;background:linear-gradient(180deg,rgba(0,255,140,.92),rgba(0,255,140,.42));border-color:rgba(170,255,216,.6);box-shadow:0 0 24px rgba(0,255,140,.22);text-shadow:none}
+    .tab{flex:1 1 170px;min-width:150px;padding:16px 14px;border-radius:18px;border:1px solid rgba(0,255,128,.18);background:rgba(0,0,0,.25);color:#98d8b3;text-align:center;cursor:pointer;letter-spacing:.14em;text-transform:uppercase;font-size:13px;transition:.2s}
+    .tab.active{color:#041108;background:linear-gradient(180deg,rgba(0,255,128,.92),rgba(0,255,128,.42));border-color:rgba(170,255,216,.6);box-shadow:0 0 24px rgba(0,255,128,.22);text-shadow:none}
     .content{padding:0 18px 18px}
-    .view{display:none;padding:18px;border-radius:22px;border:1px solid rgba(0,255,140,.16);background:var(--panel2);min-height:420px}
+    .view{display:none;padding:18px;border-radius:22px;border:1px solid rgba(0,255,128,.16);background:var(--panel2);min-height:420px}
     .view.active{display:block}
     .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
-    .card{border:1px solid rgba(0,255,140,.14);border-radius:18px;background:rgba(0,0,0,.25);padding:16px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.3)}
-    .card h3{margin:0 0 10px;color:#dffff0;font-size:15px;letter-spacing:.14em;text-transform:uppercase}
-    .card p, .card li{color:var(--muted);font-size:13px;line-height:1.6}
+    .card{border:1px solid rgba(0,255,128,.14);border-radius:18px;background:rgba(0,0,0,.25);padding:16px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.3)}
+    .card h3{margin:0 0 10px;color:#f0fff5;font-size:15px;letter-spacing:.14em;text-transform:uppercase}
+    .card p,.card li{font-size:13px;line-height:1.6}
     .card ul{margin:0;padding-left:18px}
     .console{grid-column:span 7;min-height:320px}
     .console-log{display:grid;gap:8px}
-    .line{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:12px;background:rgba(0,255,140,.04);border:1px solid rgba(0,255,140,.08)}
-    .stamp{flex:none;color:#6ef0aa;font-size:11px;opacity:.8}
-    .msg{color:#dfffee;font-size:13px;line-height:1.45}
+    .line{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:12px;background:rgba(0,255,128,.04);border:1px solid rgba(0,255,128,.08)}
+    .stamp{flex:none;color:#73f2a9;font-size:11px;opacity:.8}
+    .msg{color:#e5fff0;font-size:13px;line-height:1.45}
     .side{grid-column:span 5;display:grid;gap:14px}
     .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    .stat{padding:14px;border-radius:14px;background:rgba(0,255,140,.04);border:1px solid rgba(0,255,140,.08)}
-    .stat .k{font-size:11px;color:#8dd8a8;letter-spacing:.16em;text-transform:uppercase}
-    .stat .v{font-size:18px;margin-top:4px;color:#e7fff0}
+    .stat{padding:14px;border-radius:14px;background:rgba(0,255,128,.04);border:1px solid rgba(0,255,128,.08)}
+    .stat .k{font-size:11px;color:#8bd9a7;letter-spacing:.16em;text-transform:uppercase}
+    .stat .v{font-size:18px;margin-top:4px;color:#effff6}
     .table{display:grid;gap:10px}
-    .row{display:grid;grid-template-columns:1.2fr .8fr .8fr 1.6fr;gap:10px;padding:12px;border-radius:14px;border:1px solid rgba(0,255,140,.08);background:rgba(0,255,140,.04);font-size:12px;color:#c5f5d6}
-    .row.head{background:rgba(0,255,140,.11);color:#effff6;text-transform:uppercase;letter-spacing:.12em}
+    .row{display:grid;grid-template-columns:1.2fr .8fr .8fr 1.6fr;gap:10px;padding:12px;border-radius:14px;border:1px solid rgba(0,255,128,.08);background:rgba(0,255,128,.04);font-size:12px;color:#c7f7d8}
+    .row.head{background:rgba(0,255,128,.11);color:#effff6;text-transform:uppercase;letter-spacing:.12em}
     .nfts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-    .nft{padding:14px;border-radius:16px;border:1px solid rgba(0,255,140,.12);background:rgba(0,0,0,.3)}
+    .nft{padding:14px;border-radius:16px;border:1px solid rgba(0,255,128,.12);background:rgba(0,0,0,.3)}
     .nft .name{font-size:14px;color:#f2fff5;margin-bottom:6px}
     .nft .meta{font-size:12px;color:#8ed7a8;line-height:1.55;word-break:break-word}
     .socials{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-    a.link{display:block;text-decoration:none;color:inherit;padding:16px;border-radius:16px;border:1px solid rgba(0,255,140,.14);background:rgba(0,0,0,.25)}
-    a.link:hover{border-color:rgba(0,255,140,.36);background:rgba(0,255,140,.06)}
-    .muted{color:var(--muted)}
+    a.link{display:block;text-decoration:none;color:inherit;padding:16px;border-radius:16px;border:1px solid rgba(0,255,128,.14);background:rgba(0,0,0,.25)}
+    a.link:hover{border-color:rgba(0,255,128,.36);background:rgba(0,255,128,.06)}
+    .fusion-meter{display:grid;gap:14px}
+    .fusion-bar{height:22px;border-radius:999px;background:rgba(0,255,128,.08);border:1px solid rgba(0,255,128,.16);overflow:hidden}
+    .fusion-bar > div{height:100%;width:0;background:linear-gradient(90deg,rgba(0,255,128,.35),rgba(0,255,128,.95));box-shadow:0 0 18px rgba(0,255,128,.28)}
+    .callout{padding:14px;border-radius:14px;border:1px solid rgba(0,255,128,.12);background:rgba(0,0,0,.22)}
     .foot{padding:0 18px 18px;color:#6fae84;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
     @media (max-width:900px){
       .hero{grid-template-columns:1fr}
@@ -99,7 +98,7 @@
           <div class="badge">GB</div>
           <div>
             <h1>Gross Bros v7</h1>
-            <p>Green/black CRT control deck with wallet connect, NFT scan, and live tabbed operations.</p>
+            <p>Green-black CRT control deck with Xaman flow, live chat streaming, and fusion math. Treasury wallet: <span id="treasury-wallet">rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY</span>.</p>
           </div>
         </div>
         <div class="status">
@@ -112,13 +111,11 @@
         <section class="panel monitor">
           <div class="scanline"></div>
           <h2>CRT DECK ONLINE</h2>
-          <p>Five clean terminals. Console, transmission logs, fusion lab, neural standings, and socials. The page is self-contained and keeps the wallet/NFT workflow in one file.</p>
+          <p>Five tabs only: CONSOLE, TRANSMISSION LOGS, FUSION LAB, NEURAL STANDINGS, and SOCIALS. The page keeps the wallet flow, streaming chat, and XRP fusion calculation in a single root file.</p>
         </section>
         <aside class="panel controls">
-          <div class="connect">
-            <button id="connect-btn">Connect Xaman</button>
-            <div class="mini" id="connect-copy">Session idle. No wallet loaded.</div>
-          </div>
+          <button id="connect-btn">Connect Xaman</button>
+          <div class="mini" id="connect-copy">Session idle. No wallet loaded.</div>
           <div class="mini" id="nft-summary">NFT scan: waiting for a wallet.</div>
         </aside>
       </section>
@@ -147,8 +144,8 @@
                 </div>
               </div>
               <div class="card">
-                <h3>Notes</h3>
-                <p class="muted">The NFT scanner reads XRPL account NFTs after connect. If a direct Xaman payload helper is available, it is used. Otherwise the page falls back to the hosted /api/xaman bridge.</p>
+                <h3>Streaming Chat</h3>
+                <p>Message form posts to /api/chat.js with a readable stream response so the page can render tokens live as they arrive.</p>
               </div>
             </div>
           </div>
@@ -165,7 +162,11 @@
           <div class="grid">
             <div class="card console">
               <h3>Fusion Lab</h3>
-              <p>Choose a wallet and pull the live NFT set. The lab is wired to surface issuer/taxon metadata and a raw token list.</p>
+              <div class="fusion-meter">
+                <div class="callout" id="fusion-summary">Waiting for XRP spot price.</div>
+                <div class="fusion-bar"><div id="fusion-fill"></div></div>
+                <div class="callout" id="fusion-detail">$50 USD / live XRP rate = 0 XRP.</div>
+              </div>
               <div class="nfts" id="nft-grid" style="margin-top:14px"></div>
             </div>
             <div class="side">
@@ -174,8 +175,8 @@
                 <p id="scan-result" class="muted">No scan yet.</p>
               </div>
               <div class="card">
-                <h3>Signal</h3>
-                <p class="muted">Xaman payload creation, payload polling, and wallet recovery are retained in the page logic so the old loop can be replaced with a single stable landing page.</p>
+                <h3>Xaman Flow</h3>
+                <p class="muted">Wallet connect uses Xaman payload creation and polling. After approval, the account NFT set is fetched from live XRPL RPC.</p>
               </div>
             </div>
           </div>
@@ -195,80 +196,46 @@
               <a class="link" href="#" onclick="return false"><div class="muted">Broadcast</div><div>Discord / X / community channels</div></a>
               <a class="link" href="#" onclick="return false"><div class="muted">Archive</div><div>Transmission history and release notes</div></a>
               <a class="link" href="#" onclick="return false"><div class="muted">Support</div><div>Wallet connect and scan help</div></a>
-              <a class="link" href="#" onclick="return false"><div class="muted">Status</div><div>Live CRT deck, one-page static build</div></a>
+              <a class="link" href="#" onclick="return false"><div class="muted">Status</div><div>Live CRT deck, root index build only</div></a>
             </div>
           </div>
         </section>
       </section>
 
-      <div class="foot">root index only • stable 5-tab CRT build • green/black mode</div>
+      <div class="foot">root index only • stable 5-tab crt build • green/black mode</div>
     </main>
   </div>
 
   <script>
     (function(){
-      const XAMAN_RETURN_URL = 'https://grossbros.vercel.app';
-      const STRICT_ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
-      const STRICT_TAXON = 1;
-      const XRPL_RPC_URLS = ['https://xrplcluster.com/', 'https://s2.ripple.com:51234/'];
       const SESSION_KEY = 'grossbros:xaman-session';
-      const state = {
-        tab: 'console',
-        wallet: '',
-        connected: false,
-        nfts: [],
-        loading: false,
-        payloadTimer: null
-      };
-
+      const XAMAN_API_KEY = '5f30fcbe-a810-490b-8fd5-500a37568a49';
+      const TREASURY_WALLET = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
+      const XAMAN_RETURN_URL = location.origin;
+      const XRPL_RPC_URLS = ['https://xrplcluster.com/', 'https://s2.ripple.com:51234/'];
+      const state = { tab:'console', wallet:'', connected:false, nfts:[], xrpPrice:0, stream:'' };
       const $ = (s) => document.querySelector(s);
       const esc = (v) => String(v ?? '').replace(/[&<>'"]/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
       const short = (addr) => addr ? `${addr.slice(0,6)}…${addr.slice(-6)}` : '—';
-      const nowStamp = () => new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      const stamp = () => new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 
-      function logLines(items){
-        const el = $('#console-log');
-        el.innerHTML = items.map((item) => `<div class="line"><div class="stamp">${nowStamp()}</div><div class="msg">${esc(item)}</div></div>`).join('');
-      }
-
-      function transmissionRows(items){
-        const el = $('#log-table');
-        el.innerHTML = ['FILE INTEGRITY','TAB ROUTING','XAMAN CONNECT','NFT SCAN'].map((label, i) => `<div class="row ${i===0?'head':''}"><div>${i===0?'Channel':'#'+String(i+1).padStart(2,'0')}</div><div>${label}</div><div>${i===0?'State':'OK'}</div><div>${esc(items[i] || 'Ready')}</div></div>`).join('');
-      }
-
-      function neuralStats(){
-        const el = $('#neural-stats');
-        const nftCount = state.nfts.length;
-        const connected = state.connected ? 'ONLINE' : 'OFFLINE';
-        el.innerHTML = [
-          ['SYSTEM','GREEN CRT'],
-          ['WALLET', connected],
-          ['NFTS', String(nftCount)],
-          ['STRICT ISSUER', short(STRICT_ISSUER)]
-        ].map(([k,v]) => `<div class="stat"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`).join('');
-      }
-
+      function renderConsole(lines){ $('#console-log').innerHTML = lines.map((t)=>`<div class="line"><div class="stamp">${stamp()}</div><div class="msg">${esc(t)}</div></div>`).join(''); }
+      function renderLogs(lines){ $('#log-table').innerHTML = [
+        ['CH-01','CONSOLE','OK',lines[0] || 'Ready'],
+        ['CH-02','TRANSMISSION LOGS','OK',lines[1] || 'Awaiting activity'],
+        ['CH-03','FUSION LAB','OK',lines[2] || 'Awaiting price feed'],
+        ['CH-04','NEURAL STANDINGS','OK',lines[3] || 'Awaiting wallet']
+      ].map((r,i)=>`<div class="row ${i===0?'head':''}"><div>${r[0]}</div><div>${r[1]}</div><div>${r[2]}</div><div>${esc(r[3])}</div></div>`).join(''); }
+      function renderNeural(){ $('#neural-stats').innerHTML = [
+        ['SYSTEM','GREEN CRT'],['WALLET', state.connected ? 'ONLINE' : 'OFFLINE'],['NFTS', String(state.nfts.length)],['XRP PRICE', state.xrpPrice ? `$${state.xrpPrice.toFixed(3)}` : 'PENDING'],['TREASURY', short(TREASURY_WALLET)]
+      ].map(([k,v])=>`<div class="stat"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`).join(''); }
       function renderNfts(){
-        const grid = $('#nft-grid');
-        if (!state.wallet){
-          grid.innerHTML = `<div class="nft"><div class="name">No wallet connected</div><div class="meta">Connect Xaman to pull the live XRPL NFT inventory.</div></div>`;
-          $('#scan-result').textContent = 'Wallet required to run NFT scan.';
-          return;
-        }
-        if (!state.nfts.length){
-          grid.innerHTML = `<div class="nft"><div class="name">No NFTs found</div><div class="meta">The account returned no NFTs from the live XRPL query.</div></div>`;
-          $('#scan-result').textContent = 'NFT scan completed with zero results.';
-          return;
-        }
-        grid.innerHTML = state.nfts.slice(0,12).map((nft) => `
-          <div class="nft">
-            <div class="name">${esc(nft.name || 'XRPL NFT')}</div>
-            <div class="meta"><strong>Token:</strong> ${esc(short(nft.id))}<br><strong>Issuer:</strong> ${esc(short(nft.issuer || ''))}<br><strong>Taxon:</strong> ${esc(String(nft.taxon ?? '—'))}</div>
-          </div>
-        `).join('');
+        const g = $('#nft-grid');
+        if (!state.wallet) { g.innerHTML = `<div class="nft"><div class="name">No wallet connected</div><div class="meta">Connect Xaman to pull the live XRPL NFT inventory.</div></div>`; $('#scan-result').textContent='Wallet required to run NFT scan.'; return; }
+        if (!state.nfts.length) { g.innerHTML = `<div class="nft"><div class="name">No NFTs found</div><div class="meta">The account returned no NFTs from the live XRPL query.</div></div>`; $('#scan-result').textContent='NFT scan completed with zero results.'; return; }
+        g.innerHTML = state.nfts.slice(0,12).map((n)=>`<div class="nft"><div class="name">${esc(n.name||'XRPL NFT')}</div><div class="meta"><strong>Token:</strong> ${esc(short(n.id))}<br><strong>Issuer:</strong> ${esc(short(n.issuer||''))}<br><strong>Taxon:</strong> ${esc(String(n.taxon ?? '—'))}</div></div>`).join('');
         $('#scan-result').textContent = `Loaded ${state.nfts.length} NFTs from the connected wallet.`;
       }
-
       function updateChrome(){
         $('#xaman-status').textContent = state.connected ? `Connected ${short(state.wallet)}` : 'Wallet disconnected';
         $('#wallet-line').textContent = state.connected ? `Connected wallet: ${state.wallet}` : 'Connect Xaman to unlock the inventory feed.';
@@ -276,144 +243,89 @@
         $('#wallet-nft-count').textContent = String(state.nfts.length);
         $('#connect-copy').textContent = state.connected ? 'Session restored and NFT scan ready.' : 'Session idle. No wallet loaded.';
         $('#nft-summary').textContent = state.connected ? `Wallet ready. ${state.nfts.length} NFTs pulled.` : 'NFT scan: waiting for a wallet.';
-        logLines([
+        renderConsole([
           state.connected ? `Wallet active: ${short(state.wallet)}` : 'Console standby.',
           'Tabs are locked to the required five-panel layout.',
-          'Xaman connect and NFT pull logic remain in the single root page.'
+          'Streaming chat posts to /api/chat.js.',
+          state.xrpPrice ? `Live XRP price received: $${state.xrpPrice.toFixed(4)}` : 'XRP price pending.',
+          `Treasury wallet armed: ${short(TREASURY_WALLET)}`
         ]);
-        transmissionRows([
-          state.connected ? short(state.wallet) : 'No session',
-          'Five tabs rendered',
-          state.connected ? 'Connected' : 'Awaiting connect',
-          `${state.nfts.length} NFTs indexed`
-        ]);
-        neuralStats();
+        renderLogs([state.connected ? short(state.wallet) : 'No session', 'Five tabs rendered', state.connected ? 'Connected' : 'Awaiting connect', `${state.nfts.length} NFTs indexed`]);
+        renderNeural();
+        renderNfts();
       }
-
-      function setTab(tab){
-        state.tab = tab;
-        document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t.dataset.tab === tab));
-        document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
-        $('#view-' + tab).classList.add('active');
+      function setTab(tab){ state.tab = tab; document.querySelectorAll('.tab').forEach((t)=>t.classList.toggle('active', t.dataset.tab===tab)); document.querySelectorAll('.view').forEach((v)=>v.classList.remove('active')); $('#view-'+tab).classList.add('active'); }
+      async function fetchJson(url, options){ const res = await fetch(url, options); if(!res.ok) throw new Error(`HTTP ${res.status}`); return await res.json(); }
+      async function fetchTextStream(url, options){ const res = await fetch(url, options); if(!res.ok || !res.body) throw new Error(`HTTP ${res.status}`); const reader = res.body.getReader(); const dec = new TextDecoder(); let out = ''; while(true){ const {done, value} = await reader.read(); if(done) break; const chunk = dec.decode(value, {stream:true}); out += chunk; $('#console-log').insertAdjacentHTML('beforeend', `<div class="line"><div class="stamp">${stamp()}</div><div class="msg">${esc(chunk)}</div></div>`); } return out; }
+      async function loadXrpPrice(){
+        const sources = [
+          'https://api.coingecko.com/api/v3/simple/price?ids=xrp&vs_currencies=usd',
+          'https://min-api.cryptocompare.com/data/price?fsym=XRP&tsyms=USD'
+        ];
+        for (const url of sources){ try { const json = await fetchJson(url, {cache:'no-store'}); state.xrpPrice = Number(json?.xrp?.usd ?? json?.USD ?? json?.usd ?? 0); if (state.xrpPrice) break; } catch {} }
+        const xrp = state.xrpPrice ? (50 / state.xrpPrice) : 0;
+        $('#fusion-summary').innerHTML = state.xrpPrice ? `XRP spot price: $${state.xrpPrice.toFixed(4)}. <span class="muted">Treasury wallet ${esc(TREASURY_WALLET)}</span>` : 'XRP spot price unavailable right now.';
+        $('#fusion-detail').textContent = state.xrpPrice ? `$50 USD / $${state.xrpPrice.toFixed(4)} = ${xrp.toFixed(6)} XRP.` : '$50 USD / live XRP rate = 0 XRP.';
+        $('#fusion-fill').style.width = state.xrpPrice ? `${Math.min(100, xrp * 8)}%` : '0%';
+        renderNeural(); updateChrome();
       }
-
-      async function fetchRpc(url, body){
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: {'Content-Type':'application/json','Accept':'application/json'},
-          body: JSON.stringify(body),
-          cache: 'no-store'
-        });
-        if (!res.ok) throw new Error(`XRPL HTTP ${res.status}`);
-        return await res.json();
-      }
-
-      function getPayloadUuid(payload){
-        return payload?.uuid || payload?.payload?.uuid || payload?.response?.uuid || payload?.session?.uuid || '';
-      }
-
-      function getRedirect(payload){
-        return payload?.next?.always || payload?.payload?.next?.always || payload?.response?.next?.always || '';
-      }
-
+      function getPayloadUuid(payload){ return payload?.uuid || payload?.payload?.uuid || payload?.response?.uuid || payload?.session?.uuid || ''; }
+      function getRedirect(payload){ return payload?.next?.always || payload?.payload?.next?.always || payload?.response?.next?.always || ''; }
+      const xamanSdk = window.Xumm ? new window.Xumm(XAMAN_API_KEY) : window.xumm || null;
       async function createPayload(req){
-        if (window.xumm?.payload?.createAndSubscribe) return await window.xumm.payload.createAndSubscribe(req);
-        const res = await fetch('/api/xaman?action=create-payload', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify(req)
-        });
-        return await res.json();
+        if (xamanSdk?.payload?.createAndSubscribe) return await xamanSdk.payload.createAndSubscribe(req);
+        return await fetchJson('/api/xaman?action=create-payload', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...req, apiKey: XAMAN_API_KEY }) });
       }
-
-      async function checkPayload(uuid){
-        const res = await fetch('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(uuid), {cache:'no-store'});
-        return await res.json();
-      }
-
+      async function checkPayload(uuid){ return await fetchJson('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(uuid), {cache:'no-store'}); }
       async function loadNfts(wallet){
         const collector = [];
         for (const rpcUrl of XRPL_RPC_URLS){
           try {
-            const json = await fetchRpc(rpcUrl, { method:'account_nfts', params:[{ account: wallet, ledger_index:'validated', limit:400 }] });
+            const json = await fetchJson(rpcUrl, { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify({ method:'account_nfts', params:[{ account: wallet, ledger_index:'validated', limit:400 }] }), cache:'no-store' });
             const records = json?.result?.account_nfts || json?.result?.nfts || [];
             if (Array.isArray(records) && records.length){
-              for (const nft of records){
-                const issuer = nft.Issuer || nft.issuer || '';
-                const taxon = nft.NFTokenTaxon ?? nft.nft_taxon ?? nft.taxon ?? '';
-                collector.push({ id: nft.NFTokenID || nft.nft_id || nft.id || '', issuer, taxon, name: nft.URI ? 'Encoded NFT' : 'XRPL NFT' });
-              }
+              for (const nft of records){ collector.push({ id: nft.NFTokenID || nft.nft_id || nft.id || '', issuer: nft.Issuer || nft.issuer || '', taxon: nft.NFTokenTaxon ?? nft.nft_taxon ?? nft.taxon ?? '', name: nft.URI ? 'Encoded NFT' : 'XRPL NFT' }); }
               break;
             }
-          } catch (err) {
-            console.warn(err);
-          }
+          } catch (err) { console.warn(err); }
         }
-        state.nfts = collector;
-        renderNfts();
-        updateChrome();
+        state.nfts = collector; renderNfts(); updateChrome();
       }
-
-      function restoreSession(){
-        try {
-          const saved = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-          if (saved?.wallet){
-            state.wallet = saved.wallet;
-            state.connected = true;
-          }
-        } catch {}
-      }
-
+      function restoreSession(){ try { const saved = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); if (saved?.wallet){ state.wallet = saved.wallet; state.connected = true; } } catch {} }
       async function connectXaman(){
         const btn = $('#connect-btn');
         try {
-          state.loading = true;
-          btn.disabled = true;
-          btn.textContent = 'CONNECTING';
+          btn.disabled = true; btn.textContent = 'CONNECTING';
           const payload = await createPayload({ return_url: { web: XAMAN_RETURN_URL } });
-          const redirectUrl = getRedirect(payload);
-          const uuid = getPayloadUuid(payload);
-          if (redirectUrl) window.location.assign(redirectUrl);
+          const redirectUrl = getRedirect(payload); const uuid = getPayloadUuid(payload); if (redirectUrl) window.location.assign(redirectUrl);
           let attempts = 0;
           while (attempts++ < 35){
-            await new Promise((r) => setTimeout(r, 2000));
+            await new Promise((r)=>setTimeout(r, 2000));
             if (!uuid) break;
             const status = await checkPayload(uuid);
             const signed = Boolean(status?.signed || status?.meta?.signed || status?.response?.signed);
-            if (signed){
-              const address = status?.response?.account || status?.account || status?.response?.hex || '';
-              state.wallet = address || state.wallet;
-              state.connected = Boolean(state.wallet);
-              localStorage.setItem(SESSION_KEY, JSON.stringify({ wallet: state.wallet }));
-              if (state.wallet) await loadNfts(state.wallet);
-              updateChrome();
-              break;
-            }
-            if (status?.meta?.expired){
-              state.connected = false;
-              break;
-            }
+            if (signed){ state.wallet = status?.response?.account || status?.account || state.wallet; state.connected = Boolean(state.wallet); localStorage.setItem(SESSION_KEY, JSON.stringify({ wallet: state.wallet })); if (state.wallet) await loadNfts(state.wallet); break; }
+            if (status?.meta?.expired){ state.connected = false; break; }
           }
-        } catch (err) {
-          console.error(err);
-          state.connected = false;
-        } finally {
-          state.loading = false;
-          btn.disabled = false;
-          btn.textContent = 'Connect Xaman';
-          updateChrome();
-        }
+        } catch (err) { console.error(err); state.connected = false; }
+        finally { btn.disabled = false; btn.textContent = 'Connect Xaman'; updateChrome(); }
       }
-
+      async function streamChat(prompt){
+        $('#console-log').innerHTML = `<div class="line"><div class="stamp">${stamp()}</div><div class="msg">Sending prompt to /api/chat.js...</div></div>`;
+        const stream = await fetchTextStream('/api/chat.js', { method:'POST', headers:{'Content-Type':'application/json','Accept':'text/plain, text/event-stream, application/json'}, body: JSON.stringify({ prompt, wallet: state.wallet, mode:'crt-terminal' }) });
+        state.stream = stream;
+        return stream;
+      }
       async function init(){
         restoreSession();
-        document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => setTab(tab.dataset.tab)));
+        document.querySelectorAll('.tab').forEach((tab)=>tab.addEventListener('click', ()=>setTab(tab.dataset.tab)));
         $('#connect-btn').addEventListener('click', connectXaman);
         setTab('console');
         updateChrome();
+        await loadXrpPrice();
         if (state.wallet) await loadNfts(state.wallet);
+        await streamChat('Initialize the five-tab green CRT terminal and return a short system status.');
       }
-
       window.addEventListener('load', init);
       window.connectXaman = connectXaman;
       window.switchTab = (i) => setTab(['console','logs','fusion','neural','socials'][i] || 'console');
