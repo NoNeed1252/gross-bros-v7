@@ -1,111 +1,379 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Neural Link OS</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
-<style>
-:root{--c:#00ffc8;--bg:#050505;--line:rgba(0,255,200,.16)}*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:#000;color:var(--c);font-family:'Share Tech Mono',monospace;overflow:hidden}.header-font{font-family:'Orbitron',sans-serif}.crt{position:relative}.crt:before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(180deg,transparent 0,transparent 4px,rgba(0,255,200,.08) 4px,rgba(0,255,200,.08) 8px);mix-blend-mode:screen;opacity:.7;animation:scan 8s linear infinite}@keyframes scan{from{background-position:0 0}to{background-position:0 100%}}.monitor{height:100vh;background:radial-gradient(circle at top,rgba(0,255,200,.08),transparent 28%),linear-gradient(180deg,#050505,#000);border:14px solid #0a0a0a;box-shadow:0 0 0 8px #151515 inset,0 0 90px -28px rgba(0,255,200,.45)}.boot{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.94);backdrop-filter:blur(8px);transition:opacity .25s ease,transform .25s ease}.boot.hidden{opacity:0;pointer-events:none;transform:scale(.985)}.panel{background:linear-gradient(180deg,rgba(5,18,16,.98),rgba(0,0,0,.98));border:1px solid rgba(0,255,200,.22);box-shadow:0 0 0 1px rgba(0,255,200,.08),0 0 40px rgba(0,255,200,.08)}.shell{background:linear-gradient(180deg,rgba(5,20,17,.96),rgba(0,0,0,.98));border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 0 30px rgba(0,255,200,.06)}.tab-active{border-bottom:4px solid var(--c);color:var(--c);background:rgba(26,26,26,.92)}.hidden-tab{display:none}.ticker{overflow:hidden;white-space:nowrap;border-top:1px solid rgba(0,255,200,.2);border-bottom:1px solid rgba(0,255,200,.2);background:linear-gradient(90deg,rgba(0,255,200,.06),rgba(0,255,200,.02))}.track{display:inline-flex;gap:1rem;padding:.5rem 1rem;animation:mar 16s linear infinite;will-change:transform}@keyframes mar{from{transform:translateX(0)}to{transform:translateX(-50%)}}.chat-bubble{border:1px solid rgba(0,255,200,.16);background:rgba(0,255,200,.05)}.chat-user{background:rgba(0,255,200,.11)}.input{background:rgba(0,0,0,.4);border:1px solid rgba(0,255,200,.18);outline:none}.input:focus{border-color:rgba(0,255,200,.55);box-shadow:0 0 0 3px rgba(0,255,200,.08)}.btn{border:1px solid rgba(0,255,200,.55);background:rgba(0,255,200,.08);transition:.14s ease;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.btn:hover{background:var(--c);color:#000}.face{background:radial-gradient(circle at 50% 30%,rgba(0,255,200,.18),transparent 40%),linear-gradient(180deg,rgba(9,22,20,.98),rgba(0,0,0,.98));border:1px solid rgba(0,255,200,.16)}.pulse{animation:pulse 2.8s ease-in-out infinite}@keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}.soft{overflow-wrap:anywhere;word-break:break-word}</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.6</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        .hidden-tab { display: none !important; }
+        .terminal-glow { text-shadow: 0 0 10px rgba(0,255,200,0.3), 0 0 28px rgba(0,255,200,0.15); }
+        .inner-panel {
+            background: linear-gradient(180deg, rgba(7, 18, 17, 0.96), rgba(3, 10, 10, 0.96));
+            border: 1px solid rgba(0,255,200,0.14);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 0 0 1px rgba(0,255,200,0.05);
+        }
+        .data-card {
+            border: 1px solid rgba(0,255,200,0.16);
+            background: linear-gradient(180deg, rgba(7, 18, 17, 0.9), rgba(2, 8, 8, 0.95));
+        }
+        .button-aura {
+            border: 1px solid rgba(0,255,200,0.45);
+            background: linear-gradient(180deg, rgba(0,255,200,0.12), rgba(0,255,200,0.04));
+            color: #00ffc8;
+            box-shadow: 0 0 0 1px rgba(0,255,200,0.06), 0 18px 40px rgba(0,0,0,0.35);
+            transition: transform .14s ease, box-shadow .14s ease, background .14s ease, color .14s ease;
+        }
+        .button-aura:hover {
+            transform: translateY(-1px);
+            background: linear-gradient(180deg, rgba(0,255,200,0.2), rgba(0,255,200,0.08));
+            box-shadow: 0 0 0 1px rgba(0,255,200,0.18), 0 0 34px rgba(0,255,200,0.16);
+        }
+        .alien-chip {
+            border: 1px solid rgba(0,255,200,0.22);
+            background: rgba(0,255,200,0.06);
+            color: #cbfff4;
+        }
+        .ring-lid {
+            position: relative;
+            background: radial-gradient(circle at 50% 35%, rgba(0,255,200,0.18), transparent 42%), linear-gradient(180deg, rgba(11, 19, 18, 0.95), rgba(2, 6, 6, 0.96));
+            border: 1px solid rgba(0,255,200,0.17);
+        }
+        .ring-lid::after {
+            content: '';
+            position: absolute;
+            inset: 12px;
+            border-radius: 24px;
+            border: 1px solid rgba(0,255,200,0.1);
+            pointer-events: none;
+        }
+        .slow-pulse { animation: pulseGlow 2.6s ease-in-out infinite; }
+        @keyframes pulseGlow { 0%,100% { opacity: .6 } 50% { opacity: 1 } }
+        .scrollbar-thin::-webkit-scrollbar { width: 10px; height: 10px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(0,255,200,0.18); border-radius: 999px; border: 2px solid rgba(2,6,6,0.95); }
+        .scrollbar-thin::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+        .chat-bubble-user { background: rgba(0,255,200,0.1); border: 1px solid rgba(0,255,200,0.2); }
+        .chat-bubble-system { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); }
+        .cmd-input { background: rgba(0,0,0,0.35); border: 1px solid rgba(0,255,200,0.2); color: #d4fff6; outline: none; }
+        .cmd-input:focus { border-color: rgba(0,255,200,0.56); box-shadow: 0 0 0 3px rgba(0,255,200,0.08); }
+
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap');
+        :root { --cyan: #00ffc8; }
+        body { font-family: 'Share Tech Mono', monospace; background: #000; color: #00ffc8; }
+        .header-font { font-family: 'Orbitron', sans-serif; }
+
+        .alien-monitor {
+            background: #050505;
+            border: none;
+            box-shadow: 0 0 0 14px #0a0a0a, 0 30px 70px -20px rgba(0,0,0,0.95), 0 0 100px -20px var(--cyan);
+            border-radius: 24px;
+            overflow: hidden;
+            max-width: 1480px;
+            margin: 12px auto;
+            height: 92vh;
+        }
+
+        @media (max-width: 768px) {
+            body { background: #050505; }
+            .alien-monitor {
+                border: none;
+                outline: none;
+                box-shadow: none;
+                background: #050505;
+                margin: 0;
+                height: auto;
+                min-height: 100vh;
+                border-radius: 0;
+            }
+        }
+
+        .crt::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(transparent 0px, transparent 5px, rgba(0,255,200,0.15) 5px, rgba(0,255,200,0.15) 10px);
+            animation: scanline 8s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+        @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
+
+        .tab-active { border-bottom: 5px solid var(--cyan); color: var(--cyan); background: #1a1a1a; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        #content-2 #chat-shell.hidden-tab { display: block !important; }
+        .connected-glow { box-shadow: 0 0 30px var(--cyan); }
+        .nft-card { min-height: 100%; }
+        .nft-card img { width: 100%; height: 11rem; object-fit: cover; }
+        .fallback-art { width: 100%; height: 11rem; display: flex; align-items: center; justify-content: center; background: rgba(0,255,200,0.05); }
+        @media (max-width: 768px) {
+            .alien-monitor { height: auto; min-height: 96vh; }
+        }
+        @media (max-width: 640px) {
+            .tab { white-space: nowrap; }
+        }
+        .fusion-panel { border-color: rgba(0,255,200,0.20); }
+        .news-ticker {
+            border-top: 1px solid rgba(0,255,200,0.20);
+            border-bottom: 1px solid rgba(0,255,200,0.20);
+            background: linear-gradient(90deg, rgba(0,255,200,0.08), rgba(0,255,200,0.03));
+            overflow: hidden;
+            white-space: nowrap;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        .news-track {
+            display: inline-flex;
+            gap: 1rem;
+            padding: 0 0.5rem;
+            height: 1.5rem;
+            align-items: center;
+            will-change: transform;
+            animation: ticker 15s linear infinite;
+            font-size: 0.6875rem;
+            line-height: 1rem;
+        }
+        .news-item { font-size: 0.9rem; color: rgba(0,255,200,0.9); white-space: nowrap; }
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+    
+        .soft-wrap { overflow-wrap: anywhere; word-break: break-word; }
+        .tab { position: relative; transition: background-color .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease; }
+        .tab-active {
+            border-bottom: 5px solid var(--cyan);
+            color: var(--cyan);
+            background: linear-gradient(180deg, rgba(0,255,200,0.12), rgba(0,255,200,0.03));
+            box-shadow: inset 0 -1px 0 rgba(0,255,200,0.35), 0 0 18px rgba(0,255,200,0.12);
+            transform: translateY(-1px);
+        }
+        .tab-active::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 1px solid rgba(0,255,200,0.12);
+            border-radius: 2px;
+            pointer-events: none;
+        }
+        .hero-frame { aspect-ratio: 4 / 5; max-height: min(58vh, 34rem); }
+        .hero-image, .nft-thumb { width: 100%; height: 100%; object-fit: contain; padding: .5rem; }
+        .hero-image-shell { min-height: 18rem; }
+        .mobile-tight { line-height: 1.6; }
+        .leaderboard-row { transition: background-color .16s ease, box-shadow .16s ease; }
+        @media (max-width: 640px) {
+            .tab { min-width: 92px; }
+            .tab-active { box-shadow: inset 0 -1px 0 rgba(0,255,200,0.35), 0 0 22px rgba(0,255,200,0.18); }
+            .hero-frame { max-height: 44vh; }
+            .hero-image-shell { min-height: 14rem; }
+            .leaderboard-row { display: grid !important; grid-template-columns: 1fr !important; gap: .5rem; }
+            .leaderboard-row > div { min-width: 0; }
+        }
+        @media (max-width: 768px) and (orientation: portrait) {
+            #content-2 .fusion-lab-layout { grid-template-columns: 1fr !important; }
+            #content-2 .fusion-lab-layout > div { min-width: 0; }
+            #content-2 .portrait-stack { flex-direction: column !important; align-items: flex-start !important; gap: .75rem !important; }
+            #content-2 .portrait-stack > .alien-chip,
+            #content-2 .portrait-stack > .button-aura { align-self: flex-start; }
+            #content-2 #operative-panel .grid.gap-2.sm\\:grid-cols-2,
+            #content-2 #fusion-panel .grid.gap-3.sm\\:grid-cols-2 { grid-template-columns: 1fr !important; }
+            #content-2 #operative-panel .rounded-\\[22px\\],
+            #content-2 #fusion-panel .rounded-\\[22px\\],
+            #content-2 #field-report,
+            #content-2 #chat-shell { min-width: 0; }
+            #content-2 #operative-panel .text-base,
+            #content-2 #operative-panel .text-lg,
+            #content-2 #fusion-panel .text-xl,
+            #content-2 #fusion-panel .text-3xl { overflow-wrap: anywhere; word-break: break-word; }
+            #content-2 #fusion-panel .flex.flex-col.gap-3.sm\\:flex-row { flex-direction: column !important; }
+            #content-2 #fusion-panel .button-aura { width: 100%; justify-content: center; }
+            #content-2 #chat-shell .flex.gap-3 { flex-direction: column; }
+            #content-2 #chat-shell #chat-input { width: 100%; }
+        }
+    </style>
 </head>
-<body>
-<div id="boot" class="boot">
-  <div class="panel w-[min(94vw,760px)] rounded-[30px] p-5 sm:p-8">
+
+
+<body class="bg-black min-h-screen p-2 sm:p-4 text-[#00ffc8]">
+<div id="boot-overlay" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 backdrop-blur-sm px-4">
+  <div class="inner-panel ring-lid relative w-[min(94vw,760px)] overflow-hidden rounded-[30px] p-5 sm:p-8">
     <div class="flex items-center justify-between gap-4">
-      <div class="header-font text-xs sm:text-sm tracking-[0.6em] text-[#00ffc8]/80">BOOT SEQUENCE</div>
-      <div id="bootPct" class="text-[11px] sm:text-xs tracking-[0.35em] text-[#00ffc8]/60">0%</div>
+      <div class="orbitron text-xs sm:text-sm tracking-[0.6em] text-[#00ffc8] opacity-80">BOOT SEQUENCE</div>
+      <div id="boot-progress-label" class="text-[11px] sm:text-xs tracking-[0.35em] text-[#00ffc8]/60">0%</div>
     </div>
     <div class="mt-4 rounded-[22px] border border-[#00ffc8]/12 bg-black/35 p-4 sm:p-5">
-      <div id="bootLog" class="h-28 overflow-hidden text-xs sm:text-sm leading-6 text-[#00ffc8]/80 soft"></div>
+      <div id="boot-stream" class="h-28 overflow-hidden text-xs sm:text-sm leading-6 text-[#00ffc8]/78 soft-wrap"></div>
     </div>
     <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <div id="bootStatus" class="text-sm sm:text-base text-[#d9fff8]/80 soft">Initializing alien terminal…</div>
+      <div id="boot-status-line" class="text-sm sm:text-base text-[#d9fff8]/80 soft-wrap">Initializing alien terminal…</div>
       <div class="text-[10px] uppercase tracking-[0.4em] text-[#00ffc8]/55">Live checks</div>
     </div>
-    <div class="mt-3 h-3 overflow-hidden rounded-full border border-[#00ffc8]/18 bg-black/55"><div id="bootBar" class="h-full w-0 rounded-full bg-[#00ffc8] shadow-[0_0_20px_rgba(0,255,200,0.45)]"></div></div>
+    <div class="mt-3 h-3 overflow-hidden rounded-full border border-[#00ffc8]/18 bg-black/55">
+      <div id="boot-progress" class="h-full w-0 rounded-full bg-[#00ffc8] shadow-[0_0_20px_rgba(0,255,200,0.45)]"></div>
+    </div>
+    <div id="boot-checks" class="mt-4 grid gap-2 text-[11px] sm:text-xs text-[#00ffc8]/70"></div>
   </div>
 </div>
-<div class="monitor crt flex flex-col relative">
-  <header class="bg-black/95 border-b border-[#00ffc8]/20 px-4 sm:px-6 py-4 sm:py-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-    <div class="flex items-center gap-3 sm:gap-4">
-      <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
-      <div>
-        <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">Neural Link OS</div>
-        <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Alien CRT relay // chat terminal</div>
-      </div>
+<div id="main-monitor" class="alien-monitor flex flex-col relative crt overflow-hidden">
+
+    <div class="bg-black/95 border-b border-[#00ffc8]/20 px-4 sm:px-6 py-4 sm:py-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-center gap-3 sm:gap-4">
+            <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
+            <div>
+                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">Neural Link OS Beta</div>
+                <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Alien CRT relay // transmission and chat interface</div>
+            </div>
+        </div>
+
+        <div onclick="connectXaman()" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
+            <i class="fa-solid fa-wallet"></i>
+            <span id="wallet-text">CONNECT XAMAN</span>
+        </div>
+
+        <p id="xaman-status" class="text-[11px] sm:text-sm text-[#00ffc8]/60 text-center lg:text-right">Wallet disconnected.</p>
     </div>
-    <button id="walletBtn" class="btn w-full lg:w-auto justify-center cursor-pointer px-5 py-3 rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8] hover:text-black transition-all touch-manipulation"><i class="fa-solid fa-wallet"></i><span id="walletText">CONNECT XAMAN</span></button>
-    <p id="walletStatus" class="text-[11px] sm:text-sm text-[#00ffc8]/60 text-center lg:text-right">Wallet disconnected.</p>
-  </header>
-  <div class="ticker border-b border-[#00ffc8]/20"><div id="ticker" class="track px-4 sm:px-6"></div></div>
-  <nav class="bg-black/90 border-b border-[#00ffc8]/20 flex flex-row overflow-x-auto text-[10px] sm:text-sm px-1 sm:px-0">
-    <button class="tab flex-1 min-w-[92px] px-3 sm:px-5 py-4 text-center tab-active touch-manipulation" data-tab="0">CONSOLE</button>
-    <button class="tab flex-1 min-w-[120px] px-3 sm:px-5 py-4 text-center whitespace-nowrap touch-manipulation" data-tab="1">TRANSMISSIONS</button>
-    <button class="tab flex-1 min-w-[96px] px-3 sm:px-5 py-4 text-center touch-manipulation" data-tab="2">NEURAL LINK</button>
-    <button class="tab flex-1 min-w-[118px] px-3 sm:px-5 py-4 text-center whitespace-nowrap touch-manipulation" data-tab="3">NEURAL STANDINGS</button>
-  </nav>
-  <main class="flex-1 overflow-auto p-3 sm:p-6 relative z-10 bg-black">
-    <section id="tab0" class="tab-panel hidden-tab max-w-6xl mx-auto space-y-6">
-      <div class="shell rounded-[2rem] p-4 sm:p-6 lg:p-8">
-        <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Alien lore // transmission open</div>
-        <h1 class="header-font text-4xl sm:text-6xl mt-3 leading-none">COLLECTIVE LORE</h1>
-        <p class="mt-4 text-sm sm:text-base text-[#00ffc8]/75 leading-7 max-w-3xl soft">Before the collapse, the Gross Bros chased a fracture of light across the ledger. When the miners breached the perimeter, the survivors fused into machine-linked guardians.</p>
-      </div>
-    </section>
-    <section id="tab1" class="tab-panel hidden-tab max-w-6xl mx-auto"><div class="shell rounded-[2rem] p-5 sm:p-8 lg:p-10"><div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Storyline archive</div><h2 class="header-font text-3xl sm:text-5xl mt-3">TRANSMISSION LOGS</h2><p class="mt-5 text-[#00ffc8]/78 leading-7 text-sm sm:text-base soft">The Ledger shook, the grid held, and the crew learned to keep the channel clean. The chat terminal now sits inside the Neural Link box instead of wandering off into trait dumps or field report noise.</p></div></section>
-    <section id="tab2" class="tab-panel hidden-tab max-w-6xl mx-auto space-y-5">
-      <div class="shell rounded-[2rem] p-4 sm:p-6">
-        <div class="flex items-center justify-between gap-4">
-          <div>
-            <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Link</div>
-            <h2 class="header-font text-3xl sm:text-5xl mt-2">CHAT TERMINAL</h2>
-          </div>
-          <div id="fuseState" class="rounded-2xl border border-[#00ffc8]/15 bg-black/45 px-4 py-3 text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/70">LINK STANDING BY</div>
+
+    <div class="border-b border-[#00ffc8]/20 bg-gradient-to-r from-[#00ffc8]/10 via-transparent to-[#7c3aed]/10 overflow-hidden">
+        <div id="warning-ticker-track" class="news-track px-4 sm:px-6"></div>
+    </div>
+
+    <div class="bg-black/90 border-b border-[#00ffc8]/20 flex flex-row flex-nowrap overflow-x-auto text-[10px] sm:text-sm px-1 sm:px-0">
+        <div onclick="switchTab(0)" id="tab-0" class="tab flex-1 min-w-[92px] px-3 sm:px-5 py-4 cursor-pointer text-center tab-active">CONSOLE</div>
+        <div onclick="switchTab(1)" id="tab-1" class="tab flex-1 min-w-[120px] px-3 sm:px-5 py-4 cursor-pointer text-center whitespace-nowrap">TRANSMISSION LOGS</div>
+        <div onclick="switchTab(2)" id="tab-2" class="tab flex-1 min-w-[96px] px-3 sm:px-5 py-4 cursor-pointer text-center">FUSION LAB</div>
+        <div onclick="switchTab(3)" id="tab-3" class="tab flex-1 min-w-[118px] px-3 sm:px-5 py-4 cursor-pointer text-center whitespace-nowrap">NEURAL STANDINGS</div>
+        <div onclick="switchTab(4)" id="tab-4" class="tab flex-1 min-w-[90px] px-3 sm:px-5 py-4 cursor-pointer text-center">SOCIALS</div>
+    </div>
+
+    <div class="flex-1 overflow-auto p-3 sm:p-6 relative z-10 bg-black" id="content-area">
+
+        <div id="content-0" class="tab-content active">
+            <div class="max-w-6xl mx-auto space-y-6">
+                <div class="rounded-[2rem] bg-[#05110f] p-4 sm:p-6 lg:p-8 shadow-[0_18px_60px_-35px_rgba(0,255,200,0.55)]">
+                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Alien lore // transmission open</div>
+                    <h1 class="header-font text-4xl sm:text-6xl mt-3 leading-none">COLLECTIVE LORE</h1>
+                    <p class="mt-4 text-sm sm:text-base text-[#00ffc8]/75 leading-7 max-w-3xl soft-wrap">
+                        Before the collapse, the Gross Bros chased a fracture of light across the ledger. When the BTC miners breached the perimeter, the survivors fused into machine-linked guardians.
+                    </p>
+                    <button onclick="switchTab(1)" class="inline-flex mt-5 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm sm:text-base hover:bg-[#00ffc8] hover:text-black transition-all">
+                        READ FULL TRANSMISSION
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="mt-5 rounded-[24px] border border-[#00ffc8]/14 bg-black/45 p-3 sm:p-4">
-          <div class="face pulse overflow-hidden rounded-[22px] min-h-[320px] sm:min-h-[420px] flex items-center justify-center bg-black/55">
-            <img id="faceImg" alt="NFT face" class="hidden w-full h-full object-contain object-center" />
-            <div id="faceFallback" class="px-6 text-center text-[#00ffc8]/55 uppercase tracking-[0.35em] text-[11px] sm:text-xs">NFT face ready to fuse into the terminal.</div>
-          </div>
+
+                <div id="content-1" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
+                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Storyline archive</div>
+                    <h2 class="header-font text-3xl sm:text-5xl mt-3">TRANSMISSION LOGS</h2>
+                    <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <span class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55">The demo is available in Neural Link for everyone.</span>
+                    </div>
+                <div class="space-y-4 text-[#00ffc8]/78 leading-7 text-sm sm:text-base">
+                            <p>Before the collapse, the Gross Bros chased a fracture of light across the ledger.</p>
+                            <p>When the BTC miners breached the perimeter, the survivors fused into machine-linked guardians.</p>
+                            <p>Each bro carries a distinct signal, and the daily transmission locks onto one of them.</p>
+                        </div>
+
+                        <div class="mt-6 inner-panel rounded-[2rem] p-5 sm:p-6">
+                            <div class="flex items-center justify-between gap-4 portrait-stack">
+                                <div>
+                                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Daily Intelligence Briefing</div>
+                                    <h4 class="header-font text-xl sm:text-3xl mt-2">FIELD REPORT</h4>
+                                </div>
+                                <button onclick="loadFieldReport(true)" class="button-aura rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Refresh</button>
+                            </div>
+                            <div id="report-day" class="mt-4 text-[11px] uppercase tracking-[0.45em] text-[#00ffc8]/55"></div>
+                            <div id="field-report" class="mt-4 rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-4 sm:p-5 text-sm sm:text-base leading-7 text-[#ddfff9]/85 min-h-[160px]"></div>
+                        </div>
+                </div>
+            </div>
         </div>
-        <div id="chatLog" class="mt-5 h-[24rem] sm:h-[30rem] overflow-y-auto rounded-[22px] border border-[#00ffc8]/10 px-3 py-3 space-y-2 sm:space-y-3"></div>
-        <div class="mt-4 flex flex-col gap-2 rounded-[20px] border border-[#00ffc8]/18 bg-black/70 px-3 py-3 sm:flex-row sm:items-center sm:gap-3">
-          <span class="text-[#00ffc8]/50 text-sm shrink-0">&gt;</span>
-          <input id="chatInput" class="input min-w-0 flex-1 rounded-2xl px-4 py-3 text-sm sm:text-base" autocomplete="off" spellcheck="false" placeholder="Send a short transmission." />
-          <button id="sendBtn" type="button" class="btn shrink-0 rounded-[18px] px-4 sm:px-5 py-3 text-xs sm:text-sm tracking-[0.18em] touch-manipulation">Send</button>
-          <button id="fuseBtn" type="button" class="btn shrink-0 rounded-[18px] px-4 sm:px-5 py-3 text-xs sm:text-sm tracking-[0.18em] touch-manipulation">Fuse</button>
+        <div id="content-2" class="tab-content">
+            <div class="max-w-4xl mx-auto space-y-5">
+                <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Link demo access</div>
+                            <h4 class="header-font text-xl sm:text-3xl mt-2">LAUNCH NEURAL LINK DEMO</h4>
+                        </div>
+                        <button id="launch-neural-link-demo" type="button" onclick="launchNeuralLinkDemo()" class="button-aura rounded-2xl px-5 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em]">LAUNCH NEURAL LINK DEMO</button>
+                    </div>
+                    <p class="mt-4 text-sm sm:text-base leading-7 text-[#00ffc8]/75">Launch the Neural Link terminal without a wallet connection.</p>
+                </div>
+                <div id="chat-face" class="inner-panel rounded-[2rem] p-5 sm:p-6"></div>
+                <div id="chat-shell" class="inner-panel rounded-[2rem] p-5 sm:p-6 hidden-tab">
+                    <div class="flex items-center justify-between gap-4 portrait-stack">
+                        <div>
+                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">In-world comms terminal</div>
+                            <h4 class="header-font text-xl sm:text-3xl mt-2">CHAT TERMINAL</h4>
+                        </div>
+                        <div class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">Fused</div>
+                    </div>
+                    <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
+                    <div class="mt-4 flex gap-3">
+                        <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
+                        <button onclick="fuseSelectedNft()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
+                        <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </section>
-    <section id="tab3" class="tab-panel hidden-tab max-w-6xl mx-auto"><div class="shell rounded-[2rem] p-5 sm:p-8 lg:p-10"><div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural standings</div><h2 class="header-font text-3xl sm:text-5xl mt-3">LEADERBOARD</h2><div class="mt-6 rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-4 text-sm sm:text-base">2847 neural points. The rest of the standings are classified bro business.</div></div></section>
-  </main>
-  <footer class="bg-black/95 border-t border-[#00ffc8]/20 px-4 sm:px-6 py-4 text-xs flex items-center justify-between gap-4">
-    <div class="flex gap-6"><a href="https://discord.gg/fcZYk7UcB" target="_blank" rel="noreferrer" class="hover:text-white">Discord</a><a href="https://x.com/thegrossbros" target="_blank" rel="noreferrer" class="hover:text-white">X</a></div>
-    <div class="text-[#00ffc8]/55">Neural Link OS v8.11</div>
-  </footer>
+<div id="content-3" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
+                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural standings</div>
+                    <h2 class="header-font text-3xl sm:text-5xl mt-3">LEADERBOARD</h2>
+                    <div class="mt-6 overflow-hidden rounded-[24px] border border-[#00ffc8]/15">
+                        <div class="hidden sm:grid grid-cols-[72px,1.4fr,110px,120px,120px] gap-2 bg-black/65 px-4 py-3 text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">
+                            <div>Rank</div><div>Holder</div><div>Points</div><div>Chat Time</div><div>Win/Loss %</div>
+                        </div>
+                        <div id="leaderboard-body" class="divide-y divide-[#00ffc8]/10 bg-black/35"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-4" class="tab-content">
+            <div class="max-w-4xl mx-auto">
+                <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
+                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Socials</div>
+                    <h2 class="header-font text-3xl sm:text-5xl mt-3">COMM LINKS</h2>
+                    <div class="mt-6 grid gap-4 md:grid-cols-2">
+                        <a href="https://x.com/thegrossbros?s=21" target="_blank" rel="noreferrer" class="group block rounded-[30px] border border-[#00ffc8]/18 bg-black/45 p-6 sm:p-7 transition-transform hover:-translate-y-1 hover:bg-[#00ffc8] hover:text-black">
+                            <div class="text-[10px] uppercase tracking-[0.45em] opacity-70">X Network</div>
+                            <div class="mt-3 header-font text-2xl sm:text-3xl font-bold">Broadcast on X</div>
+                            <div class="mt-4 text-sm sm:text-base leading-7 opacity-80 group-hover:opacity-100">Signal the collective, publish relays, and keep the alien terminal alive.</div>
+                        </a>
+                        <a href="https://discord.gg/fcZYk7UcB" target="_blank" rel="noreferrer" class="group block rounded-[30px] border border-[#00ffc8]/18 bg-black/45 p-6 sm:p-7 transition-transform hover:-translate-y-1 hover:bg-[#00ffc8] hover:text-black">
+                            <div class="text-[10px] uppercase tracking-[0.45em] opacity-70">Discord</div>
+                            <div class="mt-3 header-font text-2xl sm:text-3xl font-bold">Join Discord</div>
+                            <div class="mt-4 text-sm sm:text-base leading-7 opacity-80 group-hover:opacity-100">Enter the comms deck for live experiments, drops, and operative coordination.</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        </div>
+
+    </div>
+
+    <div class="bg-black/95 border-t border-[#00ffc8]/20 px-4 sm:px-6 py-4 mt-auto sticky bottom-0 z-20 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between text-xs">
+        <div class="flex gap-6">
+            <a href="https://x.com/thegrossbros" target="_blank" class="hover:text-white transition-colors">𝕏</a>
+            <a href="https://discord.gg/fcZYk7UcB" target="_blank" class="hover:text-white transition-colors">Discord</a>
+        </div>
+        <div class="flex gap-6 items-center">
+            <a href="#" class="hover:text-white transition-colors">Privacy</a>
+            <a href="#" class="hover:text-white transition-colors">Terms</a>
+            <span class="text-[#00ffc8]/55">v8.6</span>
+        </div>
+    </div>
 </div>
-<script>
-const state={wallet:'',connected:false,fused:false,selected:'gross-bro-20',name:'DISGUSTED OPERATIVE',face:'https://cdn.bithomp.com/image/bafybeibvrgdhhag4iycctbqal3443vqlmi5idhgrpdauk3kxczoqdkynom/gross-bros-%2321.png',chat:[]};
-const replies=['Bro, that signal landed clean.','We are cooking now, bro.','That is certified terminal heat.','Clean. Mean. A little unhinged.','The link approves, bro.'],openers=['Directive locked.','Signal received.','Bro mode engaged.','Transmission accepted.','The relay is listening.'];
-let bootComplete=false;
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-function line(role,title,body){const el=document.createElement('div');el.className='chat-bubble '+(role==='user'?'chat-user':'')+' rounded-[18px] p-3';el.innerHTML='<div class="mb-2 text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">'+esc(title)+'</div><div class="text-sm leading-7 soft">'+esc(body)+'</div>';$('chatLog').appendChild(el);$('chatLog').scrollTop=$('chatLog').scrollHeight;}
-function renderFace(){const img=$('faceImg');const fallback=$('faceFallback');if(img){img.src=state.face;img.classList.remove('hidden')}if(fallback)fallback.classList.add('hidden');$('fuseState').textContent=state.fused?'LINK FUSED':'LINK STANDING BY'}
-function renderChat(){const log=$('chatLog');log.innerHTML='';if(!state.chat.length){line('system','NEURAL LINK','Awaiting operative selection. Feed me a thought, bro.');return}state.chat.forEach(m=>line(m.role,m.role==='user'?'YOU':'NEURAL LINK',m.text))}
-function updateUI(){renderFace();renderChat()}
-function setTab(n){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.add('hidden-tab'));const active=document.getElementById('tab'+n);if(active)active.classList.remove('hidden-tab');document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('tab-active',Number(b.dataset.tab)===n))}
-function finishBoot(){if(bootComplete)return;bootComplete=true;const bootEl=$('boot');if(bootEl){bootEl.classList.add('hidden');bootEl.setAttribute('aria-hidden','true')}}
-function boot(){const log=['CORE WAKE','CRT SYNCH','XRPL BUS','NFT FACE','CHAT LAYER','READY'];let i=0;const failSafe=setTimeout(finishBoot,2600);const t=setInterval(()=>{$('bootLog').innerHTML=log.slice(0,Math.min(i+1,log.length)).map(s=>'<div>'+s+' :: OK</div>').join('');$('bootPct').textContent=Math.min(100,(i+1)*18)+'%';$('bootBar').style.width=Math.min(100,(i+1)*18)+'%';$('bootStatus').textContent=log[Math.min(i,log.length-1)]+' ONLINE';i++;if(i>=log.length){clearInterval(t);clearTimeout(failSafe);setTimeout(finishBoot,350)}},220)}
-function runTicker(){const items=['BOLO: SIGNAL CLEAN','WARNING: LINK STABLE','BOLO: NFT FACE FUSED','WARNING: BRO MODE ACTIVE','BOLO: TERMINAL LOOKING SHARP'];$('ticker').innerHTML=[...items,...items].map(s=>'<span class="whitespace-nowrap">'+s+'</span>').join('<span class="whitespace-nowrap"> • </span>')}
-function syncWalletUI(connected){state.connected=connected;$('walletText').textContent=connected?'XAMAN CONNECTED':'CONNECT XAMAN';$('walletStatus').textContent=connected?'Connected: rGross...bro':'Wallet disconnected.';$('walletBtn').setAttribute('aria-pressed',String(connected));renderFace()}
-async function trySdkConnect(apiKey){const sdkFactory=window.Xumm||window.Xaman||window.xaman;if(!apiKey||!sdkFactory)return false;try{const sdk=typeof sdkFactory==='function'?new sdkFactory(apiKey):sdkFactory;if(typeof sdk.login==='function'){await sdk.login();return true}if(typeof sdk.authorize==='function'){await sdk.authorize();return true}if(sdk.payload&&typeof sdk.payload.create==='function'){await sdk.payload.create({txjson:{TransactionType:'SignIn'}});return true}return false}catch(err){return false}}
-async function connectWallet(){const button=$('walletBtn');if(!bootComplete){$('walletStatus').textContent='Waiting for boot sequence to clear…';return}button.disabled=true;button.setAttribute('aria-busy','true');$('walletStatus').textContent='Opening wallet handshake…';try{const apiKey=(window.XAMAN_API_KEY||window.XUMM_API_KEY||document.querySelector('meta[name="xaman-api-key"]')?.content||'').trim();const ok=await trySdkConnect(apiKey);if(ok){syncWalletUI(true);$('walletStatus').textContent='Connected: rGross...bro';state.fused=false;return}syncWalletUI(!state.connected)}catch(err){$('walletStatus').textContent='Wallet handshake unavailable on this build.'}finally{button.disabled=false;button.removeAttribute('aria-busy')}}
-function fuseSelectedNft(){if(!state.connected){$('walletStatus').textContent='Connect Xaman first.';return}state.fused=true;renderFace();line('system','FUSE','Bro, the operative is fused and the channel got way cooler.')}
-function sendChatMessage(){if(!state.connected){$('walletStatus').textContent='Connect Xaman first.';return}const input=$('chatInput');const text=input.value.trim();if(!text)return;input.value='';state.chat.push({role:'user',text});const reply=openers[(state.chat.length+text.length)%openers.length]+' '+replies[(text.charCodeAt(0)||0)%replies.length]+' '+state.name+' says: '+text+'. Bro, keep the cuts clean and the vibe weird.';state.chat.push({role:'assistant',text:reply});updateUI()}
-document.addEventListener('DOMContentLoaded',()=>{boot();runTicker();updateUI();setTab(0);$('walletBtn').addEventListener('click',connectWallet);$('fuseBtn').addEventListener('click',fuseSelectedNft);$('sendBtn').addEventListener('click',sendChatMessage);$('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage()}});document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTab(Number(b.dataset.tab))))})
-</script>
 </body>
 </html>
