@@ -479,6 +479,14 @@
             { role: 'user', content: text }
         ];
     }
+    const NEURAL_BOT_SYSTEM_PROMPT = "You are the NEURAL BOT for Galactic Gross Bros — an alien operative terminal AI. The user holds a specific Gross Bros NFT. Respond in-character as their personal operative. Tone: cryptic, high-security alien terminal, neon-green energy, humorous gross-out references. Reference the selected NFT name/traits and the overall project lore (galactic gross bros faction). Keep replies short, terminal-style, under 2 lines. Current user wallet: {{currentAccount}} Selected Operative: {{nftName}} User message: {{userMessage}}";
+
+    function buildNeuralBotSystemPrompt(currentAccount, nftName, userMessage) {
+        return NEURAL_BOT_SYSTEM_PROMPT
+            .replace('{{currentAccount}}', String(currentAccount || 'unknown-wallet'))
+            .replace('{{nftName}}', String(nftName || 'Unknown Operative'))
+            .replace('{{userMessage}}', String(userMessage || ''));
+    }
     function todayKey(date = new Date()) {
         const d = new Date(date);
         return [d.getUTCFullYear(), String(d.getUTCMonth() + 1).padStart(2, '0'), String(d.getUTCDate()).padStart(2, '0')].join('-');
@@ -1336,24 +1344,42 @@
         if (!input || !state.operative?.tokenId) return;
         const text = input.value.trim();
         if (!text) return;
-        input.value = '';
+        input.value = "";
         const operative = state.operative;
-        const messages = buildChatMessages(operative, text);
+        const currentAccount = String(state.wallet || '').trim();
+        const selectedNFT = {
+            name: String(operative.name || 'Operative').trim(),
+            traits: Array.isArray(operative.traits) ? operative.traits : [],
+            tokenId: String(operative.tokenId || '').trim(),
+            faction: String(operative.faction || '').trim(),
+            backstory: String(operative.backstory || '')
+        };
+        const systemPrompt = buildNeuralBotSystemPrompt(currentAccount, selectedNFT.name, text);
         await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 18000);
         try {
-            const response = await fetch('/api/chat', {
+            const response = await fetch('/api/chat.js', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                signal: controller.signal,
                 body: JSON.stringify({
-                    demoMode: state.demoMode === true,
+                    systemPrompt,
+                    currentAccount,
+                    walletAddress: currentAccount,
+                    selectedNFT,
+                    selectedNft: selectedNFT,
+                    userMessage: text,
                     operative: {
-                        name: operative.name,
-                        faction: operative.faction,
-                        backstory: operative.backstory || '',
-                        traits: operative.traits || [],
-                        tokenId: operative.tokenId
+                        name: selectedNFT.name,
+                        faction: selectedNFT.faction,
+                        backstory: selectedNFT.backstory || "",
+                        traits: selectedNFT.traits || [],
+                        tokenId: selectedNFT.tokenId,
+                        walletAddress: currentAccount,
+                        selectedNft: selectedNFT
                     },
-                    messages
+                    messages: [{ role: 'user', content: text }]
                 })
             });
             if (!response.ok) throw new Error(`Chat request failed: ${response.status}`);
@@ -1362,12 +1388,16 @@
             await persistChat({ role: 'system', message: String(reply).trim(), created_at: new Date().toISOString() });
         } catch (error) {
             console.error(error);
-            await persistChat({ role: 'system', message: 'Signal collapsed mid-relay. Try again, bro.', created_at: new Date().toISOString() });
+            const message = error?.name === 'AbortError' || String(error?.message || '').toLowerCase().includes('abort')
+                ? 'Relay timed out. Vercel is still digesting the signal.'
+                : 'Signal collapsed mid-relay. Try again, bro.';
+            await persistChat({ role: 'system', message, created_at: new Date().toISOString() });
+        } finally {
+            window.clearTimeout(timeoutId);
         }
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
         renderChatHistory();
-    }
-    window.sendChatMessage = sendChatMessage;
+    }    window.sendChatMessage = sendChatMessage;
     function bindChatInput() {
         const input = document.getElementById('chat-input');
         if (!input || input.dataset.boundEnter === '1') return;
