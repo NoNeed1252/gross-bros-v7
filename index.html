@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.6</title>
+    <title>Neural Link OS // Alien CRT Relay</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -223,7 +223,7 @@
         <div class="flex items-center gap-3 sm:gap-4">
             <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
             <div>
-                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">Neural Link OS Beta</div>
+                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">Neural Link OS // Alien CRT Relay</div>
                 <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Alien CRT relay // transmission and chat interface</div>
             </div>
         </div>
@@ -906,12 +906,12 @@
         try {
             const rows = SUPABASE_URL && SUPABASE_KEY ? await supabaseSelect(FREQUENCY_LOGS_TABLE, 'select=content,message,created_at&order=created_at.desc&limit=10').catch(() => null) : null;
             const items = Array.isArray(rows) && rows.length ? rows.map((row) => String(row.content || row.message || '').trim()).filter(Boolean) : [];
-            const feedItems = (items.length ? items : ['Frequency log stream pending']).concat(items.length ? items : ['Frequency log stream pending']);
+            const feedItems = (items.length ? items : ['Transmission stream pending']).concat(items.length ? items : ['Transmission stream pending']);
             track.innerHTML = feedItems.map((item, index) => '<span class="news-item">' + escapeHtml(item) + '</span>' + (index < feedItems.length - 1 ? '<span class="news-item"> • </span>' : '')).join('');
             track.style.animationPlayState = 'running';
         } catch (error) {
             console.error(error);
-            track.innerHTML = '<span class="news-item">Frequency log stream pending</span><span class="news-item"> • </span><span class="news-item">Frequency log stream pending</span>';
+            track.innerHTML = '<span class="news-item">Transmission stream pending</span><span class="news-item"> • </span><span class="news-item">Transmission stream pending</span>';
         }
     }
 
@@ -1260,12 +1260,6 @@
                         await loadNfts();
                         await loadLeaderboard();
                         renderFusionLab();
-                        await persistFrequencyLog({
-                            cache_key: 'freq:xaman:connected:' + Date.now(),
-                            message: 'Xaman wallet connected',
-                            content: 'Xaman wallet connected',
-                            created_at: new Date().toISOString()
-                        }).catch(() => null);
                     }
                     const returnUrl = getXamanPayloadRedirect(status);
                     if (returnUrl) window.location.assign(returnUrl);
@@ -1277,12 +1271,6 @@
             }, 2500);
         } catch (error) {
             console.error(error);
-            await persistFrequencyLog({
-                cache_key: 'freq:xaman:error:' + Date.now(),
-                message: 'Xaman connect failed',
-                content: 'Xaman connect failed',
-                created_at: new Date().toISOString()
-            }).catch(() => null);
             state.connected = false;
             renderWalletUI();
         }
@@ -1307,53 +1295,46 @@
                 },
                 return_url: { web: XAMAN_RETURN_URL }
             };
-            await persistFrequencyLog({
-                cache_key: 'freq:fusion:' + Date.now(),
-                message: 'Fusion payment requested',
-                content: 'Fusion payment requested',
-                created_at: new Date().toISOString()
-            }).catch(() => null);
             const payload = await createXamanPayload(payloadRequest);
+                const signed = Boolean(event?.signed || event?.resolved?.signed || event?.data?.signed || event?.meta?.signed);
+                if (!signed) return;
+                state.fusedTokenId = state.selectedTokenId;
+                const active = currentEntry();
+                if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
+                store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
+                store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
+                renderOperativePanel();
+                renderChatTerminal();
             const redirectUrl = getXamanPayloadRedirect(payload);
             if (typeof redirectUrl === 'string' && redirectUrl) window.location.assign(redirectUrl);
-            const uuid = getXamanPayloadUuid(payload);
-            let attempts = 0;
-            const interval = setInterval(async () => {
-                attempts++;
-                if (attempts > 35) {
-                    clearInterval(interval);
-                    return;
-                }
-                if (!uuid) return;
-                const check = await fetch('/api/xaman?action=check-payload&uuid=' + uuid);
-                const status = await check.json();
-                if ((status.meta && status.meta.signed) || status.signed) {
-                    clearInterval(interval);
-                    state.fusedTokenId = state.selectedTokenId;
-                    const active = currentEntry();
-                    if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
-                    store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
-                    store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
-                    renderOperativePanel();
-                    renderChatTerminal();
-                    await persistFrequencyLog({
-                        cache_key: 'freq:fusion:signed:' + Date.now(),
-                        message: 'Fusion payment signed',
-                        content: 'Fusion payment signed',
-                        created_at: new Date().toISOString()
-                    }).catch(() => null);
-                } else if (status.meta && status.meta.expired) {
-                    clearInterval(interval);
-                }
-            }, 2500);
+            if (!window.xumm?.payload?.createAndSubscribe) {
+                let attempts = 0;
+                const uuid = getXamanPayloadUuid(payload);
+                const interval = setInterval(async () => {
+                    attempts++;
+                    if (attempts > 35) {
+                        clearInterval(interval);
+                        return;
+                    }
+                    if (!uuid) return;
+                    const check = await fetch('/api/xaman?action=check-payload&uuid=' + uuid);
+                    const status = await check.json();
+                    if ((status.meta && status.meta.signed) || status.signed) {
+                        clearInterval(interval);
+                        state.fusedTokenId = state.selectedTokenId;
+                        const active = currentEntry();
+                        if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
+                        store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
+                        store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
+                        renderOperativePanel();
+                        renderChatTerminal();
+                    } else if (status.meta && status.meta.expired) {
+                        clearInterval(interval);
+                    }
+                }, 2500);
+            }
         } catch (error) {
             console.error(error);
-            await persistFrequencyLog({
-                cache_key: 'freq:fusion:error:' + Date.now(),
-                message: 'Fusion payment failed',
-                content: 'Fusion payment failed',
-                created_at: new Date().toISOString()
-            }).catch(() => null);
         }
     }
     window.triggerFusion = triggerFusion;
@@ -1370,7 +1351,7 @@
         await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
         await persistFrequencyLog({ cache_key: `freq:chat:user:${Date.now()}`, message: text, content: text, created_at: new Date().toISOString() }).catch(() => null);
         try {
-            const response = await fetch('/api/chat', {
+            const response = await fetch('/api/chat.js', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
