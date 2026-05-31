@@ -1,1 +1,283 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GROSS BROS • GUARDIAN BROADCAST OS v8.6</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background:#000; color:#00ffc8; font-family: monospace; }
+    .panel { background: rgba(5,17,15,.95); border:1px solid rgba(0,255,200,.15); }
+    .btn { border:1px solid rgba(0,255,200,.4); background:rgba(0,255,200,.08); color:#00ffc8; }
+    .btn:hover { background:rgba(0,255,200,.16); }
+    .tab { cursor:pointer; padding:.75rem 1rem; border-bottom:2px solid transparent; }
+    .tab.active { border-bottom-color:#00ffc8; background:rgba(0,255,200,.08); }
+    .hidden { display:none; }
+    select,input { background:rgba(0,0,0,.35); border:1px solid rgba(0,255,200,.25); color:#d4fff6; }
+  </style>
+</head>
+<body class="min-h-screen p-4">
+  <div class="max-w-5xl mx-auto space-y-4">
+    <div class="panel rounded-2xl p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div>
+        <div class="text-xs uppercase tracking-[0.4em] opacity-70">Gross Bros</div>
+        <div class="text-2xl font-bold">Guardian Broadcast OS</div>
+      </div>
+      <button id="connect-btn" class="btn rounded-2xl px-4 py-3" onclick="connectXaman()">Connect Xaman</button>
+    </div>
+
+    <div class="panel rounded-2xl overflow-hidden">
+      <div class="flex overflow-x-auto text-sm">
+        <div class="tab active" onclick="switchTab(0)">Console</div>
+        <div class="tab" onclick="switchTab(1)">Transmission Logs</div>
+        <div class="tab" onclick="switchTab(2)">Fusion Lab</div>
+        <div class="tab" onclick="switchTab(3)">Neural Standings</div>
+        <div class="tab" onclick="switchTab(4)">Socials</div>
+      </div>
+      <div class="p-4 space-y-4">
+        <section id="tab-0"><div class="text-sm opacity-80">Wallet status: <span id="wallet-status">disconnected</span></div></section>
+        <section id="tab-1" class="hidden"><div class="text-sm opacity-80">Transmission logs placeholder.</div></section>
+        <section id="tab-2" class="hidden space-y-4">
+          <div class="panel rounded-2xl p-4 space-y-3">
+            <div class="text-xs uppercase tracking-[0.4em] opacity-70">Fusion payment settings</div>
+            <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <div class="text-xl font-bold">Select token</div>
+                <div class="text-sm opacity-70">Price updates live before the payload is created.</div>
+              </div>
+              <select id="fusion-token-select" class="rounded-2xl px-4 py-3" onchange="setFusionToken(this.value)">
+                <option value="XRP">XRP</option>
+                <option value="RLUSD">RLUSD</option>
+                <option value="MEME">Meme Token</option>
+              </select>
+            </div>
+            <div class="grid gap-3 md:grid-cols-3 text-sm">
+              <div class="panel rounded-2xl p-4"><div class="text-xs uppercase opacity-70">Live price</div><div id="fusion-token-price" class="mt-2 text-lg">Refreshing…</div></div>
+              <div class="panel rounded-2xl p-4"><div class="text-xs uppercase opacity-70">Payment amount</div><div id="fusion-token-amount" class="mt-2 text-lg">Calculating…</div></div>
+              <div class="panel rounded-2xl p-4"><div class="text-xs uppercase opacity-70">Issuer / treasury</div><div id="fusion-token-issuer" class="mt-2 break-all">rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY</div></div>
+            </div>
+            <div class="text-sm opacity-75" id="fusion-quote">$50 target quote pending…</div>
+            <button class="btn rounded-2xl px-4 py-3" onclick="triggerFusion()">Fuse selected token</button>
+          </div>
+        </section>
+        <section id="tab-3" class="hidden"><div class="text-sm opacity-80">Leaderboard placeholder.</div></section>
+        <section id="tab-4" class="hidden"><div class="text-sm opacity-80">Social links placeholder.</div></section>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const CONFIG = {
+    XAMAN_API_KEY: '5f30fcbe-a810-490b-8fd5-500a37568a49',
+    XAMAN_RETURN_URL: 'https://grossbros.vercel.app',
+    TREASURY_WALLET: 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY',
+    ISSUER_ADDRESS: 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY'
+  };
+  const FUSION_TARGET_USD = 50;
+  const FUSION_DEFAULT_TOKEN_KEY = 'XRP';
+  const FUSION_TOKEN_OPTIONS = [
+    { key:'XRP', label:'XRP', currency:'XRP', issuer:'', native:true, fallbackUsd:null },
+    { key:'RLUSD', label:'RLUSD', currency:'RLUSD', issuer:CONFIG.ISSUER_ADDRESS, native:false, fallbackUsd:1 },
+    { key:'MEME', label:'Meme Token', currency:'MEME', issuer:CONFIG.ISSUER_ADDRESS, native:false, fallbackUsd:1 }
+  ];
+  const XRPL_RPC_URLS = ['https://xrplcluster.com/','https://s2.ripple.com:51234/'];
+  const state = { wallet:'', connected:false, fusionTokenKey:FUSION_DEFAULT_TOKEN_KEY };
+
+  const $ = (id) => document.getElementById(id);
+  const getToken = (key) => FUSION_TOKEN_OPTIONS.find((t) => t.key === key) || FUSION_TOKEN_OPTIONS[0];
+  const normalizeTokenKey = (value) => FUSION_TOKEN_OPTIONS.some((t) => t.key === String(value || '').trim().toUpperCase()) ? String(value || '').trim().toUpperCase() : FUSION_DEFAULT_TOKEN_KEY;
+  const xrpToDrops = (xrp) => String(Math.round(Number(xrp || 0) * 1_000_000));
+
+  async function fetchJson(url, options) {
+    const res = await fetch(url, { cache:'no-store', ...(options || {}) });
+    const data = await res.json().catch(() => null);
+    return { res, data };
+  }
+
+  async function fetchXrpUsd() {
+    try {
+      const { res, data } = await fetchJson('/api/xrp-price');
+      const price = Number(data?.xrpUsd);
+      return res.ok && Number.isFinite(price) && price > 0 ? price : null;
+    } catch { return null; }
+  }
+
+  function amtToNum(amount) {
+    if (amount && typeof amount === 'object') {
+      const value = Number(amount.value);
+      return Number.isFinite(value) && value > 0 ? value : null;
+    }
+    const drops = Number(amount);
+    return Number.isFinite(drops) && drops > 0 ? drops / 1_000_000 : null;
+  }
+
+  async function fetchDexXrpPerToken(token) {
+    if (!token || token.native) return 1;
+    const request = { method:'book_offers', params:[{ taker_gets:{ currency:token.currency, issuer:token.issuer }, taker_pays:'1000000', ledger_index:'validated', limit:1 }] };
+    for (const rpc of XRPL_RPC_URLS) {
+      try {
+        const res = await fetch(rpc, { method:'POST', headers:{ 'Content-Type':'application/json', Accept:'application/json' }, body:JSON.stringify(request), cache:'no-store' });
+        if (!res.ok) continue;
+        const data = await res.json().catch(() => null);
+        const first = data?.result?.offers?.[0];
+        if (!first) continue;
+        const q = Number(first.quality);
+        if (Number.isFinite(q) && q > 0) return q / 1_000_000;
+        const gets = amtToNum(first.TakerGets);
+        const pays = amtToNum(first.TakerPays);
+        if (gets && pays) return pays / gets;
+      } catch {}
+    }
+    return null;
+  }
+
+  async function fetchTokenUsdPrice(token) {
+    const xrpUsd = await fetchXrpUsd();
+    if (token.key === 'XRP') return xrpUsd;
+    if (token.key === 'RLUSD') return 1;
+    const xrpPerToken = await fetchDexXrpPerToken(token);
+    if (xrpUsd && xrpPerToken) return xrpUsd * xrpPerToken;
+    return token.fallbackUsd || xrpUsd || 1;
+  }
+
+  function amountUnitsFromUsd(tokenUsdPrice) {
+    return tokenUsdPrice && tokenUsdPrice > 0 ? FUSION_TARGET_USD / tokenUsdPrice : 0;
+  }
+
+  function formatTokenAmount(token, units) {
+    if (!Number.isFinite(units) || units <= 0) return '0';
+    return token.native ? xrpToDrops(units) : units.toFixed(6);
+  }
+
+  function buildFusionTxJson(token, units) {
+    if (token.native) {
+      return { TransactionType:'Payment', Destination:CONFIG.TREASURY_WALLET, Amount:formatTokenAmount(token, units) };
+    }
+    return { TransactionType:'Payment', Destination:CONFIG.TREASURY_WALLET, Amount:{ currency:token.currency, issuer:token.issuer, value:formatTokenAmount(token, units) } };
+  }
+
+  function getPayloadRedirect(payload) {
+    return payload?.next?.always || payload?.payload?.next?.always || payload?.response?.next?.always || '';
+  }
+
+  function getPayloadUuid(payload) {
+    return payload?.uuid || payload?.payload?.uuid || payload?.response?.uuid || '';
+  }
+
+  async function createPayload(payloadRequest, onSigned) {
+    if (window.xumm?.payload?.createAndSubscribe) {
+      return await window.xumm.payload.createAndSubscribe(payloadRequest, async (event) => {
+        if (Boolean(event?.signed || event?.resolved?.signed || event?.data?.signed || event?.meta?.signed) && typeof onSigned === 'function') {
+          await onSigned(event);
+        }
+      });
+    }
+    const res = await fetch('/api/xaman?action=create-payload', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(payloadRequest) });
+    return await res.json();
+  }
+
+  async function refreshFusionQuote() {
+    const token = getToken(state.fusionTokenKey);
+    if ($('fusion-token-issuer')) $('fusion-token-issuer').textContent = token.native ? 'Native XRP' : token.issuer;
+    if ($('fusion-token-price')) $('fusion-token-price').textContent = 'Refreshing price…';
+    if ($('fusion-token-amount')) $('fusion-token-amount').textContent = 'Calculating…';
+    try {
+      const usdPrice = await fetchTokenUsdPrice(token);
+      const units = amountUnitsFromUsd(usdPrice);
+      const display = token.native ? `${formatTokenAmount(token, units)} drops` : `${formatTokenAmount(token, units)} ${token.currency}`;
+      if ($('fusion-token-price')) $('fusion-token-price').textContent = usdPrice ? `$${usdPrice.toFixed(6)}` : 'Unavailable';
+      if ($('fusion-token-amount')) $('fusion-token-amount').textContent = display;
+      if ($('fusion-quote')) $('fusion-quote').textContent = `$${FUSION_TARGET_USD} -> ${display}`;
+      return { token, usdPrice, units };
+    } catch (e) {
+      if ($('fusion-token-price')) $('fusion-token-price').textContent = 'Unavailable';
+      if ($('fusion-token-amount')) $('fusion-token-amount').textContent = token.native ? '50000000 drops' : `50.000000 ${token.currency}`;
+      if ($('fusion-quote')) $('fusion-quote').textContent = `$${FUSION_TARGET_USD} quote unavailable`;
+      return { token, usdPrice:null, units: token.native ? 50 : 50 };
+    }
+  }
+
+  function setFusionToken(tokenKey) {
+    state.fusionTokenKey = normalizeTokenKey(tokenKey);
+    refreshFusionQuote();
+  }
+
+  async function connectXaman() {
+    if ($('connect-btn')) $('connect-btn').textContent = 'CONNECTING...';
+    try {
+      const payload = await createPayload({
+        txjson: { TransactionType:'SignIn' },
+        options: { return_url: { app: CONFIG.XAMAN_RETURN_URL, web: CONFIG.XAMAN_RETURN_URL }, force_network:'MAINNET' },
+        custom_meta: { identifier:'Gross Bros wallet login', instruction:'Approve this sign-in request in Xaman.' }
+      });
+      const redirectUrl = getPayloadRedirect(payload);
+      if (redirectUrl) window.location.assign(redirectUrl);
+      const uuid = getPayloadUuid(payload);
+      let attempts = 0;
+      const timer = setInterval(async () => {
+        attempts++;
+        if (attempts > 35) { clearInterval(timer); if ($('connect-btn')) $('connect-btn').textContent = 'Connect Xaman'; return; }
+        if (!uuid) return;
+        const { data } = await fetchJson('/api/xaman?action=check-payload&uuid=' + uuid);
+        if (data?.meta?.signed || data?.signed) {
+          clearInterval(timer);
+          state.connected = true;
+          state.wallet = data?.response?.account || data?.account || '';
+          if ($('wallet-status')) $('wallet-status').textContent = state.wallet || 'connected';
+          if ($('connect-btn')) $('connect-btn').textContent = 'Xaman Connected';
+        } else if (data?.meta?.expired) {
+          clearInterval(timer);
+          if ($('connect-btn')) $('connect-btn').textContent = 'Connect Xaman';
+        }
+      }, 2500);
+    } catch (e) {
+      console.error(e);
+      if ($('connect-btn')) $('connect-btn').textContent = 'Connect Xaman';
+    }
+  }
+
+  async function triggerFusion() {
+    if (!state.wallet) { await connectXaman(); return; }
+    const quote = await refreshFusionQuote();
+    const token = quote.token;
+    const units = quote.units;
+    try {
+      const payload = await createPayload({
+        txjson: buildFusionTxJson(token, units),
+        options: { return_url: { app: CONFIG.XAMAN_RETURN_URL, web: CONFIG.XAMAN_RETURN_URL }, force_network:'MAINNET' },
+        custom_meta: { identifier:'Gross Bros fusion payment', instruction:'Approve this fusion payment in Xaman.' }
+      }, async () => {});
+      const redirectUrl = getPayloadRedirect(payload);
+      if (redirectUrl) window.location.assign(redirectUrl);
+      const uuid = getPayloadUuid(payload);
+      if (!window.xumm?.payload?.createAndSubscribe && uuid) {
+        let attempts = 0;
+        const timer = setInterval(async () => {
+          attempts++;
+          if (attempts > 35) { clearInterval(timer); return; }
+          const { data } = await fetchJson('/api/xaman?action=check-payload&uuid=' + uuid);
+          if (data?.meta?.signed || data?.signed) clearInterval(timer);
+        }, 2500);
+      }
+    } catch (e) { console.error(e); }
+  }
+
+  function switchTab(index) {
+    document.querySelectorAll('.tab').forEach((el, i) => el.classList.toggle('active', i === index));
+    document.querySelectorAll('section[id^="tab-"]').forEach((el, i) => el.classList.toggle('hidden', i !== index));
+    if (index === 2) refreshFusionQuote();
+  }
+
+  window.connectXaman = connectXaman;
+  window.triggerFusion = triggerFusion;
+  window.setFusionToken = setFusionToken;
+  window.switchTab = switchTab;
+  window.refreshFusionQuote = refreshFusionQuote;
+  document.addEventListener('DOMContentLoaded', () => {
+    refreshFusionQuote();
+  });
+})();
+</script>
+</body>
+</html>
