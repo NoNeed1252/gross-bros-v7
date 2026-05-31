@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -174,14 +174,16 @@
   </div>
 
   <script>
-    const XRPL_ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
+    const CONFIG = {
+      GROSS_BROS_ISSUER: 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY',
+      TREASURY_WALLET: 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY',
+      XAMAN_API_KEY: '5f30fcbe-a810-490b-8fd5-500a37568a49'
+    };
     const XRPL_TAXON = 1;
     const XRPL_RPCS = ['https://xrplcluster.com/','https://s2.ripple.com:51234/'];
-    const XAMAN_KEY = '5f30fcbe-a810-490b-8fd5-500a37568a49';
     const XAMAN_BASE = 'https://xumm.app/api/v1/platform';
     const XAMAN_PROXY = '/api/xaman';
     const SESSION_KEY = 'grossbros:xaman-session';
-    const FUSE_DEST = 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX';
     const FUSE_DROPS = '50000000';
 
     const els = {
@@ -206,7 +208,7 @@
     function deepString(obj, keys){ if (!obj || typeof obj !== 'object') return ''; for (const k of keys){ const v = obj[k]; if (typeof v === 'string' && v.trim()) return v.trim(); } for (const v of Object.values(obj)) { const found = deepString(v, keys); if (found) return found; } return ''; }
     function tokenId(n){ return String(n.nftoken_id || n.nft_id || n.NFTokenID || n.id || '').trim(); }
     function serial(n){ const x = Number(n.nft_serial ?? n.serial ?? n.NFTokenSerial ?? n.NFTokenSequence); return Number.isFinite(x) ? x : 1e9; }
-    function isGrossBro(n){ return tokenId(n) && String(n.Issuer || n.issuer || '').toLowerCase() === XRPL_ISSUER.toLowerCase() && Number(n.NFTokenTaxon ?? n.nft_taxon ?? n.taxon) === XRPL_TAXON; }
+    function isGrossBro(n){ return tokenId(n) && String(n.Issuer || n.issuer || '').toLowerCase() === CONFIG.GROSS_BROS_ISSUER.toLowerCase() && Number(n.NFTokenTaxon ?? n.nft_taxon ?? n.taxon) === XRPL_TAXON; }
     function titleFor(n){ return n.name || n.NFTokenName || ('Gross Bro #' + serial(n)); }
 
     function setStatus(msg, connected){ els.walletStatus.textContent = msg; els.walletBtn.textContent = connected ? ('XAMAN ' + short(session?.address || 'CONNECTED')) : 'CONNECT XAMAN'; }
@@ -222,7 +224,7 @@
 
     async function fetchJson(url, opts){ const r = await fetch(url, opts); const j = await r.json().catch(() => null); if (!r.ok || !j) throw new Error((j && (j.error || j.message)) || ('Request failed: ' + r.status)); return j; }
     async function createPayload(body){ const j = await fetchJson(XAMAN_PROXY + '?action=create-payload', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ redirectUri: location.origin, payload: body }) }); return j.payload || j; }
-    async function payloadStatus(uuid){ const r = await fetch(XAMAN_BASE + '/payload/' + encodeURIComponent(uuid), { headers: { 'X-API-Key': XAMAN_KEY } }); const j = await r.json().catch(() => null); if (!r.ok || !j) throw new Error((j && (j.message || j.error)) || 'Unable to check payload status'); return j; }
+    async function payloadStatus(uuid){ const r = await fetch(XAMAN_BASE + '/payload/' + encodeURIComponent(uuid), { headers: { 'X-API-Key': CONFIG.XAMAN_API_KEY } }); const j = await r.json().catch(() => null); if (!r.ok || !j) throw new Error((j && (j.message || j.error)) || 'Unable to check payload status'); return j; }
 
     async function verifySession(s){ if (!s?.connected || !s?.address || !s?.payloadUuid) return null; const p = await payloadStatus(s.payloadUuid); const signed = !!(p?.meta?.signed || p?.signed || p?.response?.signed); const expired = !!(p?.meta?.expired || p?.expired); if (!signed || expired) return null; return { ...s, connected: true, address: String(p?.response?.account || p?.response?.signer || s.address).trim() }; }
     async function connectXaman(){ setStatus('Preparing Xaman sign-in…', false); const payload = await createPayload({ txjson:{ TransactionType:'SignIn' }, options:{ submit:false, expire:5 } }); const url = payload?.next?.always?.url || payload?.next?.always || payload?.url; if (url) window.open(url, '_blank', 'noopener,noreferrer'); let signed = null; for (let i = 0; i < 60; i++) { const p = await payloadStatus(payload.uuid); if (p?.meta?.signed || p?.signed || p?.response?.signed) { signed = p; break; } if (p?.meta?.expired || p?.expired) throw new Error('Xaman sign-in expired'); await new Promise(r => setTimeout(r, 2000)); } if (!signed) throw new Error('Timed out waiting for Xaman approval'); saveSession({ connected:true, address: String(signed?.response?.account || signed?.response?.signer || '').trim(), payloadUuid: payload.uuid, signedAt: new Date().toISOString() }); setStatus('Connected: ' + short(session.address), true); await loadWalletData(); }
@@ -231,7 +233,7 @@
       const gross = list.filter(isGrossBro).map(n => ({ ...n })); for (const n of gross) { let img = deepString(n, ['image','imageUrl','animationUrl']); const raw = String(n.URI || n.Uri || n.uri || '').trim(); if (!img && raw) { const decoded = hexToUtf8(raw); const metaUrl = uriToUrl(decoded || raw); try { if (metaUrl) { const r = await fetch(metaUrl, { cache:'no-store' }); if (r.ok) { if ((r.headers.get('content-type') || '').includes('image/')) img = metaUrl; else { const j = await r.json().catch(async()=>JSON.parse(await r.text().catch(()=>'')) ); if (j && typeof j === 'object') img = uriToUrl(deepString(j,['image','imageUrl','animationUrl'])) || ''; } } } } catch {} } n._image = img || ''; }
       nfts = gross.sort((a,b) => serial(a) - serial(b) || tokenId(a).localeCompare(tokenId(b))); activeToken = nfts[0] ? tokenId(nfts[0]) : ''; renderGate(); renderRoster(); setActive(activeToken); renderLogs(); if (!nfts.length) logLine('system', 'NO BROS', 'No Gross Bro NFTs found on this connected wallet.'); else logLine('system', 'XRPL ONLINE', 'Loaded live NFT metadata for ' + session.address + '.'); }
 
-    async function fuse(){ if (!session?.connected || !session?.address) return connectXaman(); const payload = await createPayload({ txjson:{ TransactionType:'Payment', Destination:FUSE_DEST, Amount:FUSE_DROPS }, options:{ submit:true } }); const url = payload?.next?.always?.url || payload?.next?.always || payload?.url; if (url) window.location.assign(url); }
+    async function fuse(){ if (!session?.connected || !session?.address) return connectXaman(); const payload = await createPayload({ txjson:{ TransactionType:'Payment', Destination:CONFIG.TREASURY_WALLET, Amount:FUSE_DROPS }, options:{ submit:true } }); const url = payload?.next?.always?.url || payload?.next?.always || payload?.url; if (url) window.location.assign(url); }
     function sendMessage(text){ const msg = String(text || '').trim(); if (!msg) return; logLine('user', 'YOU', msg); els.chatInput.value = ''; logLine('assistant', 'NEURAL LINK', 'Transmission accepted: ' + msg); }
 
     document.querySelectorAll('.tab').forEach(btn => btn.onclick = () => { document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === btn)); document.querySelectorAll('.tabpane').forEach(p => p.classList.toggle('active', p.id === btn.dataset.tab)); });
