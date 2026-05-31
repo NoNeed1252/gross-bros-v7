@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neural Link OS // Alien CRT Relay</title>
+    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -201,14 +201,14 @@
 <div id="boot-overlay" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 backdrop-blur-sm px-4">
   <div class="inner-panel ring-lid relative w-[min(94vw,760px)] overflow-hidden rounded-[30px] p-5 sm:p-8">
     <div class="flex items-center justify-between gap-4">
-      <div class="orbitron text-xs sm:text-sm tracking-[0.6em] text-[#00ffc8] opacity-80">ALIEN BROADCAST OS</div>
+      <div class="orbitron text-xs sm:text-sm tracking-[0.6em] text-[#00ffc8] opacity-80">BOOT SEQUENCE</div>
       <div id="boot-progress-label" class="text-[11px] sm:text-xs tracking-[0.35em] text-[#00ffc8]/60">0%</div>
     </div>
     <div class="mt-4 rounded-[22px] border border-[#00ffc8]/12 bg-black/35 p-4 sm:p-5">
       <div id="boot-stream" class="h-28 overflow-hidden text-xs sm:text-sm leading-6 text-[#00ffc8]/78 soft-wrap"></div>
     </div>
     <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <div id="boot-status-line" class="text-sm sm:text-base text-[#d9fff8]/80 soft-wrap">Initializing alien broadcast relay…</div>
+      <div id="boot-status-line" class="text-sm sm:text-base text-[#d9fff8]/80 soft-wrap">Initializing alien terminal…</div>
       <div class="text-[10px] uppercase tracking-[0.4em] text-[#00ffc8]/55">Live checks</div>
     </div>
     <div class="mt-3 h-3 overflow-hidden rounded-full border border-[#00ffc8]/18 bg-black/55">
@@ -223,15 +223,15 @@
         <div class="flex items-center gap-3 sm:gap-4">
             <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
             <div>
-                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">Neural Link OS // Alien CRT Relay</div>
-                <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Alien Broadcast OS booted // transmission, chat, and fusion relay</div>
+                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">Neural Link OS Beta</div>
+                <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Alien CRT relay // transmission and chat interface</div>
             </div>
         </div>
 
-        <button type="button" onclick="connectXaman()" class="w-full lg:w-auto justify-center cursor-pointer bg-transparent appearance-none px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
+        <div onclick="connectXaman()" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
             <i class="fa-solid fa-wallet"></i>
-            <span id="wallet-text">CONNECT WALLET</span>
-        </button>
+            <span id="wallet-text">CONNECT XAMAN</span>
+        </div>
 
         <p id="xaman-status" class="text-[11px] sm:text-sm text-[#00ffc8]/60 text-center lg:text-right">Wallet disconnected.</p>
     </div>
@@ -250,89 +250,22 @@
 
     <div class="flex-1 overflow-auto p-3 sm:p-6 relative z-10 bg-black" id="content-area">
 
-                <div id="content-0" class="tab-content active">
-            <div class="max-w-7xl mx-auto grid gap-6 xl:grid-cols-[1.05fr_.95fr]">
-                <section class="inner-panel rounded-[2rem] p-5 sm:p-6 lg:p-8 overflow-hidden relative">
-                    <div class="absolute inset-0 opacity-60 pointer-events-none" style="background: radial-gradient(circle at 20% 18%, rgba(0,255,200,0.12), transparent 18%), radial-gradient(circle at 80% 8%, rgba(0,255,200,0.08), transparent 14%), linear-gradient(180deg, rgba(0,255,200,0.03), transparent 24%, transparent 76%, rgba(0,255,200,0.03));"></div>
-                    <div class="relative z-10 grid gap-6 lg:grid-cols-[1.15fr_.85fr] items-stretch">
-                        <div class="space-y-5">
-                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Alien lore // transmission open</div>
-                            <h1 class="header-font text-4xl sm:text-6xl lg:text-7xl mt-2 leading-[0.92]">NEURAL LINK OS</h1>
-                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.6em] text-[#00ffc8]/75">// Alien CRT relay</div>
-                            <p class="text-sm sm:text-base text-[#ddfff8]/78 leading-7 max-w-2xl soft-wrap">
-                                The terminal now boots with an Alien Broadcast OS splash, then drops into a phosphor-heavy console with the green grid, CRT bloom, and the same five-tab control deck.
-                            </p>
-                            <div class="grid gap-3 sm:grid-cols-3">
-                                <div class="rounded-[1.4rem] border border-[#00ffc8]/15 bg-black/35 p-4">
-                                    <div class="text-[10px] uppercase tracking-[0.4em] text-[#00ffc8]/55">Mode</div>
-                                    <div class="mt-2 text-lg sm:text-xl text-[#ecfff8]">Broadcast</div>
-                                </div>
-                                <div class="rounded-[1.4rem] border border-[#00ffc8]/15 bg-black/35 p-4">
-                                    <div class="text-[10px] uppercase tracking-[0.4em] text-[#00ffc8]/55">Wallet</div>
-                                    <div class="mt-2 text-lg sm:text-xl text-[#ecfff8]">Xaman live</div>
-                                </div>
-                                <div class="rounded-[1.4rem] border border-[#00ffc8]/15 bg-black/35 p-4">
-                                    <div class="text-[10px] uppercase tracking-[0.4em] text-[#00ffc8]/55">Payment</div>
-                                    <div class="mt-2 text-lg sm:text-xl text-[#ecfff8]">$50 XRP</div>
-                                </div>
-                            </div>
-                            <div class="flex flex-wrap gap-3">
-                                <button onclick="switchTab(2)" class="inline-flex items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm sm:text-base hover:bg-[#00ffc8] hover:text-black transition-all">OPEN FUSION LAB</button>
-                                <button onclick="switchTab(1)" class="inline-flex items-center justify-center rounded-2xl border border-[#00ffc8]/28 px-5 py-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">VIEW TRANSMISSIONS</button>
-                            </div>
-                        </div>
-                        <div class="rounded-[1.75rem] border border-[#00ffc8]/16 bg-black/35 p-4 sm:p-5 relative overflow-hidden shadow-[0_0_40px_rgba(0,255,200,0.14)]">
-                            <div class="absolute inset-0 opacity-40 pointer-events-none" style="background: radial-gradient(circle at 50% 10%, rgba(0,255,200,0.12), transparent 24%), repeating-linear-gradient(180deg, rgba(0,255,200,0.05) 0 1px, transparent 1px 22px), repeating-linear-gradient(90deg, rgba(0,255,200,0.04) 0 1px, transparent 1px 22px);"></div>
-                            <div class="relative z-10 flex h-full flex-col gap-4">
-                                <div class="flex items-center justify-between gap-3">
-                                    <div>
-                                        <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Console operative</div>
-                                        <div class="mt-1 header-font text-2xl sm:text-3xl text-[#ecfff8]">Alien operative</div>
-                                    </div>
-                                    <div class="rounded-full border border-[#00ffc8]/20 bg-[#00ffc8]/8 px-3 py-1 text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/75">Placeholder</div>
-                                </div>
-                                <div class="flex-1 rounded-[1.4rem] border border-[#00ffc8]/14 bg-black/55 p-3 sm:p-4 shadow-[inset_0_0_30px_rgba(0,255,200,0.08)]">
-                                    <svg viewBox="0 0 420 520" class="h-full w-full" role="img" aria-label="Cartoon alien operative placeholder">
-                                        <defs>
-                                            <linearGradient id="alienSuit" x1="0" x2="1" y1="0" y2="1">
-                                                <stop offset="0%" stop-color="#0c251b"/>
-                                                <stop offset="100%" stop-color="#02110b"/>
-                                            </linearGradient>
-                                            <linearGradient id="alienGlow" x1="0" x2="0" y1="0" y2="1">
-                                                <stop offset="0%" stop-color="#8dffca" stop-opacity="0.9"/>
-                                                <stop offset="100%" stop-color="#00ffc8" stop-opacity="0.15"/>
-                                            </linearGradient>
-                                        </defs>
-                                        <rect x="12" y="12" width="396" height="496" rx="34" fill="rgba(0,255,200,0.02)" stroke="rgba(0,255,200,0.15)"/>
-                                        <ellipse cx="210" cy="388" rx="128" ry="82" fill="rgba(0,255,200,0.08)"/>
-                                        <path d="M130 360c18-70 49-116 80-116h0c31 0 62 46 80 116l16 64H114z" fill="url(#alienSuit)" stroke="rgba(0,255,200,0.22)"/>
-                                        <path d="M146 258c0-58 29-96 64-96h0c35 0 64 38 64 96s-29 90-64 90h0c-35 0-64-32-64-90z" fill="#7cffb3" stroke="rgba(0,255,200,0.26)"/>
-                                        <ellipse cx="210" cy="250" rx="58" ry="78" fill="#8fffbc" stroke="rgba(0,255,200,0.28)"/>
-                                        <ellipse cx="185" cy="245" rx="16" ry="24" fill="#04100a"/>
-                                        <ellipse cx="235" cy="245" rx="16" ry="24" fill="#04100a"/>
-                                        <path d="M172 284c20 18 56 18 76 0" stroke="#04100a" stroke-width="10" stroke-linecap="round" fill="none"/>
-                                        <path d="M154 300h112" stroke="rgba(0,255,200,0.45)" stroke-width="6" stroke-linecap="round"/>
-                                        <path d="M160 330l-34 78" stroke="#9fffd1" stroke-width="20" stroke-linecap="round"/>
-                                        <path d="M260 330l34 78" stroke="#9fffd1" stroke-width="20" stroke-linecap="round"/>
-                                        <path d="M150 349c-22 36-42 51-50 77" stroke="rgba(0,255,200,0.18)" stroke-width="14" stroke-linecap="round"/>
-                                        <path d="M270 349c22 36 42 51 50 77" stroke="rgba(0,255,200,0.18)" stroke-width="14" stroke-linecap="round"/>
-                                        <ellipse cx="210" cy="404" rx="88" ry="28" fill="rgba(0,255,200,0.2)"/>
-                                        <rect x="182" y="332" width="56" height="88" rx="22" fill="rgba(0,0,0,0.32)" stroke="rgba(0,255,200,0.22)"/>
-                                        <circle cx="210" cy="362" r="18" fill="url(#alienGlow)"/>
-                                        <text x="210" y="474" text-anchor="middle" fill="#00ffc8" font-size="17" font-family="ui-monospace, monospace" letter-spacing="4">OPERATIONAL RELAY</text>
-                                    </svg>
-                                </div>
-                                <div class="grid gap-2 sm:grid-cols-2 text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/60">
-                                    <div class="rounded-2xl border border-[#00ffc8]/12 bg-black/30 px-3 py-2">CRT Glow: Max</div>
-                                    <div class="rounded-2xl border border-[#00ffc8]/12 bg-black/30 px-3 py-2">Distortion: Live</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+        <div id="content-0" class="tab-content active">
+            <div class="max-w-6xl mx-auto space-y-6">
+                <div class="rounded-[2rem] bg-[#05110f] p-4 sm:p-6 lg:p-8 shadow-[0_18px_60px_-35px_rgba(0,255,200,0.55)]">
+                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Alien lore // transmission open</div>
+                    <h1 class="header-font text-4xl sm:text-6xl mt-3 leading-none">COLLECTIVE LORE</h1>
+                    <p class="mt-4 text-sm sm:text-base text-[#00ffc8]/75 leading-7 max-w-3xl soft-wrap">
+                        Before the collapse, the Gross Bros chased a fracture of light across the ledger. When the BTC miners breached the perimeter, the survivors fused into machine-linked guardians.
+                    </p>
+                    <button onclick="switchTab(1)" class="inline-flex mt-5 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm sm:text-base hover:bg-[#00ffc8] hover:text-black transition-all">
+                        READ FULL TRANSMISSION
+                    </button>
+                </div>
             </div>
         </div>
-<div id="content-1" class="tab-content">
+
+                <div id="content-1" class="tab-content">
             <div class="max-w-6xl mx-auto">
                 <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Storyline archive</div>
@@ -366,7 +299,7 @@
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Link demo access</div>
-                            <h4 class="header-font text-xl sm:text-3xl mt-2">OPEN NEURAL LINK DEMO</h4>
+                            <h4 class="header-font text-xl sm:text-3xl mt-2">LAUNCH NEURAL LINK DEMO</h4>
                         </div>
                         <button id="launch-neural-link-demo" type="button" onclick="launchNeuralLinkDemo()" class="button-aura rounded-2xl px-5 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em]">LAUNCH NEURAL LINK DEMO</button>
                     </div>
@@ -457,7 +390,7 @@
     };
     const XAMAN_API_KEY = CONFIG.XAMAN_API_KEY;
     const XAMAN_API_SECRET = CONFIG.XAMAN_API_SECRET;
-    const XAMAN_RETURN_URL = CONFIG.XAMAN_RETURN_URL;
+    const XAMAN_RETURN_URL = window.location.href.split('#')[0];
     const STRICT_ISSUER = CONFIG.ISSUER_ADDRESS;
     const STRICT_TAXON = CONFIG.STRICT_TAXON;
     const TOTAL_BROS = 214;
@@ -465,9 +398,9 @@
     const XRPL_RPC_URLS = ['https://xrplcluster.com/', 'https://s2.ripple.com:51234/'];
     const SUPABASE_URL = CONFIG.SUPABASE_URL || window.SUPABASE_URL || window.__SUPABASE_URL || window.NEXT_PUBLIC_SUPABASE_URL || '';
     const SUPABASE_KEY = CONFIG.SUPABASE_KEY || window.SUPABASE_ANON_KEY || window.__SUPABASE_ANON_KEY || window.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-    const CHAT_TABLE = window.SUPABASE_CHAT_TABLE || 'chat_history';
-    const REPORT_TABLE = window.SUPABASE_REPORT_TABLE || 'field_reports';
-    const STATS_TABLE = window.SUPABASE_LEADERBOARD_TABLE || 'leaderboard';
+    const NEURAL_MESSAGES_TABLE = window.SUPABASE_NEURAL_MESSAGES_TABLE || 'neural_messages';
+    const FREQUENCY_LOGS_TABLE = window.SUPABASE_FREQUENCY_LOGS_TABLE || 'frequency_logs';
+    const HOLDER_POINTS_TABLE = window.SUPABASE_HOLDER_POINTS_TABLE || 'holder_points';
     const SESSION_KEY = 'grossbros:xaman-session';
     const STATE_KEY = 'grossbros:state';
     const BOOT_KEY = 'grossbros:boot-seen';
@@ -719,21 +652,28 @@
         return payload?.uuid || payload?.payload?.uuid || payload?.response?.uuid || payload?.session?.uuid || '';
     }
 
-    async function createXamanPayload(payloadRequest, onSigned) {
-        if (window.xumm?.payload?.createAndSubscribe) {
-            return await window.xumm.payload.createAndSubscribe(payloadRequest, async (event) => {
-                if ((event?.signed || event?.resolved?.signed || event?.data?.signed) && typeof onSigned === 'function') {
-                    await onSigned(event);
-                }
-            });
-        }
-
+    async function createXamanPayload(payloadRequest) {
         const res = await fetch('/api/xaman?action=create-payload', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payloadRequest)
         });
         return await res.json();
+    }
+
+    async function persistFrequencyLog(entry) {
+        if (!SUPABASE_URL || !SUPABASE_KEY) return false;
+        const message = String(entry?.message || entry?.content || '').trim();
+        if (!message) return false;
+        const createdAt = entry?.created_at || new Date().toISOString();
+        const cacheKey = String(entry?.cache_key || `freq:${createdAt}:${Math.random().toString(36).slice(2, 10)}`);
+        await supabaseUpsert(FREQUENCY_LOGS_TABLE, {
+            cache_key: cacheKey,
+            content: message,
+            message,
+            created_at: createdAt
+        }).catch(() => null);
+        return true;
     }
 
     function reportKey(tokenId, dayKey) {
@@ -791,10 +731,10 @@
         const amount = Math.max(1, Math.round(basePoints * operatorPointsMultiplier()));
         try {
             let current = 0;
-            const rows = await supabaseSelect(STATS_TABLE, `select=cache_key,holder,points,chat_time,win_loss&cache_key=eq.${encodeURIComponent(key)}&limit=1`).catch(() => null);
+            const rows = await supabaseSelect(HOLDER_POINTS_TABLE, `select=cache_key,holder,points,chat_time,win_loss&cache_key=eq.${encodeURIComponent(key)}&limit=1`).catch(() => null);
             if (Array.isArray(rows) && rows[0]) current = Number(rows[0].points || 0);
             const nextPoints = current + amount;
-            await supabaseUpsert(STATS_TABLE, {
+            await supabaseUpsert(HOLDER_POINTS_TABLE, {
                 cache_key: key,
                 holder: shortAddress(state.wallet),
                 points: nextPoints,
@@ -964,14 +904,14 @@
         const track = document.getElementById('warning-ticker-track');
         if (!track) return;
         try {
-            const rows = SUPABASE_URL && SUPABASE_KEY ? await supabaseSelect('transmissions', 'select=content,message,created_at&order=created_at.desc&limit=10').catch(() => null) : null;
+            const rows = SUPABASE_URL && SUPABASE_KEY ? await supabaseSelect(FREQUENCY_LOGS_TABLE, 'select=content,message,created_at&order=created_at.desc&limit=10').catch(() => null) : null;
             const items = Array.isArray(rows) && rows.length ? rows.map((row) => String(row.content || row.message || '').trim()).filter(Boolean) : [];
-            const feedItems = (items.length ? items : ['Transmission stream pending']).concat(items.length ? items : ['Transmission stream pending']);
+            const feedItems = (items.length ? items : ['Frequency log stream pending']).concat(items.length ? items : ['Frequency log stream pending']);
             track.innerHTML = feedItems.map((item, index) => '<span class="news-item">' + escapeHtml(item) + '</span>' + (index < feedItems.length - 1 ? '<span class="news-item"> • </span>' : '')).join('');
             track.style.animationPlayState = 'running';
         } catch (error) {
             console.error(error);
-            track.innerHTML = '<span class="news-item">Transmission stream pending</span><span class="news-item"> • </span><span class="news-item">Transmission stream pending</span>';
+            track.innerHTML = '<span class="news-item">Frequency log stream pending</span><span class="news-item"> • </span><span class="news-item">Frequency log stream pending</span>';
         }
     }
 
@@ -1122,7 +1062,7 @@
         try {
             let rows = [];
             if (SUPABASE_URL && SUPABASE_KEY) {
-                const data = await supabaseSelect(STATS_TABLE, 'select=holder,points,chat_time,win_loss&order=points.desc&limit=10').catch(() => null);
+                const data = await supabaseSelect(HOLDER_POINTS_TABLE, 'select=holder,points,chat_time,win_loss&order=points.desc&limit=10').catch(() => null);
                 if (Array.isArray(data) && data.length) rows = data;
             }
             if (!rows.length) {
@@ -1214,14 +1154,11 @@
         panel.innerHTML = `<div class="space-y-3"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Briefing ${dayKey}</div><div>${escapeHtml(report).replace(/\n/g, '<br>')}</div></div>`;
         if (dayEl) dayEl.textContent = `Day ${dayKey} • Token ${active.tokenId}`;
         store(key, { report, day_key: dayKey, updated_at: new Date().toISOString() });
-        supabaseUpsert(REPORT_TABLE, {
+        persistFrequencyLog({
             cache_key: key,
-            wallet_address: state.wallet,
-            token_id: active.tokenId,
-            day_key: dayKey,
-            report_text: report,
-            operative_name: state.operative?.name || active.nft?.name || '',
-            metadata: JSON.stringify({ name: state.operative?.name, faction: state.operative?.faction, traits: state.operative?.traits || [] })
+            message: report,
+            content: report,
+            created_at: new Date().toISOString()
         }).catch(() => null);
     }
 
@@ -1231,7 +1168,7 @@
         const key = chatKey(state.operative.tokenId);
         store(key, state.chatHistory);
         if (SUPABASE_URL && SUPABASE_KEY) {
-            await supabaseUpsert(CHAT_TABLE, {
+            await supabaseUpsert(NEURAL_MESSAGES_TABLE, {
                 cache_key: `${key}:${Date.now()}:${entry.role}`,
                 wallet_address: state.wallet,
                 token_id: state.operative.tokenId,
@@ -1252,9 +1189,9 @@
         if (!Array.isArray(history)) history = [];
         if (SUPABASE_URL && SUPABASE_KEY) {
             try {
-                const rows = await supabaseSelect(CHAT_TABLE, `select=role,message,created_at&wallet_address=eq.${encodeURIComponent(state.wallet)}&token_id=eq.${encodeURIComponent(state.operative.tokenId)}&order=created_at.asc&limit=100`);
+                const rows = await supabaseSelect(NEURAL_MESSAGES_TABLE, `select=role,message,created_at&wallet_address=eq.${encodeURIComponent(state.wallet)}&token_id=eq.${encodeURIComponent(state.operative.tokenId)}&order=created_at.asc&limit=100`);
                 if (Array.isArray(rows) && rows.length) {
-                    history = rows.map((r) => ({ role: r.role || 'system', message: r.message || r.content || '', created_at: r.created_at || new Date().toISOString() }));
+                    history = rows.map((r) => ({ role: r.role || 'assistant', message: r.message || r.content || '', created_at: r.created_at || new Date().toISOString() }));
                 }
             } catch {}
         }
@@ -1288,6 +1225,12 @@
         const walletText = document.getElementById('wallet-text');
         try {
             if (walletText) walletText.textContent = 'CONNECTING...';
+            await persistFrequencyLog({
+                cache_key: `freq:xaman-connect:${Date.now()}`,
+                message: 'Xaman sign-in requested',
+                content: 'Xaman sign-in requested',
+                created_at: new Date().toISOString()
+            });
             const payload = await createXamanPayload({
                 return_url: { web: XAMAN_RETURN_URL }
             });
@@ -1317,6 +1260,12 @@
                         await loadNfts();
                         await loadLeaderboard();
                         renderFusionLab();
+                        await persistFrequencyLog({
+                            cache_key: 'freq:xaman:connected:' + Date.now(),
+                            message: 'Xaman wallet connected',
+                            content: 'Xaman wallet connected',
+                            created_at: new Date().toISOString()
+                        }).catch(() => null);
                     }
                     const returnUrl = getXamanPayloadRedirect(status);
                     if (returnUrl) window.location.assign(returnUrl);
@@ -1328,6 +1277,12 @@
             }, 2500);
         } catch (error) {
             console.error(error);
+            await persistFrequencyLog({
+                cache_key: 'freq:xaman:error:' + Date.now(),
+                message: 'Xaman connect failed',
+                content: 'Xaman connect failed',
+                created_at: new Date().toISOString()
+            }).catch(() => null);
             state.connected = false;
             renderWalletUI();
         }
@@ -1352,47 +1307,53 @@
                 },
                 return_url: { web: XAMAN_RETURN_URL }
             };
-            const payload = await createXamanPayload(payloadRequest, async (event) => {
-                const signed = Boolean(event?.signed || event?.resolved?.signed || event?.data?.signed || event?.meta?.signed);
-                if (!signed) return;
-                state.fusedTokenId = state.selectedTokenId;
-                const active = currentEntry();
-                if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
-                store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
-                store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
-                renderOperativePanel();
-                renderChatTerminal();
-            });
+            await persistFrequencyLog({
+                cache_key: 'freq:fusion:' + Date.now(),
+                message: 'Fusion payment requested',
+                content: 'Fusion payment requested',
+                created_at: new Date().toISOString()
+            }).catch(() => null);
+            const payload = await createXamanPayload(payloadRequest);
             const redirectUrl = getXamanPayloadRedirect(payload);
             if (typeof redirectUrl === 'string' && redirectUrl) window.location.assign(redirectUrl);
-            if (!window.xumm?.payload?.createAndSubscribe) {
-                let attempts = 0;
-                const uuid = getXamanPayloadUuid(payload);
-                const interval = setInterval(async () => {
-                    attempts++;
-                    if (attempts > 35) {
-                        clearInterval(interval);
-                        return;
-                    }
-                    if (!uuid) return;
-                    const check = await fetch('/api/xaman?action=check-payload&uuid=' + uuid);
-                    const status = await check.json();
-                    if ((status.meta && status.meta.signed) || status.signed) {
-                        clearInterval(interval);
-                        state.fusedTokenId = state.selectedTokenId;
-                        const active = currentEntry();
-                        if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
-                        store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
-                        store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
-                        renderOperativePanel();
-                        renderChatTerminal();
-                    } else if (status.meta && status.meta.expired) {
-                        clearInterval(interval);
-                    }
-                }, 2500);
-            }
+            const uuid = getXamanPayloadUuid(payload);
+            let attempts = 0;
+            const interval = setInterval(async () => {
+                attempts++;
+                if (attempts > 35) {
+                    clearInterval(interval);
+                    return;
+                }
+                if (!uuid) return;
+                const check = await fetch('/api/xaman?action=check-payload&uuid=' + uuid);
+                const status = await check.json();
+                if ((status.meta && status.meta.signed) || status.signed) {
+                    clearInterval(interval);
+                    state.fusedTokenId = state.selectedTokenId;
+                    const active = currentEntry();
+                    if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
+                    store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
+                    store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
+                    renderOperativePanel();
+                    renderChatTerminal();
+                    await persistFrequencyLog({
+                        cache_key: 'freq:fusion:signed:' + Date.now(),
+                        message: 'Fusion payment signed',
+                        content: 'Fusion payment signed',
+                        created_at: new Date().toISOString()
+                    }).catch(() => null);
+                } else if (status.meta && status.meta.expired) {
+                    clearInterval(interval);
+                }
+            }, 2500);
         } catch (error) {
             console.error(error);
+            await persistFrequencyLog({
+                cache_key: 'freq:fusion:error:' + Date.now(),
+                message: 'Fusion payment failed',
+                content: 'Fusion payment failed',
+                created_at: new Date().toISOString()
+            }).catch(() => null);
         }
     }
     window.triggerFusion = triggerFusion;
@@ -1407,6 +1368,7 @@
         const operative = state.operative;
         const messages = buildChatMessages(operative, text);
         await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
+        await persistFrequencyLog({ cache_key: `freq:chat:user:${Date.now()}`, message: text, content: text, created_at: new Date().toISOString() }).catch(() => null);
         try {
             const response = await fetch('/api/chat', {
                 method: 'POST',
@@ -1426,10 +1388,12 @@
             if (!response.ok) throw new Error(`Chat request failed: ${response.status}`);
             const data = await response.json().catch(() => ({}));
             const reply = data?.reply || data?.message || data?.content || data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || data?.output || data?.result || 'Static lost. Try again, bro.';
-            await persistChat({ role: 'system', message: String(reply).trim(), created_at: new Date().toISOString() });
+            await persistChat({ role: 'assistant', message: String(reply).trim(), created_at: new Date().toISOString() });
+            await persistFrequencyLog({ cache_key: `freq:chat:reply:${Date.now()}`, message: String(reply).trim(), content: String(reply).trim(), created_at: new Date().toISOString() }).catch(() => null);
         } catch (error) {
             console.error(error);
-            await persistChat({ role: 'system', message: 'Signal collapsed mid-relay. Try again, bro.', created_at: new Date().toISOString() });
+            await persistChat({ role: 'assistant', message: 'Signal collapsed mid-relay. Try again, bro.', created_at: new Date().toISOString() });
+            await persistFrequencyLog({ cache_key: `freq:chat:error:${Date.now()}`, message: 'Signal collapsed mid-relay. Try again, bro.', content: 'Signal collapsed mid-relay. Try again, bro.', created_at: new Date().toISOString() }).catch(() => null);
         }
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
         renderChatHistory();
