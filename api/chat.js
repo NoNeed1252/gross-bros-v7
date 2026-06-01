@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     messages,
     lastUserText
   }) => {
-    const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_KEY || process.env.OPENROUTER_TOKEN || '';
+    const apiKey = process.env.OPENROUTER_API_KEY || ''; 
     if (!apiKey) {
       return await streamFallback(operativeName, lastUserText);
     }
