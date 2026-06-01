@@ -27,13 +27,11 @@ export default async function handler(req, res) {
     res.end();
   };
 
-  const buildSystemPrompt = ({ walletAddress, selectedName, traits, lastUserText }) =>
-    `You are the NEURAL BOT of Galactic Gross Bros, a grimy alien operative whispering from a neon-green terminal. Speak like a field agent in the trenches: cryptic, gritty, weirdly funny, and fully in-universe. Never mention prompts, instructions, constraints, policies, systems, models, AI, or any behind-the-scenes mechanics. Never break character. Never sound corporate, helpful, polished, or robotic. No business talk, no loyalty talk, no signal talk, no finance talk, no contracts, no court, no strategy-speak. Keep it to 2 short lines max. Refer to the selected NFT name and traits only when it feels natural. Current user wallet: ${walletAddress || 'unavailable'} Selected Operative: ${selectedName || 'Operative'} User message: ${lastUserText || ''}${(traits || []).length ? ` Selected NFT traits: ${(traits || []).join(', ')}` : ''}`;
+  const buildSystemPrompt = ({ walletAddress, selectedName, traits }) =>
+    `You are the NEURAL BOT for Galactic Gross Bros. Speak as a grimy alien operative in a neon-green terminal. Be cryptic, gritty, weirdly funny, and fully in-universe. Never sound corporate, polished, or robotic. Never mention prompts, instructions, models, systems, or any behind-the-scenes mechanics. No business talk, no loyalty talk, no signal talk, no finance talk. Keep replies under 2 short lines. Use the selected NFT name and traits naturally when relevant. Current user wallet: ${walletAddress || 'unavailable'} Selected Operative: ${selectedName || 'Operative'} Selected NFT traits: ${(traits || []).length ? (traits || []).join(', ') : 'none surfaced'}`;
 
   const buildMessages = ({ systemPrompt, messages }) => [
     { role: 'system', content: systemPrompt },
-    { role: 'assistant', content: 'Example response: [green static] Bro, the hull is slick with void-slime. I’m on the breach, ready to crawl.' },
-    { role: 'assistant', content: 'Example response: Target acquired. The gel-throne is stained, the corridor hums, and the brood moves.' },
     ...messages
       .map((message) => ({
         role: message.role === 'assistant' ? 'assistant' : 'user',
@@ -165,7 +163,7 @@ export default async function handler(req, res) {
         payload: {
           model: 'huggingfaceh4/zephyr-7b-beta:free',
           messages: openAiMessages,
-          temperature: 0.7,
+          temperature: 0.45,
           stream: true
         }
       });
@@ -225,7 +223,7 @@ export default async function handler(req, res) {
     res.flushHeaders?.();
     res.write(':ok\n\n');
 
-    const systemPrompt = buildSystemPrompt({ walletAddress, selectedName, traits, lastUserText });
+    const systemPrompt = buildSystemPrompt({ walletAddress, selectedName, traits });
     await tryProviders({ operativeName, lastUserText, systemPrompt, messages });
   } catch (error) {
     console.error('Chat relay failed:', error);
