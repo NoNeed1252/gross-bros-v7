@@ -1305,8 +1305,6 @@
         return `<div class="${bubbleClass} rounded-[18px] p-3 text-sm leading-7"><div class="mb-2 text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">${escapeHtml(label)}</div><div>${escapeHtml(entry.message || entry.content || '')}</div></div>`;
     }
 
-    let chatRenderFrame = null;
-
     function renderChatHistory() {
         const panel = document.getElementById('chat-history');
         if (!panel) return;
@@ -1314,20 +1312,13 @@
             panel.innerHTML = '<div class="rounded-[18px] border border-[#00ffc8]/12 bg-black/20 p-3 text-sm text-[#00ffc8]/60">No comms yet. Send a directive to initialize the chat log.</div>';
             panel.scrollTop = panel.scrollHeight;
             panel.getBoundingClientRect();
+            void panel.offsetHeight;
             return;
         }
         panel.innerHTML = state.chatHistory.map(renderChatBubble).join('');
         panel.scrollTop = panel.scrollHeight;
         panel.getBoundingClientRect();
         void panel.offsetHeight;
-    }
-
-    function scheduleChatHistoryRender() {
-        if (chatRenderFrame) return;
-        chatRenderFrame = requestAnimationFrame(() => {
-            chatRenderFrame = null;
-            renderChatHistory();
-        });
     }
 
     function renderChatFace() {
