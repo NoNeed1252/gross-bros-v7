@@ -849,7 +849,7 @@
         const tokenId = state.operative?.tokenId || 'guest';
         state.chatHistory.push({ role: 'system', message, created_at: new Date().toISOString() });
         store(chatKey(tokenId), state.chatHistory);
-        scheduleChatHistoryRender();
+        renderChatHistory();
     }
 
     function isGuestMode() {
@@ -1250,7 +1250,7 @@
             renderOperativePanel();
             renderChatFace();
         updateTradeUI();
-            scheduleChatHistoryRender();
+            renderChatHistory();
             loadFieldReport();
             bindChatInput();
             if (state.currentTab === 2) renderFusionLabState();
@@ -1312,11 +1312,14 @@
         if (!panel) return;
         if (!state.chatHistory.length) {
             panel.innerHTML = '<div class="rounded-[18px] border border-[#00ffc8]/12 bg-black/20 p-3 text-sm text-[#00ffc8]/60">No comms yet. Send a directive to initialize the chat log.</div>';
+            panel.scrollTop = panel.scrollHeight;
+            panel.getBoundingClientRect();
             return;
         }
         panel.innerHTML = state.chatHistory.map(renderChatBubble).join('');
         panel.scrollTop = panel.scrollHeight;
         panel.getBoundingClientRect();
+        void panel.offsetHeight;
     }
 
     function scheduleChatHistoryRender() {
@@ -1420,13 +1423,13 @@
             } catch {}
         }
         state.chatHistory = history;
-        scheduleChatHistoryRender();
+        renderChatHistory();
     }
 
     function renderChatTerminal() {
         renderChatFace();
         updateTradeUI();
-        scheduleChatHistoryRender();
+        renderChatHistory();
         loadFieldReport();
     }
 
@@ -1575,7 +1578,7 @@
 
         const liveReply = { role: 'system', message: '', created_at: new Date().toISOString() };
         state.chatHistory.push(liveReply);
-        scheduleChatHistoryRender();
+        renderChatHistory();
 
         try {
             const response = await fetch('/api/chat', {
@@ -1600,7 +1603,7 @@
                 const textBody = await response.text().catch(() => '');
                 liveReply.message = textBody.trim() || 'Relay fallback active. Try again in a moment.';
                 store(chatKey(operative.tokenId), state.chatHistory);
-                scheduleChatHistoryRender();
+                renderChatHistory();
                 return;
             }
 
@@ -1630,7 +1633,7 @@
                         if (token) {
                             finalReply += token;
                             liveReply.message = finalReply;
-                            scheduleChatHistoryRender();
+                            renderChatHistory();
                         }
                     }
                     splitIndex = buffer.indexOf('\n\n');
@@ -1656,10 +1659,10 @@
             console.error(error);
             liveReply.message = 'Relay fallback active. Try again in a moment.';
             store(chatKey(operative.tokenId), state.chatHistory);
-            scheduleChatHistoryRender();
+            renderChatHistory();
         }
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
-        scheduleChatHistoryRender();
+        renderChatHistory();
     }
     window.sendChatMessage = sendChatMessage;
     function updateTradeUI() {
@@ -1800,7 +1803,7 @@
         renderOperativePanel();
         renderChatFace();
         updateTradeUI();
-        scheduleChatHistoryRender();
+        renderChatHistory();
         loadFieldReport();
         updateTradeUI();
         bindChatInput();
