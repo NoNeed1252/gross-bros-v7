@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     const reply = [
       `Relay fallback active for ${operativeName}.`,
       lastUserText ? `I received: ${lastUserText}.` : 'I received your directive.',
-      'The neural link is alive, but the upstream provider is slow.',
+      'The neural link is alive, but the upstream provider is unavailable.',
       'Try again in a moment or shorten the prompt.'
     ].join(' ');
     for (const token of reply.split(/(\s+)/)) {
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
     res.end();
   };
 
-  const streamOpenAi = async ({
+  const streamOpenRouter = async ({
     operativeName,
     walletAddress,
     selectedName,
@@ -35,18 +35,16 @@ export default async function handler(req, res) {
     messages,
     lastUserText
   }) => {
-    const apiKey = process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || '';
+    const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_KEY || process.env.OPENROUTER_TOKEN || '';
     if (!apiKey) {
       return await streamFallback(operativeName, lastUserText);
     }
 
     const systemPrompt = `You are the NEURAL BOT for Galactic Gross Bros — an alien operative terminal AI. The user holds a specific Gross Bros NFT. Respond in-character as their personal operative. Tone: cryptic, high-security alien terminal, neon-green energy, humorous gross-out references. Reference the selected NFT name/traits and the overall project lore (galactic gross bros faction). Keep replies short, terminal-style, under 2 lines. Current user wallet: ${walletAddress || 'unavailable'} Selected Operative: ${selectedName || 'Operative'} Selected NFT traits: ${(traits || []).join(', ') || 'none surfaced'} User message: ${lastUserText || ''}`;
 
-    const openAiMessages = [
+    const openRouterMessages = [
       { role: 'system', content: systemPrompt },
       ...messages
-        .filter((message, index) => index !== messages.length - 1)
-        .filter((message) => message && message.role !== 'system')
         .map((message) => ({
           role: message.role === 'assistant' ? 'assistant' : 'user',
           content: String(message.content || message.message || '')
@@ -59,16 +57,18 @@ export default async function handler(req, res) {
 
     let upstream;
     try {
-      upstream = await fetch('https://api.openai.com/v1/chat/completions', {
+      upstream = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`
+          Authorization: `Bearer ${apiKey}`,
+          'HTTP-Referer': 'https://grossbros.vercel.app',
+          'X-Title': 'Gross Bros Chat'
         },
         signal: controller.signal,
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: openAiMessages,
+          model: 'huggingfaceh4/zephyr-7b-beta:free',
+          messages: openRouterMessages,
           temperature: 0.7,
           stream: true
         })
@@ -81,7 +81,7 @@ export default async function handler(req, res) {
 
     if (!upstream.ok || !upstream.body) {
       const errText = await upstream.text().catch(() => '');
-      console.error('OpenAI relay failed:', upstream.status, errText);
+      console.error('OpenRouter relay failed:', upstream.status, errText);
       return await streamFallback(operativeName, lastUserText);
     }
 
@@ -117,7 +117,14 @@ export default async function handler(req, res) {
       if (!payloadText || payloadText === '[DONE]') return false;
       try {
         const payload = JSON.parse(payloadText);
-        const token = String(payload?.choices?.[0]?.delta?.content || payload?.choices?.[0]?.message?.content || payload?.token || payload?.content || payload?.text || '');
+        const token = String(
+          payload?.choices?.[0]?.delta?.content ||
+          payload?.choices?.[0]?.message?.content ||
+          payload?.token ||
+          payload?.content ||
+          payload?.text ||
+          ''
+        );
         if (token) emitToken(token);
         if (payload?.choices?.[0]?.finish_reason) return true;
       } catch {
@@ -146,7 +153,7 @@ export default async function handler(req, res) {
       const remaining = buffer.split(/\r?\n/);
       for (const line of remaining) processLine(line);
       if (!started) {
-        throw new Error('OpenAI produced no stream tokens.');
+        throw new Error('OpenRouter produced no stream tokens.');
       }
       sendSse('done', '[DONE]');
       return res.end();
@@ -178,7 +185,7 @@ export default async function handler(req, res) {
       || [...messages].reverse().find((message) => String(message?.role || '').toLowerCase() === 'user')?.message
       || '';
 
-    await streamOpenAi({
+    await streamOpenRouter({
       operativeName,
       walletAddress,
       selectedName,
