@@ -1,1136 +1,1843 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gross Bros Fusion Lab</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #050705;
-      --panel: rgba(8, 15, 11, 0.94);
-      --panel-soft: rgba(255, 255, 255, 0.04);
-      --line: rgba(183, 255, 85, 0.18);
-      --line-2: rgba(255, 190, 85, 0.18);
-      --green: #b7ff55;
-      --green-2: #9eea31;
-      --amber: #ffbe55;
-      --text: #ecf5da;
-      --muted: #9fa996;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-      --radius: 24px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GROSS BROS • GUARDIAN BROADCAST OS v8.6</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        .hidden-tab { display: none !important; }
+        .terminal-glow { text-shadow: 0 0 10px rgba(0,255,200,0.3), 0 0 28px rgba(0,255,200,0.15); }
+        .inner-panel {
+            background: linear-gradient(180deg, rgba(7, 18, 17, 0.96), rgba(3, 10, 10, 0.96));
+            border: 1px solid rgba(0,255,200,0.14);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 0 0 1px rgba(0,255,200,0.05);
+        }
+        .data-card {
+            border: 1px solid rgba(0,255,200,0.16);
+            background: linear-gradient(180deg, rgba(7, 18, 17, 0.9), rgba(2, 8, 8, 0.95));
+        }
+        .button-aura {
+            border: 1px solid rgba(0,255,200,0.45);
+            background: linear-gradient(180deg, rgba(0,255,200,0.12), rgba(0,255,200,0.04));
+            color: #00ffc8;
+            box-shadow: 0 0 0 1px rgba(0,255,200,0.06), 0 18px 40px rgba(0,0,0,0.35);
+            transition: transform .14s ease, box-shadow .14s ease, background .14s ease, color .14s ease;
+        }
+        .button-aura:hover {
+            transform: translateY(-1px);
+            background: linear-gradient(180deg, rgba(0,255,200,0.2), rgba(0,255,200,0.08));
+            box-shadow: 0 0 0 1px rgba(0,255,200,0.18), 0 0 34px rgba(0,255,200,0.16);
+        }
+        .alien-chip {
+            border: 1px solid rgba(0,255,200,0.22);
+            background: rgba(0,255,200,0.06);
+            color: #cbfff4;
+        }
+        .ring-lid {
+            position: relative;
+            background: radial-gradient(circle at 50% 35%, rgba(0,255,200,0.18), transparent 42%), linear-gradient(180deg, rgba(11, 19, 18, 0.95), rgba(2, 6, 6, 0.96));
+            border: 1px solid rgba(0,255,200,0.17);
+        }
+        .ring-lid::after {
+            content: '';
+            position: absolute;
+            inset: 12px;
+            border-radius: 24px;
+            border: 1px solid rgba(0,255,200,0.1);
+            pointer-events: none;
+        }
+        .slow-pulse { animation: pulseGlow 2.6s ease-in-out infinite; }
+        @keyframes pulseGlow { 0%,100% { opacity: .6 } 50% { opacity: 1 } }
+        .scrollbar-thin::-webkit-scrollbar { width: 10px; height: 10px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(0,255,200,0.18); border-radius: 999px; border: 2px solid rgba(2,6,6,0.95); }
+        .scrollbar-thin::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+        .chat-bubble-user { background: rgba(0,255,200,0.1); border: 1px solid rgba(0,255,200,0.2); }
+        .chat-bubble-system { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); }
+        .cmd-input { background: rgba(0,0,0,0.35); border: 1px solid rgba(0,255,200,0.2); color: #d4fff6; outline: none; }
+        .cmd-input:focus { border-color: rgba(0,255,200,0.56); box-shadow: 0 0 0 3px rgba(0,255,200,0.08); }
+        .token-picker { position: relative; }
+        .token-search-row { display: flex; gap: 10px; align-items: stretch; }
+        .token-search-row input { flex: 1; }
+        .token-dropdown { position: absolute; left: 0; right: 0; top: calc(100% + 8px); z-index: 40; border-radius: 18px; border: 1px solid rgba(0,255,200,0.18); background: linear-gradient(180deg, rgba(4, 12, 11, 0.98), rgba(0, 0, 0, 0.96)); box-shadow: 0 18px 44px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.02); overflow: hidden; max-height: 260px; overflow-y: auto; }
+        .token-option { width: 100%; display: grid; gap: 2px; text-align: left; border: 0; border-bottom: 1px solid rgba(0,255,200,0.08); border-radius: 0; padding: 12px 14px; background: transparent; color: #d9fff8; letter-spacing: 0.08em; text-transform: uppercase; }
+        .token-option:last-child { border-bottom: 0; }
+        .token-option:hover, .token-option:focus-visible { outline: none; background: rgba(0,255,200,0.08); }
+        .token-option strong { color: #00ffc8; font-size: 12px; letter-spacing: 0.18em; }
+        .token-option span { color: rgba(236,245,218,0.62); font-size: 11px; letter-spacing: 0.12em; }
+        .token-hint { color: rgba(236,245,218,0.58); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 8px; line-height: 1.5; }
 
-    * { box-sizing: border-box; }
-    html, body { min-height: 100%; }
-    body {
-      margin: 0;
-      font-family: var(--mono);
-      color: var(--text);
-      background:
-        radial-gradient(circle at 12% 14%, rgba(183, 255, 85, 0.10), transparent 18%),
-        radial-gradient(circle at 80% 20%, rgba(255, 190, 85, 0.08), transparent 17%),
-        linear-gradient(180deg, #030403, #060907 50%, #040604);
-      overflow-x: hidden;
-    }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap');
+        :root { --cyan: #00ffc8; }
+        body { font-family: 'Share Tech Mono', monospace; background: #000; color: #00ffc8; }
+        .header-font { font-family: 'Orbitron', sans-serif; }
 
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background: repeating-linear-gradient(180deg, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 5px);
-      opacity: 0.3;
-    }
+        .alien-monitor {
+            background: #050505;
+            border: none;
+            box-shadow: 0 0 0 14px #0a0a0a, 0 30px 70px -20px rgba(0,0,0,0.95), 0 0 100px -20px var(--cyan);
+            border-radius: 24px;
+            overflow: hidden;
+            max-width: 1480px;
+            margin: 12px auto;
+            height: 92vh;
+        }
 
-    a { color: inherit; text-decoration: none; }
-    button, input, textarea, select { font: inherit; }
+        @media (max-width: 768px) {
+            body { background: #050505; }
+            .alien-monitor {
+                border: none;
+                outline: none;
+                box-shadow: none;
+                background: #050505;
+                margin: 0;
+                height: auto;
+                min-height: 100vh;
+                border-radius: 0;
+            }
+        }
 
-    .shell {
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 18px;
-    }
+        .crt::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(transparent 0px, transparent 5px, rgba(0,255,200,0.15) 5px, rgba(0,255,200,0.15) 10px);
+            animation: scanline 8s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+        @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
 
-    .frame {
-      width: min(1400px, 100%);
-      border-radius: 32px;
-      padding: 14px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(78,82,89,0.96));
-      box-shadow: 0 20px 80px rgba(0,0,0,0.58);
-    }
-
-    .terminal {
-      border-radius: 24px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.09);
-      background:
-        radial-gradient(circle at 50% 0%, rgba(183,255,85,0.10), transparent 24%),
-        linear-gradient(180deg, #070a07, #050706 44%, #030403);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), inset 0 0 40px rgba(183,255,85,0.05);
-    }
-
-    .topbar, .bottombar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 16px 18px;
-      background: linear-gradient(180deg, rgba(0,0,0,0.84), rgba(0,0,0,0.66));
-      border-bottom: 1px solid var(--line);
-    }
-
-    .bottombar {
-      border-bottom: 0;
-      border-top: 1px solid var(--line);
-      color: rgba(236,245,218,0.6);
-      font-size: 11px;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      flex-wrap: wrap;
-    }
-
-    .brand {
-      display: flex;
-      gap: 14px;
-      align-items: center;
-      min-width: 0;
-    }
-
-    .pulse {
-      width: 14px;
-      height: 14px;
-      border-radius: 999px;
-      background: var(--amber);
-      box-shadow: 0 0 16px rgba(255,190,85,0.8), 0 0 2px rgba(255,255,255,0.4) inset;
-      animation: pulse 2.8s ease-in-out infinite;
-      flex: none;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: .72; transform: scale(.95); }
-      50% { opacity: 1; transform: scale(1.06); }
-    }
-
-    .titles { min-width: 0; }
-    .kicker {
-      margin: 0 0 4px;
-      color: var(--green);
-      font-size: 11px;
-      letter-spacing: 0.38em;
-      text-transform: uppercase;
-    }
-    h1 {
-      margin: 0;
-      font-size: clamp(1.5rem, 4vw, 3.5rem);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      line-height: 0.95;
-    }
-    .subhead {
-      margin: 10px 0 0;
-      color: var(--muted);
-      max-width: 88ch;
-      line-height: 1.7;
-      font-size: 14px;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      border-radius: 999px;
-      padding: 10px 14px;
-      border: 1px solid var(--line-2);
-      background: linear-gradient(180deg, rgba(255,190,85,0.12), rgba(183,255,85,0.08));
-      color: var(--amber);
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      white-space: nowrap;
-    }
-
-    .content {
-      padding: 18px;
-      display: grid;
-      gap: 18px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      gap: 18px;
-    }
-
-    .panel {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--panel);
-      padding: 18px;
-      min-width: 0;
-      box-shadow: 0 18px 34px rgba(0,0,0,0.16);
-    }
-
-    .panel-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      color: var(--green);
-      font-size: 11px;
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-      margin-bottom: 14px;
-    }
-
-    .copy {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.75;
-      font-size: 14px;
-    }
-
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .chip {
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.03);
-      color: rgba(236,245,218,0.82);
-      border-radius: 999px;
-      padding: 10px 12px;
-      font-size: 11px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .tabs {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    .tab {
-      border: 1px solid rgba(255,255,255,0.10);
-      border-radius: 18px;
-      padding: 14px 12px;
-      background: linear-gradient(180deg, rgba(19,24,18,0.98), rgba(8,10,8,0.98));
-      color: rgba(236,245,218,0.74);
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      font-size: 11px;
-      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, color .15s ease;
-    }
-    .tab:hover, .tab:focus-visible {
-      outline: none;
-      transform: translateY(-1px);
-      border-color: rgba(183,255,85,0.55);
-      box-shadow: 0 0 0 1px rgba(183,255,85,0.04) inset, 0 0 24px rgba(183,255,85,0.10);
-      color: var(--green);
-    }
-    .tab.active {
-      background: linear-gradient(180deg, rgba(183,255,85,0.16), rgba(255,190,85,0.06));
-      border-color: rgba(183,255,85,0.72);
-      color: var(--green);
-    }
-
-    .field {
-      display: grid;
-      gap: 8px;
-      margin-top: 14px;
-    }
-    label {
-      color: rgba(236,245,218,0.70);
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-    input, textarea, select {
-      width: 100%;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.38);
-      color: var(--text);
-      padding: 12px 14px;
-      outline: none;
-    }
-    input:focus, textarea:focus, select:focus {
-      border-color: rgba(183,255,85,0.65);
-      box-shadow: 0 0 0 4px rgba(183,255,85,0.08);
-    }
-    textarea { min-height: 120px; resize: vertical; }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .btn {
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 14px;
-      padding: 12px 16px;
-      background: linear-gradient(180deg, rgba(20,24,18,0.98), rgba(9,11,9,0.98));
-      color: var(--green);
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      font-size: 11px;
-      transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease, opacity .14s ease;
-    }
-    .btn:hover:not(:disabled), .btn:focus-visible:not(:disabled) {
-      outline: none;
-      transform: translateY(-1px);
-      border-color: rgba(183,255,85,0.70);
-      box-shadow: 0 0 0 1px rgba(183,255,85,0.04) inset, 0 0 24px rgba(183,255,85,0.16);
-    }
-    .btn:disabled { opacity: 0.62; cursor: wait; }
-    .btn.primary { color: #0b1308; background: linear-gradient(180deg, var(--green), #9ee22b); border-color: rgba(183,255,85,0.82); }
-    .btn.amber { color: #150d04; background: linear-gradient(180deg, var(--amber), #f0a63e); border-color: rgba(255,190,85,0.90); }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    .stat {
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(0,0,0,0.30);
-      padding: 12px;
-    }
-    .stat span {
-      display: block;
-      margin-bottom: 8px;
-      color: rgba(236,245,218,0.64);
-      font-size: 11px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-    }
-    .stat strong { color: var(--green); font-size: 14px; }
-
-    .signal {
-      border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(0,0,0,0.32);
-      padding: 14px;
-      display: grid;
-      gap: 10px;
-    }
-
-    .signal-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      padding: 12px 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.02);
-      color: rgba(236,245,218,0.82);
-    }
-
-    .qr-wrap {
-      display: grid;
-      gap: 12px;
-      justify-items: center;
-      text-align: center;
-    }
-    .qr-wrap img {
-      width: 240px;
-      max-width: 100%;
-      border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: #fff;
-      padding: 10px;
-      display: block;
-    }
-
-    .hidden { display: none !important; }
-
-    .notice {
-      border: 1px solid rgba(183,255,85,0.16);
-      background: rgba(183,255,85,0.06);
-      color: rgba(236,245,218,0.92);
-      border-radius: 18px;
-      padding: 12px 14px;
-      line-height: 1.65;
-      font-size: 13px;
-    }
-
-    .small {
-      color: rgba(236,245,218,0.66);
-      line-height: 1.6;
-      font-size: 12px;
-    }
-
-    .log {
-      max-height: 280px;
-      overflow: auto;
-      display: grid;
-      gap: 10px;
-    }
-    .log-item {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.02);
-      color: rgba(236,245,218,0.78);
-      font-size: 12px;
-    }
-
-    @media (max-width: 1100px) {
-      .grid { grid-template-columns: 1fr; }
-      .tabs, .stats { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 760px) {
-      .shell { padding: 0; }
-      .frame { width: 100%; padding: 0; border-radius: 0; }
-      .terminal { border-radius: 0; min-height: 100vh; }
-      .topbar { flex-direction: column; align-items: flex-start; }
-      .content { padding: 14px; }
-    }
-  </style>
-  <script src="https://xaman.app/assets/cdn/xumm.min.js"></script>
+        .tab-active { border-bottom: 5px solid var(--cyan); color: var(--cyan); background: #1a1a1a; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        #content-2 #chat-shell.hidden-tab { display: block !important; }
+        .connected-glow { box-shadow: 0 0 30px var(--cyan); }
+        .nft-card { min-height: 100%; }
+        .nft-card img { width: 100%; height: 11rem; object-fit: cover; }
+        .fallback-art { width: 100%; height: 11rem; display: flex; align-items: center; justify-content: center; background: rgba(0,255,200,0.05); }
+        @media (max-width: 768px) {
+            .alien-monitor { height: auto; min-height: 96vh; }
+        }
+        @media (max-width: 640px) {
+            .tab { white-space: nowrap; }
+        }
+        .fusion-panel { border-color: rgba(0,255,200,0.20); }
+        .news-ticker {
+            border-top: 1px solid rgba(0,255,200,0.20);
+            border-bottom: 1px solid rgba(0,255,200,0.20);
+            background: linear-gradient(90deg, rgba(0,255,200,0.08), rgba(0,255,200,0.03));
+            overflow: hidden;
+            white-space: nowrap;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        .news-track {
+            display: inline-flex;
+            gap: 1rem;
+            padding: 0 0.5rem;
+            height: 1.5rem;
+            align-items: center;
+            will-change: transform;
+            animation: ticker 15s linear infinite;
+            font-size: 0.6875rem;
+            line-height: 1rem;
+        }
+        .news-item { font-size: 0.9rem; color: rgba(0,255,200,0.9); white-space: nowrap; }
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+    
+        .soft-wrap { overflow-wrap: anywhere; word-break: break-word; }
+        .tab { position: relative; transition: background-color .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease; }
+        .tab-active {
+            border-bottom: 5px solid var(--cyan);
+            color: var(--cyan);
+            background: linear-gradient(180deg, rgba(0,255,200,0.12), rgba(0,255,200,0.03));
+            box-shadow: inset 0 -1px 0 rgba(0,255,200,0.35), 0 0 18px rgba(0,255,200,0.12);
+            transform: translateY(-1px);
+        }
+        .tab-active::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 1px solid rgba(0,255,200,0.12);
+            border-radius: 2px;
+            pointer-events: none;
+        }
+        .hero-frame { aspect-ratio: 4 / 5; max-height: min(58vh, 34rem); }
+        .hero-image, .nft-thumb { width: 100%; height: 100%; object-fit: contain; padding: .5rem; }
+        .hero-image-shell { min-height: 18rem; }
+        .mobile-tight { line-height: 1.6; }
+        .leaderboard-row { transition: background-color .16s ease, box-shadow .16s ease; }
+        @media (max-width: 640px) {
+            .tab { min-width: 92px; }
+            .tab-active { box-shadow: inset 0 -1px 0 rgba(0,255,200,0.35), 0 0 22px rgba(0,255,200,0.18); }
+            .hero-frame { max-height: 44vh; }
+            .hero-image-shell { min-height: 14rem; }
+            .leaderboard-row { display: grid !important; grid-template-columns: 1fr !important; gap: .5rem; }
+            .leaderboard-row > div { min-width: 0; }
+        }
+        @media (max-width: 768px) and (orientation: portrait) {
+            #content-2 .fusion-lab-layout { grid-template-columns: 1fr !important; }
+            #content-2 .fusion-lab-layout > div { min-width: 0; }
+            #content-2 .portrait-stack { flex-direction: column !important; align-items: flex-start !important; gap: .75rem !important; }
+            #content-2 .portrait-stack > .alien-chip,
+            #content-2 .portrait-stack > .button-aura { align-self: flex-start; }
+            #content-2 #operative-panel .grid.gap-2.sm\:grid-cols-2,
+            #content-2 #fusion-panel .grid.gap-3.sm\:grid-cols-2 { grid-template-columns: 1fr !important; }
+            #content-2 #operative-panel .rounded-\[22px\],
+            #content-2 #fusion-panel .rounded-\[22px\],
+            #content-2 #field-report,
+            #content-2 #chat-shell { min-width: 0; }
+            #content-2 #operative-panel .text-base,
+            #content-2 #operative-panel .text-lg,
+            #content-2 #fusion-panel .text-xl,
+            #content-2 #fusion-panel .text-3xl { overflow-wrap: anywhere; word-break: break-word; }
+            #content-2 #fusion-panel .flex.flex-col.gap-3.sm\:flex-row { flex-direction: column !important; }
+            #content-2 #fusion-panel .button-aura { width: 100%; justify-content: center; }
+            #content-2 #chat-shell .flex.gap-3 { flex-direction: column; }
+            #content-2 #chat-shell #chat-input { width: 100%; }
+        }
+    </style>
+    <script src="https://xaman.app/assets/cdn/xumm.min.js"></script>
 </head>
-<body>
-  <div class="shell">
-    <div class="frame">
-      <main class="terminal">
-        <header class="topbar">
-          <div class="brand">
-            <div class="pulse" aria-hidden="true"></div>
-            <div class="titles">
-              <p class="kicker">Gross Bros</p>
-              <h1>Fusion Lab</h1>
-              <p class="subhead">Xaman integration for the root page. Uses createAndSubscribe, opens the Xaman deeplink immediately, restores return flow from the signed payload, and supports pay-with-anything for XRP, RLUSD, and custom meme tokens.</p>
-            </div>
-          </div>
-          <div class="status-pill" id="global-status">Booting</div>
-        </header>
 
-        <section class="content">
-          <div class="grid">
-            <article class="panel">
-              <div class="panel-head"><span>integration summary</span><span id="sdk-state">waiting</span></div>
-              <p class="copy">The Fusion Lab requests a $50 USD payment target. XRP is converted live from the current XRP/USD rate. RLUSD uses the issuer-backed asset directly. Meme token mode lets the operator enter any XRPL IOU and uses a live token quote or manual quote fallback for the USD conversion.</p>
-              <div class="chips">
-                <span class="chip">createAndSubscribe</span>
-                <span class="chip">deeplink + QR fallback</span>
-                <span class="chip">live USD target $50</span>
-                <span class="chip">return-url restoration</span>
-                <span class="chip">pay with anything</span>
-              </div>
 
-              <div class="tabs" role="tablist" aria-label="payment modes">
-                <button class="tab active" id="mode-xrp" data-mode="xrp" type="button">XRP</button>
-                <button class="tab" id="mode-rlusd" data-mode="rlusd" type="button">RLUSD</button>
-                <button class="tab" id="mode-meme" data-mode="meme" type="button">Meme token</button>
-              </div>
-
-              <div class="field">
-                <label for="destination">Fusion treasury address</label>
-                <input id="destination" readonly value="rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY" />
-              </div>
-
-              <div class="field">
-                <label for="xrp-rate">Live XRP/USD rate</label>
-                <input id="xrp-rate" readonly value="loading…" />
-              </div>
-
-              <div id="meme-fields" class="hidden">
-                <div class="field">
-                  <label for="meme-currency">Meme token currency code</label>
-                  <input id="meme-currency" placeholder="e.g. PEPE" value="" />
-                </div>
-                <div class="field">
-                  <label for="meme-issuer">Meme token issuer</label>
-                  <input id="meme-issuer" placeholder="r...issuer address..." value="" />
-                </div>
-                <div class="field">
-                  <label for="meme-lookup">Live quote lookup term</label>
-                  <input id="meme-lookup" placeholder="symbol or name for live quote search" value="" />
-                </div>
-                <div class="field">
-                  <label for="meme-manual-price">Manual USD price per token fallback</label>
-                  <input id="meme-manual-price" inputmode="decimal" placeholder="0.000001" value="" />
-                </div>
-              </div>
-
-              <div class="stats">
-                <div class="stat">
-                  <span>USD target</span>
-                  <strong>$50.00</strong>
-                </div>
-                <div class="stat">
-                  <span>Selected amount</span>
-                  <strong id="selected-amount">—</strong>
-                </div>
-                <div class="stat">
-                  <span>Quote source</span>
-                  <strong id="quote-source">coin gecko</strong>
-                </div>
-                <div class="stat">
-                  <span>Network</span>
-                  <strong>MAINNET</strong>
-                </div>
-              </div>
-
-              <div class="actions">
-                <button class="btn primary" id="connect-btn" type="button">Connect with Xaman</button>
-                <button class="btn amber" id="fusion-btn" type="button">Start Fusion Payment</button>
-                <button class="btn" id="refresh-price-btn" type="button">Refresh live quote</button>
-              </div>
-
-              <p class="small" id="status-line" style="margin-top:12px;">Ready.</p>
-            </article>
-
-            <article class="panel">
-              <div class="panel-head"><span>payload delivery</span><span id="payload-state">idle</span></div>
-              <div class="signal">
-                <div class="signal-row"><span>Last payload UUID</span><strong id="payload-uuid">none</strong></div>
-                <div class="signal-row"><span>Return URL</span><strong id="return-url">pending</strong></div>
-                <div class="signal-row"><span>Opened</span><strong id="opened-state">no</strong></div>
-                <div class="signal-row"><span>Signed</span><strong id="signed-state">no</strong></div>
-              </div>
-
-              <div style="height:14px"></div>
-
-              <div class="qr-wrap">
-                <div id="qr-card" class="notice">No payload yet. Create a sign-in or fusion payment request to show the QR fallback here.</div>
-                <img id="qr-image" class="hidden" alt="Xaman QR code" />
-                <div class="actions" style="justify-content:center; margin-top:0;">
-                  <a id="deeplink-btn" class="btn primary hidden" href="#" rel="noopener">Open Xaman</a>
-                  <a id="qr-btn" class="btn hidden" href="#" rel="noopener">Open QR fallback</a>
-                </div>
-              </div>
-            </article>
-          </div>
-
-          <div class="grid">
-            <article class="panel">
-              <div class="panel-head"><span>live log</span><span>browser restored</span></div>
-              <div id="log" class="log"></div>
-            </article>
-
-            <article class="panel">
-              <div class="panel-head"><span>notes</span><span>docs aligned</span></div>
-              <p class="copy">The Xaman SDK is loaded from the official CDN. Payloads are created with options.return_url set so mobile and desktop can restore state after signing. For browser origin flows, the page keeps the transaction details in localStorage and re-checks the payload UUID after return.</p>
-              <div class="notice" style="margin-top:14px;">
-                For issued-token modes, the payment payload sets pathfinding and requests the desired token amount. The user can still satisfy the request with any asset they hold, and Xaman handles the routing.
-              </div>
-            </article>
-          </div>
-        </section>
-
-        <footer class="bottombar">
-          <span>gross bros neural terminal</span>
-          <span>createAndSubscribe // deeplink // pay with anything</span>
-          <span id="clock">00:00:00 UTC</span>
-        </footer>
-      </main>
+<body class="bg-black min-h-screen p-2 sm:p-4 text-[#00ffc8]">
+<div id="boot-overlay" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 backdrop-blur-sm px-4">
+  <div class="inner-panel ring-lid relative w-[min(94vw,760px)] overflow-hidden rounded-[30px] p-5 sm:p-8">
+    <div class="flex items-center justify-between gap-4">
+      <div class="orbitron text-xs sm:text-sm tracking-[0.6em] text-[#00ffc8] opacity-80">BOOT SEQUENCE</div>
+      <div id="boot-progress-label" class="text-[11px] sm:text-xs tracking-[0.35em] text-[#00ffc8]/60">0%</div>
     </div>
+    <div class="mt-4 rounded-[22px] border border-[#00ffc8]/12 bg-black/35 p-4 sm:p-5">
+      <div id="boot-stream" class="h-28 overflow-hidden text-xs sm:text-sm leading-6 text-[#00ffc8]/78 soft-wrap"></div>
+    </div>
+    <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div id="boot-status-line" class="text-sm sm:text-base text-[#d9fff8]/80 soft-wrap">Initializing alien terminal…</div>
+      <div class="text-[10px] uppercase tracking-[0.4em] text-[#00ffc8]/55">Live checks</div>
+    </div>
+    <div class="mt-3 h-3 overflow-hidden rounded-full border border-[#00ffc8]/18 bg-black/55">
+      <div id="boot-progress" class="h-full w-0 rounded-full bg-[#00ffc8] shadow-[0_0_20px_rgba(0,255,200,0.45)]"></div>
+    </div>
+    <div id="boot-checks" class="mt-4 grid gap-2 text-[11px] sm:text-xs text-[#00ffc8]/70"></div>
   </div>
+</div>
+<div id="main-monitor" class="alien-monitor flex flex-col relative crt overflow-hidden">
 
-  <script>
-    (() => {
-      const CONFIG = {
-        apiKey: '5f30fcbe-a810-490b-8fd5-500a37568a49',
-        treasury: 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY',
-        fusedUsd: 50,
-        storageKey: 'grossbros:fusion-lab:v2',
-        rlusdIssuer: 'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De',
-        rlusdCurrency: '524C555344000000000000000000000000000000'
-      };
+    <div class="bg-black/95 border-b border-[#00ffc8]/20 px-4 sm:px-6 py-4 sm:py-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-center gap-3 sm:gap-4">
+            <div class="w-3.5 h-3.5 bg-[#ff3b6b] rounded-full animate-pulse shadow-[0_0_18px_rgba(255,59,107,0.85)]"></div>
+            <div>
+                <div class="header-font text-lg sm:text-2xl tracking-[0.35em] text-[#00ffc8]">Neural Link OS Beta</div>
+                <div class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55 mt-1">Alien CRT relay // transmission and chat interface</div>
+            </div>
+        </div>
 
-      const state = {
-        mode: 'xrp',
-        xrpUsd: null,
-        memeUsd: null,
-        xumm: null,
-        pendingPayload: null,
-        signed: false,
-        opened: false,
-        log: []
-      };
+        <div onclick="connectXaman()" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
+            <i class="fa-solid fa-wallet"></i>
+            <span id="wallet-text">CONNECT WALLET</span>
+        </div>
 
-      const els = {
-        globalStatus: document.getElementById('global-status'),
-        sdkState: document.getElementById('sdk-state'),
-        statusLine: document.getElementById('status-line'),
-        payloadState: document.getElementById('payload-state'),
-        payloadUuid: document.getElementById('payload-uuid'),
-        returnUrl: document.getElementById('return-url'),
-        openedState: document.getElementById('opened-state'),
-        signedState: document.getElementById('signed-state'),
-        qrCard: document.getElementById('qr-card'),
-        qrImage: document.getElementById('qr-image'),
-        deeplinkBtn: document.getElementById('deeplink-btn'),
-        qrBtn: document.getElementById('qr-btn'),
-        connectBtn: document.getElementById('connect-btn'),
-        fusionBtn: document.getElementById('fusion-btn'),
-        refreshPriceBtn: document.getElementById('refresh-price-btn'),
-        destination: document.getElementById('destination'),
-        xrpRate: document.getElementById('xrp-rate'),
-        selectedAmount: document.getElementById('selected-amount'),
-        quoteSource: document.getElementById('quote-source'),
-        memeFields: document.getElementById('meme-fields'),
-        memeCurrency: document.getElementById('meme-currency'),
-        memeIssuer: document.getElementById('meme-issuer'),
-        memeLookup: document.getElementById('meme-lookup'),
-        memeManualPrice: document.getElementById('meme-manual-price'),
-        log: document.getElementById('log'),
-        clock: document.getElementById('clock'),
-        modeXrp: document.getElementById('mode-xrp'),
-        modeRlusd: document.getElementById('mode-rlusd'),
-        modeMeme: document.getElementById('mode-meme')
-      };
+        <p id="xaman-status" class="text-[11px] sm:text-sm text-[#00ffc8]/60 text-center lg:text-right">Wallet disconnected.</p>
+    </div>
 
-      const RLUSD_TOKEN = {
-        currency: CONFIG.rlusdCurrency,
-        issuer: CONFIG.rlusdIssuer,
-        value: String(CONFIG.fusedUsd)
-      };
+    <div class="border-b border-[#00ffc8]/20 bg-gradient-to-r from-[#00ffc8]/10 via-transparent to-[#7c3aed]/10 overflow-hidden">
+        <div id="warning-ticker-track" class="news-track px-4 sm:px-6"></div>
+    </div>
 
-      function esc(value) {
+    <div class="bg-black/90 border-b border-[#00ffc8]/20 flex flex-row flex-nowrap overflow-x-auto text-[10px] sm:text-sm px-1 sm:px-0">
+        <div onclick="switchTab(0)" id="tab-0" class="tab flex-1 min-w-[92px] px-3 sm:px-5 py-4 cursor-pointer text-center tab-active">CONSOLE</div>
+        <div onclick="switchTab(1)" id="tab-1" class="tab flex-1 min-w-[120px] px-3 sm:px-5 py-4 cursor-pointer text-center whitespace-nowrap">TRANSMISSION LOGS</div>
+        <div onclick="switchTab(2)" id="tab-2" class="tab flex-1 min-w-[96px] px-3 sm:px-5 py-4 cursor-pointer text-center">FUSION LAB</div>
+        <div onclick="switchTab(3)" id="tab-3" class="tab flex-1 min-w-[118px] px-3 sm:px-5 py-4 cursor-pointer text-center whitespace-nowrap">NEURAL STANDINGS</div>
+        <div onclick="switchTab(4)" id="tab-4" class="tab flex-1 min-w-[90px] px-3 sm:px-5 py-4 cursor-pointer text-center">SOCIALS</div>
+    </div>
+
+    <div class="flex-1 overflow-auto p-3 sm:p-6 relative z-10 bg-black" id="content-area">
+
+        <div id="content-0" class="tab-content active">
+            <div class="max-w-6xl mx-auto space-y-6">
+                <div class="rounded-[2rem] bg-[#05110f] p-4 sm:p-6 lg:p-8 shadow-[0_18px_60px_-35px_rgba(0,255,200,0.55)]">
+                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Alien lore // transmission open</div>
+                    <h1 class="header-font text-4xl sm:text-6xl mt-3 leading-none">COLLECTIVE LORE</h1>
+                    <p class="mt-4 text-sm sm:text-base text-[#00ffc8]/75 leading-7 max-w-3xl soft-wrap">
+                        Before the collapse, the Gross Bros chased a fracture of light across the ledger. When the BTC miners breached the perimeter, the survivors fused into machine-linked guardians.
+                    </p>
+                    <button onclick="switchTab(1)" class="inline-flex mt-5 items-center justify-center rounded-2xl border border-[#00ffc8]/40 px-5 py-3 text-sm sm:text-base hover:bg-[#00ffc8] hover:text-black transition-all">
+                        READ FULL TRANSMISSION
+                    </button>
+                </div>
+            </div>
+        </div>
+
+                <div id="content-1" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
+                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Storyline archive</div>
+                    <h2 class="header-font text-3xl sm:text-5xl mt-3">TRANSMISSION LOGS</h2>
+                    <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <span class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55">The demo is available in Neural Link for everyone.</span>
+                    </div>
+                <div class="space-y-4 text-[#00ffc8]/78 leading-7 text-sm sm:text-base">
+                            <p>Before the collapse, the Gross Bros chased a fracture of light across the ledger.</p>
+                            <p>When the BTC miners breached the perimeter, the survivors fused into machine-linked guardians.</p>
+                            <p>Each bro carries a distinct signal, and the daily transmission locks onto one of them.</p>
+                        </div>
+
+                        <div class="mt-6 inner-panel rounded-[2rem] p-5 sm:p-6">
+                            <div class="flex items-center justify-between gap-4 portrait-stack">
+                                <div>
+                                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Daily Intelligence Briefing</div>
+                                    <h4 class="header-font text-xl sm:text-3xl mt-2">FIELD REPORT</h4>
+                                </div>
+                                <button onclick="loadFieldReport(true)" class="button-aura rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Refresh</button>
+                            </div>
+                            <div id="report-day" class="mt-4 text-[11px] uppercase tracking-[0.45em] text-[#00ffc8]/55"></div>
+                            <div id="field-report" class="mt-4 rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-4 sm:p-5 text-sm sm:text-base leading-7 text-[#ddfff9]/85 min-h-[160px]"></div>
+                        </div>
+                </div>
+            </div>
+        </div>
+        <div id="content-2" class="tab-content">
+            <div class="max-w-4xl mx-auto space-y-5">
+                <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Link demo access</div>
+                            <h4 class="header-font text-xl sm:text-3xl mt-2">LAUNCH NEURAL LINK DEMO</h4>
+                        </div>
+                        <button id="launch-neural-link-demo" type="button" onclick="launchNeuralLinkDemo()" class="button-aura rounded-2xl px-5 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em]">LAUNCH NEURAL LINK DEMO</button>
+                    </div>
+                    <p class="mt-4 text-sm sm:text-base leading-7 text-[#00ffc8]/75">Launch the Neural Link terminal without a wallet connection.</p>
+                </div>
+                <div id="fusion-panel" class="inner-panel rounded-[2rem] p-5 sm:p-6">
+                    <div class="flex flex-col gap-4">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between portrait-stack">
+                            <div>
+                                <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Fusion payment selector</div>
+                                <h4 class="header-font text-xl sm:text-3xl mt-2">FUSION PAY $50 USD</h4>
+                            </div>
+                            <div id="fusion-mode-pill" class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">XRP</div>
+                        </div>
+                        <div class="grid gap-3 sm:grid-cols-3">
+                            <button id="fusion-mode-xrp" type="button" onclick="setFusionMode('XRP')" class="rounded-2xl border border-[#00ffc8] bg-[#00ffc8] px-4 py-3 text-xs uppercase tracking-[0.34em] text-black transition-all">XRP</button>
+                            <button id="fusion-mode-rlusd" type="button" onclick="setFusionMode('RLUSD')" class="rounded-2xl border border-[#00ffc8]/30 bg-black/30 px-4 py-3 text-xs uppercase tracking-[0.34em] text-[#d9fff8] transition-all">RLUSD</button>
+                            <button id="fusion-mode-meme" type="button" onclick="setFusionMode('MEME')" class="rounded-2xl border border-[#00ffc8]/30 bg-black/30 px-4 py-3 text-xs uppercase tracking-[0.34em] text-[#d9fff8] transition-all">MEME TOKEN</button>
+                        </div>
+                        <div class="grid gap-3 sm:grid-cols-3">
+                            <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/35 p-4">
+                                <div class="text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/55">Selected token</div>
+                                <div id="fusion-mode-pill-copy" class="mt-2 text-sm text-[#f1fffd]">XRP</div>
+                            </div>
+                            <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/35 p-4 sm:col-span-2">
+                                <div class="text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/55">Live fusion quote</div>
+                                <div id="fusion-quote" class="mt-2 text-sm leading-7 text-[#d9fff8]/85">Loading live token quote…</div>
+                                <div class="mt-2 text-xl sm:text-2xl header-font text-[#00ffc8]">Amount: <span id="fusion-amount">—</span></div>
+                            </div>
+                        </div>
+                        <div id="fusion-meme-fields" class="grid gap-3 sm:grid-cols-3 hidden">
+                            <label class="block rounded-[22px] border border-[#00ffc8]/12 bg-black/35 p-4 sm:col-span-2">
+                                <div class="text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/55">Search XRPL token</div>
+                                <input id="fusion-meme-currency" value="PEPE" list="fusion-token-options" oninput="updateFusionMemeField('currency', this.value)" class="cmd-input mt-3 w-full rounded-2xl px-4 py-3 text-sm" placeholder="Search $FUZZY, $ATM, $ARMY or any XRPL token" maxlength="20" />
+                                <datalist id="fusion-token-options">
+                                    <option value="FUZZY">$FUZZY</option>
+                                    <option value="ATM">$ATM</option>
+                                    <option value="ARMY">$ARMY</option>
+                                </datalist>
+                            </label>
+                            <label class="block rounded-[22px] border border-[#00ffc8]/12 bg-black/35 p-4">
+                                <div class="text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/55">Meme token issuer</div>
+                                <input id="fusion-meme-issuer" value="" oninput="updateFusionMemeField('issuer', this.value)" class="cmd-input mt-3 w-full rounded-2xl px-4 py-3 text-sm" placeholder="r..." maxlength="35" />
+                            </label>
+                            <label class="block rounded-[22px] border border-[#00ffc8]/12 bg-black/35 p-4">
+                                <div class="text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/55">USD price per token</div>
+                                <input id="fusion-meme-price" value="" oninput="updateFusionMemeField('usdPrice', this.value)" class="cmd-input mt-3 w-full rounded-2xl px-4 py-3 text-sm" placeholder="0.00001234" inputmode="decimal" />
+                            </label>
+                        </div>
+                        <div class="rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-4 text-sm leading-7 text-[#d9fff8]/80">
+                            XRP uses a live market rate, RLUSD stays at $1.00, and meme token mode lets you enter any token code, issuer, and live USD price.
+                        </div>
+                        <div id="fusion-status" class="text-[11px] uppercase tracking-[0.32em] text-[#00ffc8]/55"></div>
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <button id="fusion-action" onclick="triggerFusion()" class="button-aura rounded-2xl px-5 py-3 text-xs uppercase tracking-[0.34em]">FUSE WITH SELECTED TOKEN</button>
+                            <button type="button" onclick="refreshXrpUsdPrice()" class="button-aura rounded-2xl px-5 py-3 text-xs uppercase tracking-[0.34em]">REFRESH XRP QUOTE</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="chat-face" class="inner-panel rounded-[2rem] p-5 sm:p-6"></div>
+                <div id="chat-shell" class="inner-panel rounded-[2rem] p-5 sm:p-6 hidden-tab">
+                    <div class="flex items-center justify-between gap-4 portrait-stack">
+                        <div>
+                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">In-world comms terminal</div>
+                            <h4 class="header-font text-xl sm:text-3xl mt-2">CHAT TERMINAL</h4>
+                        </div>
+                        <div class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">Fused</div>
+                    </div>
+                    <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
+                    <div class="mt-4 flex gap-3">
+                        <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
+                        <button onclick="triggerFusion()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
+                        <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+<div id="content-3" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
+                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural standings</div>
+                    <h2 class="header-font text-3xl sm:text-5xl mt-3">LEADERBOARD</h2>
+                    <div class="mt-6 overflow-hidden rounded-[24px] border border-[#00ffc8]/15">
+                        <div class="hidden sm:grid grid-cols-[72px,1.4fr,110px,120px,120px] gap-2 bg-black/65 px-4 py-3 text-[10px] sm:text-xs uppercase tracking-[0.4em] text-[#00ffc8]/55">
+                            <div>Rank</div><div>Holder</div><div>Points</div><div>Chat Time</div><div>Win/Loss %</div>
+                        </div>
+                        <div id="leaderboard-body" class="divide-y divide-[#00ffc8]/10 bg-black/35"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-4" class="tab-content">
+            <div class="max-w-4xl mx-auto">
+                <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
+                    <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Socials</div>
+                    <h2 class="header-font text-3xl sm:text-5xl mt-3">COMM LINKS</h2>
+                    <div class="mt-6 grid gap-4 md:grid-cols-2">
+                        <a href="https://x.com/thegrossbros?s=21" target="_blank" rel="noreferrer" class="group block rounded-[30px] border border-[#00ffc8]/18 bg-black/45 p-6 sm:p-7 transition-transform hover:-translate-y-1 hover:bg-[#00ffc8] hover:text-black">
+                            <div class="text-[10px] uppercase tracking-[0.45em] opacity-70">X Network</div>
+                            <div class="mt-3 header-font text-2xl sm:text-3xl font-bold">Broadcast on X</div>
+                            <div class="mt-4 text-sm sm:text-base leading-7 opacity-80 group-hover:opacity-100">Signal the collective, publish relays, and keep the alien terminal alive.</div>
+                        </a>
+                        <a href="https://discord.gg/fcZYk7UcB" target="_blank" rel="noreferrer" class="group block rounded-[30px] border border-[#00ffc8]/18 bg-black/45 p-6 sm:p-7 transition-transform hover:-translate-y-1 hover:bg-[#00ffc8] hover:text-black">
+                            <div class="text-[10px] uppercase tracking-[0.45em] opacity-70">Discord</div>
+                            <div class="mt-3 header-font text-2xl sm:text-3xl font-bold">Join Discord</div>
+                            <div class="mt-4 text-sm sm:text-base leading-7 opacity-80 group-hover:opacity-100">Enter the comms deck for live experiments, drops, and operative coordination.</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        </div>
+
+    </div>
+
+    <div class="bg-black/95 border-t border-[#00ffc8]/20 px-4 sm:px-6 py-4 mt-auto sticky bottom-0 z-20 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between text-xs">
+        <div class="flex gap-6">
+            <a href="https://x.com/thegrossbros" target="_blank" class="hover:text-white transition-colors">𝕏</a>
+            <a href="https://discord.gg/fcZYk7UcB" target="_blank" class="hover:text-white transition-colors">Discord</a>
+        </div>
+        <div class="flex gap-6 items-center">
+            <a href="#" class="hover:text-white transition-colors">Privacy</a>
+            <a href="#" class="hover:text-white transition-colors">Terms</a>
+            <span class="text-[#00ffc8]/55">v8.6</span>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+(function () {
+    const CONFIG = {
+        XAMAN_API_KEY: '5f30fcbe-a810-490b-8fd5-500a37568a49',
+        XAMAN_API_SECRET: '__XAMAN_API_SECRET__',
+        SUPABASE_URL: '__SUPABASE_URL__',
+        SUPABASE_KEY: '__SUPABASE_KEY__',
+        ISSUER_ADDRESS: 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY',
+        TREASURY_WALLET: 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY',
+        XAMAN_RETURN_URL: 'https://grossbros.vercel.app',
+        STRICT_TAXON: '1',
+    };
+    const XAMAN_API_KEY = CONFIG.XAMAN_API_KEY;
+    const XAMAN_API_SECRET = CONFIG.XAMAN_API_SECRET;
+    const XAMAN_RETURN_URL = CONFIG.XAMAN_RETURN_URL;
+    const STRICT_ISSUER = CONFIG.ISSUER_ADDRESS;
+    const STRICT_TAXON = CONFIG.STRICT_TAXON;
+    const TOTAL_BROS = 214;
+    const FUSION_PRICE_USD = 50;
+    const FUSION_XRP = 50;
+    const RLUSD_ISSUER = 'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De';
+    const RLUSD_CURRENCY_HEX = '524C555344000000000000000000000000000000';
+    const DEFAULT_MEME_CURRENCY = 'PEPE';
+    const XRPL_RPC_URLS = ['https://xrplcluster.com/', 'https://s2.ripple.com:51234/'];
+    const SUPABASE_URL = CONFIG.SUPABASE_URL || window.SUPABASE_URL || window.__SUPABASE_URL || window.NEXT_PUBLIC_SUPABASE_URL || '';
+    const SUPABASE_KEY = CONFIG.SUPABASE_KEY || window.SUPABASE_ANON_KEY || window.__SUPABASE_ANON_KEY || window.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    const CHAT_TABLE = window.SUPABASE_CHAT_TABLE || 'chat_history';
+    const REPORT_TABLE = window.SUPABASE_REPORT_TABLE || 'field_reports';
+    const STATS_TABLE = window.SUPABASE_LEADERBOARD_TABLE || 'leaderboard';
+    const SESSION_KEY = 'grossbros:xaman-session';
+    const STATE_KEY = 'grossbros:state';
+    const BOOT_KEY = 'grossbros:boot-seen';
+    const local = (key, fallback = null) => {
+        try {
+            const raw = localStorage.getItem(key);
+            return raw ? JSON.parse(raw) : fallback;
+        } catch {
+            return fallback;
+        }
+    };
+    const store = (key, value) => {
+        try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+    };
+
+    const state = {
+        wallet: '',
+        connected: false,
+        nfts: [],
+        selectedTokenId: '',
+        fusedTokenId: '',
+        operative: null,
+        chatHistory: [],
+        report: '',
+        currentTab: 0,
+        loadingNfts: false,
+        fusionMode: 'XRP',
+        fusionStatus: '',
+        xrpUsdPrice: null,
+        memeCurrency: DEFAULT_MEME_CURRENCY,
+        memeIssuer: '',
+        memeUsdPrice: '',
+    };
+
+    const BACKSTORIES = Object.fromEntries(Array.from({ length: TOTAL_BROS }, (_, index) => {
+        const id = index + 1;
+        const templates = [
+            'The first crack in the Ledger turned this bro into a listener for miner static.',
+            'Built in the shadow of XRP-7, this bro survived by decoding the void before it spoke.',
+            'When the miners breached the perimeter, this bro carried the relay core to safety.',
+            'A relic of the dim dimension war, this bro still hums with ledger fire.',
+            'Born from a broken block, this bro learned to survive on signal and instinct alone.',
+            'This bro patrols the rift edges and keeps the Ledger calm when the static rises.',
+            'Forged from chrome and consequence, this bro never blinks when the chain trembles.',
+            'A scanline myth in a neon shell, this bro watches over the survivors of the relay.'
+        ];
+        return [id, 'Bro ' + id + ': ' + templates[index % templates.length]];
+    }));
+
+    const BRIEFING_SEEDS = [
+        'calm', 'focused', 'hard-edged', 'signal-clean', 'radiant', 'watchful'
+    ];
+    const REPORTEVENTS = [
+        'a narrow breach near the relay core',
+        'steady chat activity and a reinforced perimeter',
+        'a low-contrast threat pattern beneath the primary route',
+        'clean fusion alignment and strong terminal discipline',
+        'a quiet surge that favors the operative channel',
+        'a clean window for signal extraction'
+    ];
+    function getFactionPersonalityPrompt(faction) {
+        const normalized = String(faction || '').toLowerCase();
+        if (normalized.includes('backpack')) {
+            return 'You are a Backpack Bro: a stoner coder with cosmic confidence. Stay chill, a little spacey, and obviously brilliant. Speak like a living signal in a neon relay. Use bro naturally. Reference signal, relay, static, and faction loyalty. Keep it vivid, grounded, and helpful.';
+        }
+        if (normalized.includes('worker')) {
+            return 'You are a Worker Bro: a miner turned warrior. Hardline, survivalist, grit-heavy, and unshakably loyal. Speak like a battle-tested signal guarding the relay. Use bro naturally. Reference signal, relay, static, and faction loyalty. Keep it direct, disciplined, and alive.';
+        }
+        return 'You are a Business Bro: the legal and cooperative arm of the Galactic Federation. Sharp, authoritative, and composed, with see you in court energy. Speak like a living signal in a federation relay. Use bro naturally. Reference signal, relay, static, and faction loyalty. Keep it crisp, persuasive, and controlled.';
+    }
+
+    function buildChatMessages(operative, text) {
+        const history = state.chatHistory.slice(-12).map((entry) => ({
+            role: entry.role === 'system' ? 'assistant' : (entry.role || 'user'),
+            content: entry.message || entry.content || ''
+        })).filter((entry) => entry.content);
+        const traits = (operative.traits || []).length ? operative.traits.join(', ') : 'none surfaced';
+        return [
+            { role: 'system', content: getFactionPersonalityPrompt(operative.faction) },
+            { role: 'system', content: `General Tone: confident, chill, cosmic, and alive. Use bro naturally. Reference signal, relay, static, and faction loyalty. Operative name: ${operative.name}. Faction: ${operative.faction}. Backstory: ${operative.backstory || 'None provided.'}. Traits: ${traits}.` },
+            ...history,
+            { role: 'user', content: text }
+        ];
+    }
+    function todayKey(date = new Date()) {
+        const d = new Date(date);
+        return [d.getUTCFullYear(), String(d.getUTCMonth() + 1).padStart(2, '0'), String(d.getUTCDate()).padStart(2, '0')].join('-');
+    }
+
+    function dayOfYear(date = new Date()) {
+        const start = Date.UTC(date.getUTCFullYear(), 0, 0);
+        const now = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+        return Math.floor((now - start) / 86400000);
+    }
+
+    function hashString(input) {
+        let hash = 2166136261;
+        for (const ch of String(input || '')) {
+            hash ^= ch.charCodeAt(0);
+            hash = Math.imul(hash, 16777619);
+        }
+        return hash >>> 0;
+    }
+
+    function pick(list, seed, fallback = '') {
+        if (!list.length) return fallback;
+        return list[hashString(seed) % list.length];
+    }
+
+    function getDailyBroId() {
+        return ((dayOfYear() - 1) % TOTAL_BROS) + 1;
+    }
+
+    function escapeHtml(value) {
         return String(value ?? '')
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#39;');
-      }
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
 
-      function short(value) {
-        const s = String(value || '');
-        if (!s) return 'none';
-        return s.length > 18 ? `${s.slice(0, 8)}…${s.slice(-6)}` : s;
-      }
+    function shortAddress(address) {
+        const a = String(address || '');
+        return a.length > 12 ? `${a.slice(0, 6)}…${a.slice(-6)}` : a;
+    }
 
-      function nowUtc() {
-        return new Date().toISOString().slice(11, 19) + ' UTC';
-      }
+    function toFixedTrim(value, decimals = 6) {
+        const num = Number(value);
+        if (!Number.isFinite(num)) return '';
+        return num.toFixed(decimals).replace(/\.?0+$/, '');
+    }
 
-      function pushLog(label, value) {
-        state.log.unshift({ label, value, time: nowUtc() });
-        state.log = state.log.slice(0, 10);
-        renderLog();
-      }
+    function isValidXrplAccount(value) {
+        return /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(String(value || '').trim());
+    }
 
-      function renderLog() {
-        els.log.innerHTML = state.log.length
-          ? state.log.map((entry) => `<div class="log-item"><span>${esc(entry.time)} · ${esc(entry.label)}</span><strong>${esc(entry.value)}</strong></div>`).join('')
-          : '<div class="log-item"><span>relay</span><strong>waiting for the first payload</strong></div>';
-      }
+    function utf8ToHex(textValue) {
+        const bytes = new TextEncoder().encode(String(textValue || '').trim());
+        return Array.from(bytes).map((byte) => byte.toString(16).padStart(2, '0')).join('').toUpperCase();
+    }
 
-      function setClock() {
-        els.clock.textContent = nowUtc();
-      }
+    function encodeCurrencyCode(code) {
+        const normalized = String(code || '').trim().toUpperCase();
+        if (!normalized) return '';
+        if (normalized === 'RLUSD') return RLUSD_CURRENCY_HEX;
+        if (normalized.length === 3 && /^[A-Z0-9]{3}$/.test(normalized)) return normalized;
+        return utf8ToHex(normalized).padEnd(40, '0').slice(0, 40);
+    }
 
-      function setStatus(text) {
-        els.globalStatus.textContent = text;
-        els.statusLine.textContent = text;
-      }
+    function getFusionModeLabel(mode = state.fusionMode) {
+        if (mode === 'RLUSD') return 'RLUSD';
+        if (mode === 'MEME') return 'Meme token';
+        return 'XRP';
+    }
 
-      function saveSession(extra = {}) {
-        try {
-          const data = {
-            mode: state.mode,
-            xrpUsd: state.xrpUsd,
-            memeUsd: state.memeUsd,
-            pendingPayload: state.pendingPayload,
-            signed: state.signed,
-            opened: state.opened,
-            memeCurrency: els.memeCurrency.value,
-            memeIssuer: els.memeIssuer.value,
-            memeLookup: els.memeLookup.value,
-            memeManualPrice: els.memeManualPrice.value,
-            ...extra
-          };
-          localStorage.setItem(CONFIG.storageKey, JSON.stringify(data));
-        } catch {}
-      }
-
-      function loadSession() {
-        try {
-          const raw = localStorage.getItem(CONFIG.storageKey);
-          if (!raw) return;
-          const data = JSON.parse(raw);
-          if (data && typeof data === 'object') {
-            if (data.mode) state.mode = data.mode;
-            if (typeof data.xrpUsd === 'number') state.xrpUsd = data.xrpUsd;
-            if (typeof data.memeUsd === 'number') state.memeUsd = data.memeUsd;
-            if (data.pendingPayload && typeof data.pendingPayload === 'object') state.pendingPayload = data.pendingPayload;
-            state.signed = Boolean(data.signed);
-            state.opened = Boolean(data.opened);
-            if (typeof data.memeCurrency === 'string') els.memeCurrency.value = data.memeCurrency;
-            if (typeof data.memeIssuer === 'string') els.memeIssuer.value = data.memeIssuer;
-            if (typeof data.memeLookup === 'string') els.memeLookup.value = data.memeLookup;
-            if (typeof data.memeManualPrice === 'string') els.memeManualPrice.value = data.memeManualPrice;
-          }
-        } catch {}
-      }
-
-      function payloadReturnUrl(uuid) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('xaman_return', uuid);
-        url.searchParams.set('mode', state.mode);
-        return url.toString();
-      }
-
-      function returnUrlTemplate(mode) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('xaman_return', '{id}');
-        url.searchParams.set('mode', mode || state.mode);
-        return url.toString();
-      }
-
-      function updateModeUi() {
-        const active = state.mode;
-        [els.modeXrp, els.modeRlusd, els.modeMeme].forEach((btn) => btn.classList.toggle('active', btn.dataset.mode === active));
-        els.memeFields.classList.toggle('hidden', active !== 'meme');
-        saveSession();
-        updateSelectedAmount();
-      }
-
-      function updateSelectedAmount() {
-        if (state.mode === 'xrp') {
-          if (typeof state.xrpUsd === 'number' && state.xrpUsd > 0) {
-            const drops = Math.ceil((CONFIG.fusedUsd / state.xrpUsd) * 1_000_000);
-            els.selectedAmount.textContent = `${drops.toLocaleString()} drops`;
-            els.quoteSource.textContent = 'CoinGecko XRP/USD';
-          } else {
-            els.selectedAmount.textContent = 'loading…';
-            els.quoteSource.textContent = 'CoinGecko XRP/USD';
-          }
-          return;
-        }
-
-        if (state.mode === 'rlusd') {
-          els.selectedAmount.textContent = `50 RLUSD`;
-          els.quoteSource.textContent = 'fixed 1:1 USD token';
-          return;
-        }
-
-        if (state.mode === 'meme') {
-          const price = state.memeUsd;
-          if (typeof price === 'number' && price > 0) {
-            const amount = CONFIG.fusedUsd / price;
-            const code = (els.memeCurrency.value || 'TOKEN').trim();
-            els.selectedAmount.textContent = `${amount.toFixed(6)} ${code}`;
-            els.quoteSource.textContent = 'Dexscreener live quote';
-          } else {
-            els.selectedAmount.textContent = 'quote needed';
-            els.quoteSource.textContent = 'manual fallback';
-          }
-        }
-      }
-
-      function setPayloadState(text) {
-        els.payloadState.textContent = text;
-      }
-
-      function setPayloadUi({ uuid, deeplink, qr, pushed }) {
-        els.payloadUuid.textContent = short(uuid);
-        els.deeplinkBtn.href = deeplink || '#';
-        els.qrBtn.href = qr || deeplink || '#';
-        els.returnUrl.textContent = payloadReturnUrl(uuid || 'pending');
-        els.qrImage.src = qr || '';
-        els.qrImage.classList.toggle('hidden', !qr);
-        els.qrCard.classList.toggle('hidden', Boolean(qr));
-        els.deeplinkBtn.classList.toggle('hidden', !deeplink);
-        els.qrBtn.classList.toggle('hidden', !qr && !deeplink);
-        if (uuid) {
-          els.qrCard.textContent = pushed ? 'Payload pushed. Open Xaman or use the QR fallback if needed.' : 'No push received. Use the QR fallback or open the deeplink.';
-        }
-      }
-
-      function updateConnectionUi(message) {
-        setStatus(message);
-        setPayloadState(message);
-      }
-
-      function buildXrpPayment() {
-        if (!state.xrpUsd || state.xrpUsd <= 0) throw new Error('Live XRP price not available');
-        const drops = Math.ceil((CONFIG.fusedUsd / state.xrpUsd) * 1_000_000);
+    function getFusionMemeConfig() {
         return {
-          txjson: {
-            TransactionType: 'Payment',
-            Destination: CONFIG.treasury,
-            Amount: String(drops)
-          },
-          options: {
-            force_network: 'MAINNET',
-            return_url: {
-              app: returnUrlTemplate('xrp'),
-              web: returnUrlTemplate('xrp')
-            }
-          },
-          custom_meta: {
-            identifier: 'grossbros-fusion-xrp',
-            instruction: `Fusion Lab payment for $${CONFIG.fusedUsd.toFixed(2)} USD worth of XRP`
-          }
+            currency: String(state.memeCurrency || DEFAULT_MEME_CURRENCY).trim().replace(/^\$/, '').toUpperCase() || DEFAULT_MEME_CURRENCY,
+            issuer: String(state.memeIssuer || '').trim(),
+            usdPrice: Number(String(state.memeUsdPrice || '').replace(/[^0-9.]/g, ''))
         };
-      }
+    }
 
-      function buildIssuedPayment({ currency, issuer, value, identifier, instruction }) {
-        return {
-          txjson: {
-            TransactionType: 'Payment',
-            Destination: CONFIG.treasury,
-            Amount: {
-              currency,
-              issuer,
-              value
-            }
-          },
-          options: {
-            force_network: 'MAINNET',
-            pathfinding: true,
-            return_url: {
-              app: returnUrlTemplate(state.mode),
-              web: returnUrlTemplate(state.mode)
-            }
-          },
-          custom_meta: {
-            identifier,
-            instruction
-          }
-        };
-      }
-
-      function normalizeCurrencyCode(value) {
-        const code = String(value || '').trim().toUpperCase();
-        if (!code) return '';
-        if (/^[A-Z0-9]{3,20}$/.test(code)) return code;
-        return code.slice(0, 20);
-      }
-
-      async function fetchXrpPrice() {
-        els.xrpRate.value = 'loading…';
-        try {
-          const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd', { cache: 'no-store' });
-          const data = await response.json();
-          const rate = Number(data?.ripple?.usd);
-          if (!rate || rate <= 0) throw new Error('Bad XRP price');
-          state.xrpUsd = rate;
-          els.xrpRate.value = `$${rate.toFixed(4)} per XRP`;
-          pushLog('XRP quote', `$${rate.toFixed(4)}`);
-          saveSession();
-          updateSelectedAmount();
-          return rate;
-        } catch (error) {
-          if (!state.xrpUsd) state.xrpUsd = 0.5;
-          els.xrpRate.value = `$${state.xrpUsd.toFixed(4)} per XRP (fallback)`;
-          pushLog('XRP quote', 'fallback 0.5000');
-          saveSession();
-          updateSelectedAmount();
-          return state.xrpUsd;
+    function getFusionQuote() {
+        const mode = state.fusionMode || 'XRP';
+        if (mode === 'RLUSD') {
+            return {
+                mode,
+                label: 'RLUSD',
+                unitPriceUsd: 1,
+                amountValue: toFixedTrim(FUSION_PRICE_USD, 2),
+                txAmount: {
+                    currency: RLUSD_CURRENCY_HEX,
+                    issuer: RLUSD_ISSUER,
+                    value: toFixedTrim(FUSION_PRICE_USD, 2)
+                },
+                ready: true
+            };
         }
-      }
+        if (mode === 'MEME') {
+            const meme = getFusionMemeConfig();
+            if (!meme.currency || !meme.issuer || !Number.isFinite(meme.usdPrice) || meme.usdPrice <= 0) {
+                return {
+                    mode,
+                    label: meme.currency || 'Meme token',
+                    amountValue: '',
+                    txAmount: null,
+                    ready: false,
+                    error: 'Search or enter a meme token code, issuer, and USD price to calculate the fusion amount.'
+                };
+            }
+            const amount = FUSION_PRICE_USD / meme.usdPrice;
+            return {
+                mode,
+                label: meme.currency,
+                unitPriceUsd: meme.usdPrice,
+                amountValue: toFixedTrim(amount, 8),
+                txAmount: {
+                    currency: encodeCurrencyCode(meme.currency),
+                    issuer: meme.issuer,
+                    value: toFixedTrim(amount, 8)
+                },
+                ready: true
+            };
+        }
+        if (!Number.isFinite(state.xrpUsdPrice) || state.xrpUsdPrice <= 0) {
+            return {
+                mode: 'XRP',
+                label: 'XRP',
+                amountValue: '',
+                txAmount: null,
+                ready: false,
+                error: 'Loading live XRP price…'
+            };
+        }
+        const amount = FUSION_PRICE_USD / state.xrpUsdPrice;
+        return {
+            mode: 'XRP',
+            label: 'XRP',
+            unitPriceUsd: state.xrpUsdPrice,
+            amountValue: toFixedTrim(amount, 6),
+            txAmount: toFixedTrim(amount * 1000000, 0),
+            ready: true
+        };
+    }
 
-      async function fetchMemeQuote() {
-        const lookup = els.memeLookup.value.trim() || els.memeCurrency.value.trim();
-        const manualPrice = Number(els.memeManualPrice.value);
-        if (lookup) {
-          try {
-            const response = await fetch(`https://api.dexscreener.com/latest/dex/search/?q=${encodeURIComponent(lookup)}`, { cache: 'no-store' });
+    function updateFusionStatus(message) {
+        state.fusionStatus = message || '';
+        const statusEl = document.getElementById('fusion-status');
+        if (statusEl) statusEl.textContent = state.fusionStatus || '';
+    }
+
+    function updateFusionQuotePanel() {
+        const quote = getFusionQuote();
+        const pill = document.getElementById('fusion-mode-pill');
+        const pillCopy = document.getElementById('fusion-mode-pill-copy');
+        const quoteEl = document.getElementById('fusion-quote');
+        const amountEl = document.getElementById('fusion-amount');
+        const modeButtons = {
+            XRP: document.getElementById('fusion-mode-xrp'),
+            RLUSD: document.getElementById('fusion-mode-rlusd'),
+            MEME: document.getElementById('fusion-mode-meme')
+        };
+        const memeFields = document.getElementById('fusion-meme-fields');
+        const fuseButton = document.getElementById('fusion-action');
+        const selectedLabel = getFusionModeLabel();
+        if (pill) pill.textContent = selectedLabel;
+        if (pillCopy) pillCopy.textContent = selectedLabel;
+        Object.entries(modeButtons).forEach(([mode, btn]) => {
+            if (!btn) return;
+            const active = mode === (state.fusionMode || 'XRP');
+            btn.classList.toggle('bg-[#00ffc8]', active);
+            btn.classList.toggle('text-black', active);
+            btn.classList.toggle('border-[#00ffc8]', active);
+            btn.classList.toggle('bg-black/30', !active);
+            btn.classList.toggle('text-[#d9fff8]', !active);
+        });
+        if (memeFields) memeFields.classList.toggle('hidden', (state.fusionMode || 'XRP') !== 'MEME');
+        if (quoteEl) {
+            if (quote.ready) {
+                const unit = quote.mode === 'XRP' ? 'XRP' : quote.mode === 'RLUSD' ? 'RLUSD' : quote.label;
+                const prefix = quote.mode === 'XRP' ? `1 XRP ≈ $${toFixedTrim(quote.unitPriceUsd, 4)}` : quote.mode === 'RLUSD' ? '1 RLUSD ≈ $1.00' : `1 ${quote.label} ≈ $${toFixedTrim(quote.unitPriceUsd, 8)}`;
+                quoteEl.textContent = `${prefix} • Fusion price is $${FUSION_PRICE_USD} USD.`;
+                if (amountEl) amountEl.textContent = `${quote.amountValue} ${unit}`;
+                updateFusionStatus(`Ready to pay with ${unit}.`);
+                if (fuseButton) fuseButton.disabled = false;
+            } else {
+                quoteEl.textContent = quote.error || 'Enter token data to calculate the fusion amount.';
+                if (amountEl) amountEl.textContent = '—';
+                updateFusionStatus(quote.error || 'Token quote unavailable.');
+                if (fuseButton) fuseButton.disabled = true;
+            }
+        }
+    }
+
+    function setFusionMode(mode) {
+        state.fusionMode = mode;
+        updateFusionQuotePanel();
+    }
+
+    function updateFusionMemeField(field, value) {
+        if (field === 'currency') state.memeCurrency = String(value || '').replace(/^\$/, '').toUpperCase();
+        if (field === 'issuer') state.memeIssuer = String(value || '').trim();
+        if (field === 'usdPrice') state.memeUsdPrice = String(value || '').trim();
+        updateFusionQuotePanel();
+    }
+
+    async function refreshXrpUsdPrice() {
+        try {
+            const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd', { cache: 'no-store' });
             const data = await response.json();
-            const pair = Array.isArray(data?.pairs)
-              ? data.pairs.find((item) => Number(item?.priceUsd) > 0) || data.pairs[0]
-              : null;
-            const price = Number(pair?.priceUsd);
-            if (price > 0) {
-              state.memeUsd = price;
-              els.quoteSource.textContent = 'Dexscreener live quote';
-              pushLog('Meme quote', `${lookup} $${price.toFixed(8)}`);
-              saveSession();
-              updateSelectedAmount();
-              return price;
+            const price = Number(data?.ripple?.usd);
+            if (Number.isFinite(price) && price > 0) {
+                state.xrpUsdPrice = price;
+                updateFusionQuotePanel();
             }
-          } catch (error) {
-            pushLog('Meme quote', 'live lookup failed');
-          }
+        } catch (error) {
+            console.warn('Unable to refresh XRP price', error);
         }
+    }
 
-        if (Number.isFinite(manualPrice) && manualPrice > 0) {
-          state.memeUsd = manualPrice;
-          els.quoteSource.textContent = 'manual fallback';
-          pushLog('Meme quote', `manual $${manualPrice.toFixed(8)}`);
-          saveSession();
-          updateSelectedAmount();
-          return manualPrice;
+    function buildFusionPaymentTx() {
+        const quote = getFusionQuote();
+        if (!quote.ready || !quote.txAmount) {
+            throw new Error(quote.error || 'Select a payment token and amount.');
         }
-
-        throw new Error('Enter a live quote lookup term or a manual USD price per token');
-      }
-
-      function openPayload(payload) {
-        const target = payload?.pushed === false ? payload?.next?.no_push_msg_received : payload?.next?.always;
-        const fallback = payload?.next?.no_push_msg_received || payload?.next?.always;
-        const url = target || fallback;
-        if (!url) throw new Error('Missing Xaman payload URL');
-        setTimeout(() => window.location.assign(url), 80);
-      }
-
-      async function runCreateAndSubscribe(body, label) {
-        if (!state.xumm) throw new Error('Xaman SDK not ready');
-        updateConnectionUi(`Creating ${label} payload`);
-
-        const result = await state.xumm.payload.createAndSubscribe(body, (eventMessage) => {
-          const data = eventMessage?.data || {};
-          if ('opened' in data) {
-            state.opened = Boolean(data.opened);
-            els.openedState.textContent = state.opened ? 'yes' : 'no';
-            pushLog('payload opened', label);
-          }
-          if ('signed' in data) {
-            state.signed = Boolean(data.signed);
-            els.signedState.textContent = state.signed ? 'yes' : 'no';
-            pushLog('payload resolved', state.signed ? 'signed' : 'rejected');
-            saveSession();
-            return eventMessage;
-          }
-          if ('expired' in data) {
-            pushLog('payload expired', label);
-            saveSession();
-          }
-        });
-
-        const created = result?.created;
-        const resolved = result?.resolved;
-        const payload = created || result;
-        if (!payload) throw new Error('Xaman did not return a payload');
-
-        state.pendingPayload = {
-          uuid: payload.uuid,
-          label,
-          mode: state.mode,
-          createdAt: Date.now()
+        const txjson = {
+            TransactionType: 'Payment',
+            Destination: CONFIG.TREASURY_WALLET,
+            Amount: quote.mode === 'XRP' ? String(quote.txAmount) : quote.txAmount
         };
-        els.payloadUuid.textContent = short(payload.uuid);
-        els.returnUrl.textContent = payloadReturnUrl(payload.uuid);
-        setPayloadUi({
-          uuid: payload.uuid,
-          deeplink: payload.next?.always,
-          qr: payload.refs?.qr_png,
-          pushed: payload.pushed
+        return { txjson, quote };
+    }
+
+    function parseMaybeJson(value) {
+        if (!value) return null;
+        const text = String(value).trim();
+        if (!(text.startsWith('{') || text.startsWith('['))) return null;
+        try { return JSON.parse(text); } catch { return null; }
+    }
+
+    function hexToUtf8(hex) {
+        if (!hex) return '';
+        let clean = String(hex).trim();
+        if (clean.startsWith('0x')) clean = clean.slice(2);
+        if (!clean || clean.length % 2 !== 0 || /[^0-9a-f]/i.test(clean)) return String(hex).trim();
+        try {
+            const bytes = new Uint8Array(clean.match(/.{1,2}/g).map((b) => parseInt(b, 16)));
+            return new TextDecoder().decode(bytes).trim() || String(hex).trim();
+        } catch {
+            return String(hex).trim();
+        }
+    }
+
+    function decodeTokenUri(uriHex) {
+        const decoded = hexToUtf8(uriHex);
+        if (!decoded) return '';
+        return decoded.replace(/^ipfs:\/\//i, 'ipfs://').replace(/^ipns:\/\//i, 'ipns://');
+    }
+
+    function getIPFSUrl(value, fallback = '') {
+        const raw = typeof value === 'string' ? value.trim() : '';
+        if (!raw) return fallback;
+        const encodePath = (path) => path.split('/').map((segment) => encodeURIComponent(segment)).join('/');
+        if (raw.startsWith('ipfs://')) {
+            const path = raw.slice(7).replace(/^ipfs\//, '');
+            return 'https://ipfs.io/ipfs/' + encodePath(path);
+        }
+        if (raw.startsWith('ipns://')) {
+            const path = raw.slice(7).replace(/^ipns\//, '');
+            return 'https://ipfs.io/ipns/' + encodePath(path);
+        }
+        if (/^https?:\/\//i.test(raw) || raw.startsWith('data:image/')) return raw;
+        if (raw.startsWith('Qm') || raw.startsWith('bafy')) return 'https://ipfs.io/ipfs/' + encodePath(raw);
+        return fallback;
+    }
+
+    function resolveNftImage(input) {
+        const raw = typeof input === 'string'
+            ? input
+            : findDeepString(input, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || getNftTokenUri(input) || '';
+        return getIPFSUrl(raw, '').replace(/#/g, '%23');
+    }
+
+    function findDeepString(value, keys) {
+        if (!value || typeof value !== 'object') return null;
+        for (const key of keys) {
+            const candidate = value[key];
+            if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
+        }
+        for (const nested of Object.values(value)) {
+            const found = findDeepString(nested, keys);
+            if (found) return found;
+        }
+        return null;
+    }
+
+    function normalizeTraits(rawTraits) {
+        if (!rawTraits) return [];
+        if (Array.isArray(rawTraits)) {
+            return rawTraits.filter(Boolean).map((t) => {
+                if (typeof t === 'string') return t;
+                if (t && typeof t === 'object' && 'trait_type' in t && 'value' in t) return `${t.trait_type}: ${t.value}`;
+                return JSON.stringify(t);
+            });
+        }
+        if (typeof rawTraits === 'object') return Object.entries(rawTraits).map(([k, v]) => `${k}: ${v}`);
+        return [String(rawTraits)];
+    }
+
+    function getTokenUri(nft) {
+        return decodeTokenUri(nft?.URI || nft?.Uri || nft?.uri || nft?.token_uri || nft?.tokenUri || '');
+    }
+
+    function getNftId(nft) {
+        return String(nft?.tokenId || nft?.TokenId || nft?.nft_id || nft?.NFTokenID || nft?.nftoken_id || nft?.id || '').trim();
+    }
+
+    function getNftIssuer(nft) {
+        return String(nft?.Issuer || nft?.issuer || nft?.owner || nft?.Owner || '').trim();
+    }
+
+    function getNftTaxon(nft) {
+        const raw = nft?.NFTokenTaxon ?? nft?.nft_taxon ?? nft?.taxon ?? nft?.Taxon;
+        const num = Number(raw);
+        return Number.isFinite(num) ? num : NaN;
+    }
+
+    function getNftSerial(nft) {
+        const raw = nft?.nft_serial ?? nft?.serial ?? nft?.NFTokenSequence;
+        const num = Number(raw);
+        return Number.isFinite(num) ? num : 999999999;
+    }
+
+    function isStrictMatch(nft) {
+        return getNftIssuer(nft) === STRICT_ISSUER && getNftTaxon(nft) === Number(STRICT_TAXON);
+    }
+
+    function getStoredState() {
+        return local(STATE_KEY, { selectedTokenId: '', fusedTokenId: '' }) || { selectedTokenId: '', fusedTokenId: '' };
+    }
+
+    function currentEntry() {
+        const fused = state.fusedTokenId ? state.nfts.find((item) => item.tokenId === state.fusedTokenId) : null;
+        const selected = state.selectedTokenId ? state.nfts.find((item) => item.tokenId === state.selectedTokenId) : null;
+        return fused || selected || state.nfts[0] || null;
+    }
+
+    function operativeKey(tokenId) {
+        return `${STATE_KEY}:${state.wallet}:${tokenId}`;
+    }
+
+    function chatKey(tokenId) {
+        return `${STATE_KEY}:chat:${state.wallet}:${tokenId}`;
+    }
+
+    function getXamanPayloadRedirect(payload) {
+        return payload?.created?.next?.always || payload?.next?.always || payload?.payload?.next?.always || payload?.response?.next?.always || payload?.created?.next?.no_push_msg_received || payload?.next?.no_push_msg_received || payload?.payload?.next?.no_push_msg_received || payload?.response?.next?.no_push_msg_received || '';
+    }
+
+    function getXamanPayloadUuid(payload) {
+        return payload?.uuid || payload?.payload?.uuid || payload?.response?.uuid || payload?.session?.uuid || '';
+    }
+
+    function getPendingXamanUuid() {
+        const params = new URL(window.location.href).searchParams;
+        const savedSession = local(SESSION_KEY, null);
+        return params.get('uuid') || params.get('xaman_uuid') || savedSession?.pendingUuid || '';
+    }
+
+    function extractXamanAccount(status) {
+        return status?.response?.account || status?.account || status?.resolved?.account || status?.data?.account || '';
+    }
+
+    async function createXamanPayload(payloadRequest) {
+        const res = await fetch('/api/xaman?action=create-payload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payloadRequest)
         });
-        setPayloadState(`${label} payload created`);
-        pushLog('payload created', short(payload.uuid));
-        saveSession();
-
-        if (payload.next?.always) {
-          openPayload(payload);
+        const payload = await res.json().catch(() => null);
+        if (!res.ok) {
+            throw new Error((payload && payload.error) ? payload.error : `Failed to create Xaman payload (${res.status})`);
         }
-
-        if (resolved && typeof resolved.then === 'function') {
-          resolved.then((finalPayload) => {
-            const signed = Boolean(finalPayload?.signed);
-            state.signed = signed;
-            els.signedState.textContent = signed ? 'yes' : 'no';
-            setPayloadState(signed ? `${label} signed` : `${label} rejected`);
-            pushLog('payload final', signed ? 'signed' : 'rejected');
-            saveSession();
-          }).catch((error) => {
-            pushLog('payload result error', error instanceof Error ? error.message : 'unknown');
-          });
-        }
-
         return payload;
-      }
+    }
 
-      async function connectWallet() {
-        els.connectBtn.disabled = true;
-        try {
-          const body = {
-            txjson: {
-              TransactionType: 'SignIn'
-            },
-            options: {
-              force_network: 'MAINNET',
-              return_url: {
-                app: returnUrlTemplate('signin'),
-                web: returnUrlTemplate('signin')
-              }
-            },
-            custom_meta: {
-              identifier: 'grossbros-signin',
-              instruction: 'Connect your wallet to Gross Bros Fusion Lab'
+    async function completeXamanConnection(status) {
+        const address = extractXamanAccount(status);
+        if (address) {
+            state.wallet = address;
+            state.connected = true;
+            store(SESSION_KEY, { connected: true, address, wallet: address });
+            renderWalletUI();
+            await loadNfts();
+            await loadLeaderboard();
+            renderFusionLab();
+            await persistFrequencyLog({
+                cache_key: 'freq:xaman:connected:' + Date.now(),
+                message: 'Xaman wallet connected',
+                content: 'Xaman wallet connected',
+                created_at: new Date().toISOString()
+            }).catch(() => null);
+        }
+        const returnUrl = getXamanPayloadRedirect(status);
+        if (returnUrl) window.location.href = returnUrl;
+    }
+
+    function startXamanPolling(uuid) {
+        let attempts = 0;
+        const interval = setInterval(async () => {
+            attempts++;
+            if (attempts > 35) {
+                clearInterval(interval);
+                state.connected = false;
+                renderWalletUI();
+                return;
             }
-          };
-          await runCreateAndSubscribe(body, 'sign-in');
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Connection failed';
-          setStatus(message);
-          pushLog('connect error', message);
-        } finally {
-          els.connectBtn.disabled = false;
-        }
-      }
-
-      async function startFusionPayment() {
-        els.fusionBtn.disabled = true;
-        try {
-          let body;
-          if (state.mode === 'xrp') {
-            await fetchXrpPrice();
-            body = buildXrpPayment();
-          } else if (state.mode === 'rlusd') {
-            body = buildIssuedPayment({
-              currency: CONFIG.rlusdCurrency,
-              issuer: CONFIG.rlusdIssuer,
-              value: String(CONFIG.fusedUsd),
-              identifier: 'grossbros-fusion-rlusd',
-              instruction: 'Fusion Lab payment for $50 USD worth of RLUSD'
-            });
-            updateSelectedAmount();
-          } else {
-            const price = await fetchMemeQuote();
-            const currency = normalizeCurrencyCode(els.memeCurrency.value) || 'MEME';
-            const issuer = String(els.memeIssuer.value || '').trim();
-            if (!issuer) throw new Error('Meme token issuer is required');
-            const amount = CONFIG.fusedUsd / price;
-            body = buildIssuedPayment({
-              currency,
-              issuer,
-              value: amount.toFixed(6),
-              identifier: `grossbros-fusion-${currency.toLowerCase()}`,
-              instruction: `Fusion Lab payment for $${CONFIG.fusedUsd.toFixed(2)} USD worth of ${currency}`
-            });
-            updateSelectedAmount();
-          }
-
-          await runCreateAndSubscribe(body, `${state.mode.toUpperCase()} fusion`);
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Fusion payment failed';
-          setStatus(message);
-          setPayloadState(message);
-          pushLog('fusion error', message);
-        } finally {
-          els.fusionBtn.disabled = false;
-        }
-      }
-
-      async function resumeFromReturn() {
-        const params = new URLSearchParams(window.location.search);
-        const uuid = params.get('xaman_return');
-        if (!uuid) return;
-        pushLog('return url', short(uuid));
-        setStatus('Restoring payload status');
-
-        if (state.xumm) {
-          try {
-            const payload = await state.xumm.payload.get(uuid);
-            if (payload) {
-              els.payloadUuid.textContent = short(payload.uuid || uuid);
-              setPayloadUi({
-                uuid: payload.uuid || uuid,
-                deeplink: payload.next?.always,
-                qr: payload.refs?.qr_png,
-                pushed: payload.pushed
-              });
-              const signed = Boolean(payload.signed);
-              const rejected = payload.signed === false;
-              els.signedState.textContent = signed ? 'yes' : 'no';
-              els.openedState.textContent = payload.opened ? 'yes' : 'no';
-              setPayloadState(signed ? 'payload signed' : (rejected ? 'payload rejected' : 'payload pending'));
-              pushLog('payload restored', signed ? 'signed' : (rejected ? 'rejected' : 'pending'));
+            if (!uuid) return;
+            const check = await fetch('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(uuid));
+            const status = await check.json();
+            if ((status.meta && status.meta.signed) || status.signed) {
+                clearInterval(interval);
+                await completeXamanConnection(status);
+            } else if (status.meta && status.meta.expired) {
+                clearInterval(interval);
+                state.connected = false;
+                renderWalletUI();
             }
-          } catch (error) {
-            pushLog('restore error', error instanceof Error ? error.message : 'unknown');
-          }
-        }
-      }
+        }, 2500);
+        return interval;
+    }
 
-      function bindEvents() {
-        els.connectBtn.addEventListener('click', connectWallet);
-        els.fusionBtn.addEventListener('click', startFusionPayment);
-        els.refreshPriceBtn.addEventListener('click', async () => {
-          if (state.mode === 'xrp') await fetchXrpPrice();
-          if (state.mode === 'meme') {
-            try { await fetchMemeQuote(); } catch (error) { setStatus(error instanceof Error ? error.message : 'quote lookup failed'); }
-          }
+    function reportKey(tokenId, dayKey) {
+        return `${STATE_KEY}:report:${state.wallet}:${tokenId}:${dayKey}`;
+    }
+
+    function supabaseHeaders() {
+        if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+        return {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+        };
+    }
+
+    async function supabaseSelect(table, query) {
+        const headers = supabaseHeaders();
+        if (!SUPABASE_URL || !SUPABASE_KEY || !headers) return null;
+        const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${encodeURIComponent(table)}?${query}`;
+        const res = await fetch(url, { headers, cache: 'no-store' });
+        if (!res.ok) throw new Error(`Supabase select failed: ${res.status}`);
+        return await res.json();
+    }
+
+    async function supabaseUpsert(table, row, onConflict = 'cache_key') {
+        const headers = supabaseHeaders();
+        if (!SUPABASE_URL || !SUPABASE_KEY || !headers) return false;
+        const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${encodeURIComponent(table)}?on_conflict=${encodeURIComponent(onConflict)}`;
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { ...headers, Prefer: 'resolution=merge-duplicates,return=minimal' },
+            body: JSON.stringify(row)
         });
+        if (!res.ok && res.status !== 204) throw new Error(`Supabase upsert failed: ${res.status}`);
+        return true;
+    }
 
-        [els.modeXrp, els.modeRlusd, els.modeMeme].forEach((btn) => {
-          btn.addEventListener('click', () => {
-            state.mode = btn.dataset.mode;
-            setStatus(`Mode set to ${state.mode.toUpperCase()}`);
-            updateModeUi();
-            saveSession();
-          });
-        });
+    const OPERATOR_POINTS_BASE_ACTIVITY = 8;
+    const OPERATOR_POINTS_BASE_CHAT = 12;
+    const OPERATOR_POINTS_FUSED_MULTIPLIER = 3;
 
-        [els.memeCurrency, els.memeIssuer, els.memeLookup, els.memeManualPrice].forEach((input) => {
-          input.addEventListener('input', () => {
-            saveSession();
-            updateSelectedAmount();
-          });
-        });
-      }
+    function operatorPointsMultiplier() {
+        return state.fusedTokenId ? OPERATOR_POINTS_FUSED_MULTIPLIER : 1;
+    }
 
-      async function boot() {
-        loadSession();
-        bindEvents();
-        updateModeUi();
-        renderLog();
-        setClock();
-        setInterval(setClock, 1000);
+    function operatorPointsCacheKey() {
+        return `points:${state.wallet || 'anonymous'}`;
+    }
 
-        if (typeof window.Xumm !== 'function') {
-          setStatus('Xaman SDK unavailable');
-          pushLog('sdk', 'failed to load CDN script');
-          return;
-        }
-
+    async function awardOperatorPoints(kind, basePoints) {
+        const active = currentEntry();
+        if (!SUPABASE_URL || !SUPABASE_KEY || !state.wallet || !active) return false;
+        const key = operatorPointsCacheKey();
+        const amount = Math.max(1, Math.round(basePoints * operatorPointsMultiplier()));
         try {
-          state.xumm = new window.Xumm(CONFIG.apiKey);
-          els.sdkState.textContent = 'ready';
-          pushLog('sdk', 'ready');
+            let current = 0;
+            const rows = await supabaseSelect(STATS_TABLE, `select=cache_key,holder,points,chat_time,win_loss&cache_key=eq.${encodeURIComponent(key)}&limit=1`).catch(() => null);
+            if (Array.isArray(rows) && rows[0]) current = Number(rows[0].points || 0);
+            const nextPoints = current + amount;
+            await supabaseUpsert(STATS_TABLE, {
+                cache_key: key,
+                holder: shortAddress(state.wallet),
+                points: nextPoints,
+                chat_time: `${kind}:${todayKey()}`,
+                win_loss: state.fusedTokenId ? `Fused x${OPERATOR_POINTS_FUSED_MULTIPLIER}` : 'Base rate'
+            }).catch(() => null);
+            return true;
         } catch (error) {
-          const message = error instanceof Error ? error.message : 'sdk init failed';
-          setStatus(message);
-          pushLog('sdk error', message);
-          return;
+            console.error(error);
+            return false;
+        }
+    }
+
+    async function fetchRpc(url, body) {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(body),
+            cache: 'no-store'
+        });
+        if (!res.ok) throw new Error(`XRPL HTTP ${res.status}`);
+        return await res.json();
+    }
+
+    async function fetchXrplNftsByWallet(wallet) {
+        let lastError = null;
+        for (const rpcUrl of XRPL_RPC_URLS) {
+            try {
+                const payload = await fetchRpc(rpcUrl, {
+                    method: 'account_nfts',
+                    params: [{ account: wallet, ledger_index: 'validated', limit: 400 }]
+                });
+                const records = payload?.result?.account_nfts || payload?.result?.nfts || [];
+                if (Array.isArray(records) && records.length) return records;
+            } catch (error) {
+                lastError = error;
+            }
+        }
+        throw lastError || new Error('Unable to load NFTs');
+    }
+
+    async function fetchXrplNftsByIssuer() {
+        let lastError = null;
+        const requests = [
+            { method: 'nfts_by_issuer', params: [{ issuer: STRICT_ISSUER, taxon: Number(STRICT_TAXON), ledger_index: 'validated', limit: 400 }] },
+            { method: 'account_nfts', params: [{ account: STRICT_ISSUER, ledger_index: 'validated', limit: 400 }] }
+        ];
+        for (const rpcUrl of XRPL_RPC_URLS) {
+            for (const body of requests) {
+                try {
+                    const payload = await fetchRpc(rpcUrl, body);
+                    const result = payload?.result || payload || null;
+                    const records = Array.isArray(result?.nfts) ? result.nfts : Array.isArray(result?.account_nfts) ? result.account_nfts : [];
+                    const filtered = records.filter((entry) => {
+                        const issuer = String(entry.Issuer || entry.issuer || '').trim();
+                        const taxon = Number(entry.NFTokenTaxon ?? entry.nft_taxon ?? entry.taxon);
+                        return issuer === STRICT_ISSUER && Number.isFinite(taxon) && taxon === Number(STRICT_TAXON);
+                    }).sort((a, b) => getNftSerial(a) - getNftSerial(b) || getNftId(a).localeCompare(getNftId(b)));
+                    if (filtered.length) return filtered;
+                } catch (error) {
+                    lastError = error;
+                }
+            }
+        }
+        throw lastError || new Error('Unable to load XRPL NFTs.');
+    }
+
+    async function fetchMetadataFromTokenUri(tokenUri) {
+        const inline = parseMaybeJson(tokenUri);
+        if (inline) return inline;
+        const metadataUrl = getIPFSUrl(tokenUri);
+        if (!metadataUrl) return null;
+        try {
+            const response = await fetch(metadataUrl, { cache: 'no-store' });
+            if (!response.ok) return null;
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('json')) return await response.json().catch(() => null);
+            const text = await response.text().catch(() => '');
+            const parsed = parseMaybeJson(text);
+            if (parsed) return parsed;
+            const inlineImage = getIPFSUrl(text, '');
+            if (inlineImage) return { image: inlineImage };
+        } catch {
+            return null;
+        }
+        return null;
+    }
+
+    function buildOperativeFromMetadata(nft, metadata) {
+        const name = metadata?.name || metadata?.title || nft?.name || `Operative ${getNftSerial(nft)}`;
+        const faction = metadata?.faction || metadata?.attributes?.faction || metadata?.collection?.name || 'The Collective';
+        const traits = normalizeTraits(metadata?.attributes || metadata?.traits || metadata?.properties || metadata?.data?.attributes).slice(0, 8);
+        const tokenId = getNftId(nft);
+        const image = resolveNftImage(metadata) || resolveNftImage(nft);
+        const backstory = BACKSTORIES[getNftSerial(nft)] || BACKSTORIES[getDailyBroId()] || '';
+        return { tokenId, name, faction, traits, backstory, image, raw: nft, metadata };
+    }
+
+    function renderWalletUI() {
+        const walletText = document.getElementById('wallet-text');
+        const xamanStatus = document.getElementById('xaman-status');
+        const xrpAmount = document.getElementById('xrp-amount');
+        const monitor = document.getElementById('main-monitor');
+        if (walletText) walletText.textContent = state.connected ? 'XAMAN CONNECTED' : 'CONNECT WALLET';
+        if (xamanStatus) xamanStatus.textContent = state.connected ? 'Connected: ' + shortAddress(state.wallet) : 'Wallet disconnected.';
+        if (xrpAmount) xrpAmount.textContent = state.connected ? 'CONNECTED BRO: ' + shortAddress(state.wallet) : '';
+        if (monitor) monitor.classList.toggle('connected-glow', state.connected);
+        updateFusionQuotePanel();
+    }
+
+    function launchNeuralLinkDemo() {
+        const demoTokenId = 'demo-neural-link';
+        const demoWallet = 'DEMO-NEURAL-LINK';
+        const demoReport = 'Demo mode initialized. The Neural Link terminal is online. Use the Neural Link terminal to explore the Gross Bros demo, send a directive, and watch the relay respond in real time.';
+        const demoHistory = [
+            { role: 'system', message: 'Neural Link demo initialized. Use the terminal to explore the Gross Bros relay.' },
+            { role: 'assistant', message: 'Demo mode active. Type a message or press SEND to query the relay.' }
+        ];
+
+        state.demoMode = true;
+        if (!state.wallet) {
+            state.wallet = demoWallet;
+            state.connected = true;
         }
 
-        await fetchXrpPrice();
-        if (state.mode === 'meme') {
-          try { await fetchMemeQuote(); } catch {}
+        state.nfts = [{
+            tokenId: demoTokenId,
+            nft: { tokenId: demoTokenId, name: 'Neural Link Demo' },
+            metadata: {
+                name: 'Neural Link Demo',
+                faction: 'Gross Bros',
+                traits: ['Guided Demo', 'Console Launch'],
+                image: ''
+            }
+        }];
+        state.selectedTokenId = demoTokenId;
+        state.fusedTokenId = demoTokenId;
+        state.operative = buildOperativeFromMetadata(state.nfts[0].nft, state.nfts[0].metadata);
+        state.chatHistory = demoHistory;
+
+        store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
+        store(chatKey(demoTokenId), demoHistory);
+        store(reportKey(demoTokenId, todayKey()), { report: demoReport, day_key: todayKey(), updated_at: new Date().toISOString() });
+
+        renderWalletUI();
+        renderNftGrid();
+        switchTab(2);
+        updateFusionQuotePanel();
+        renderOperativePanel();
+        renderChatFace();
+        renderChatHistory();
+        loadFieldReport();
+        bindChatInput();
+
+        const input = document.getElementById('chat-input');
+        if (input) {
+            input.placeholder = 'Demo mode active — send a directive to the Neural Link...';
+            input.focus();
         }
+    }
 
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('mode') && ['xrp', 'rlusd', 'meme'].includes(params.get('mode'))) {
-          state.mode = params.get('mode');
-          updateModeUi();
+    window.launchNeuralLinkDemo = launchNeuralLinkDemo;
+
+    function renderConsole() {
+        return;
+    }
+
+    async function loadWarningTicker() {
+        const track = document.getElementById('warning-ticker-track');
+        if (!track) return;
+        try {
+            const rows = SUPABASE_URL && SUPABASE_KEY ? await supabaseSelect('transmissions', 'select=content,message,created_at&order=created_at.desc&limit=10').catch(() => null) : null;
+            const items = Array.isArray(rows) && rows.length ? rows.map((row) => String(row.content || row.message || '').trim()).filter(Boolean) : [];
+            const feedItems = (items.length ? items : ['Transmission stream pending']).concat(items.length ? items : ['Transmission stream pending']);
+            track.innerHTML = feedItems.map((item, index) => '<span class="news-item">' + escapeHtml(item) + '</span>' + (index < feedItems.length - 1 ? '<span class="news-item"> • </span>' : '')).join('');
+            track.style.animationPlayState = 'running';
+        } catch (error) {
+            console.error(error);
+            track.innerHTML = '<span class="news-item">Transmission stream pending</span><span class="news-item"> • </span><span class="news-item">Transmission stream pending</span>';
         }
+    }
 
-        els.openedState.textContent = state.opened ? 'yes' : 'no';
-        els.signedState.textContent = state.signed ? 'yes' : 'no';
-        if (state.pendingPayload?.uuid) {
-          els.payloadUuid.textContent = short(state.pendingPayload.uuid);
-          els.returnUrl.textContent = payloadReturnUrl(state.pendingPayload.uuid);
-          setPayloadState(`${state.pendingPayload.label || 'payload'} cached`);
+    function renderOperativePanel() {
+        const chatShell = document.getElementById('chat-shell');
+        const selectedEntry = state.selectedTokenId ? state.nfts.find((item) => item.tokenId === state.selectedTokenId) : null;
+        const fusedEntry = state.fusedTokenId ? state.nfts.find((item) => item.tokenId === state.fusedTokenId) : null;
+        const activeEntry = fusedEntry || selectedEntry || null;
+        state.operative = activeEntry ? buildOperativeFromMetadata(activeEntry.nft, activeEntry.metadata || {}) : null;
+        if (!chatShell) return;
+        if (!state.wallet || !activeEntry) {
+            chatShell.classList.add('hidden-tab');
+            return;
         }
+        chatShell.classList.remove('hidden-tab');
+        renderChatFace();
+    }
 
-        await resumeFromReturn();
-        setStatus('Ready');
-      }
+    function renderNftGrid() {
+        const grid = document.getElementById('nft-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        if (!state.wallet) {
+            grid.innerHTML = '<div class="col-span-full rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-5 text-center text-sm text-[#00ffc8]/60">Connect a wallet to scan NFT inventory.</div>';
+            return;
+        }
+        if (!state.nfts.length) {
+            grid.innerHTML = '<div class="col-span-full rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-5 text-center text-sm text-[#00ffc8]/60">No matching NFTs found for the strict issuer/taxon filter.</div>';
+            return;
+        }
+        grid.innerHTML = state.nfts.map((entry) => {
+            const tokenId = entry.tokenId;
+            const img = resolveNftImage(entry.metadata || {}) || resolveNftImage(entry.nft) || '';
+            const active = tokenId === state.selectedTokenId;
+            return [
+                '                <button class="text-left rounded-[18px] overflow-hidden border ' + (active ? 'border-[#00ffc8] shadow-[0_0_0_1px_rgba(0,255,200,0.22),0_0_26px_rgba(0,255,200,0.14)]' : 'border-[#00ffc8]/15') + ' bg-black/35 transition-transform hover:-translate-y-0.5" onclick="selectNft(\'' + escapeHtml(tokenId) + '\')">',
+                '                    <div class="w-full aspect-square overflow-hidden bg-black/45">',
+                img ? '                        <img src="' + escapeHtml(img) + '" class="w-full h-full object-cover" alt="" onerror="this.remove()" />' : '',
+                '                    </div>',
+                '                </button>'
+            ].filter(Boolean).join('\n');
+        }).join('');
+    }
 
-      boot();
-    })();
-  </script>
+    async function loadDailyBro() {
+        const imageEl = document.getElementById('daily-bro-image');
+        const placeholderEl = document.getElementById('daily-bro-placeholder');
+        const nameEl = document.getElementById('daily-bro-name');
+        const descriptionEl = document.getElementById('daily-bro-description');
+        const issuerEl = document.getElementById('daily-bro-issuer');
+        const tokenIdEl = document.getElementById('daily-bro-tokenid');
+        const linkEl = document.getElementById('daily-bro-link');
+        if (!imageEl || !placeholderEl || !nameEl || !descriptionEl || !issuerEl || !tokenIdEl || !linkEl) return;
+        const localFallback = state.nfts.find((entry) => entry && isStrictMatch(entry.nft || entry)) || state.nfts[0] || null;
+        try {
+            const records = await fetchXrplNftsByIssuer();
+            const dailyBroId = getDailyBroId();
+            const selected = records[(dailyBroId - 1) % records.length] || records[0] || localFallback?.nft || localFallback;
+            const tokenUri = getTokenUri(selected);
+            const metadata = await fetchMetadataFromTokenUri(tokenUri);
+            let image = resolveNftImage(selected) || getIPFSUrl(findDeepString(metadata, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || '') || getIPFSUrl(tokenUri) || '';
+            if (!image && localFallback) {
+                image = resolveNftImage(localFallback.metadata || localFallback.nft || localFallback) || getIPFSUrl(findDeepString(localFallback.metadata, ['image', 'image_url', 'imageUrl', 'animation_url', 'animationUrl']) || '') || '';
+            }
+            const name = findDeepString(metadata, ['name', 'title']) || selected?.name || localFallback?.metadata?.name || localFallback?.nft?.name || 'Gross Bro #' + (getNftSerial(selected) === 999999999 ? '—' : getNftSerial(selected));
+            const tokenId = getNftId(selected) || localFallback?.tokenId || '';
+            if (name) nameEl.textContent = name;
+            if (descriptionEl) descriptionEl.textContent = BACKSTORIES[dailyBroId] || BACKSTORIES.default;
+            if (issuerEl) issuerEl.textContent = STRICT_ISSUER;
+            if (tokenIdEl) tokenIdEl.textContent = tokenId ? 'Ready' : 'Pending';
+            if (linkEl) linkEl.href = tokenId ? 'https://xrp.cafe/nft/' + tokenId : 'https://xrp.cafe/collection/galactic-gross-bros';
+            if (image) {
+                imageEl.src = image;
+                imageEl.onload = () => imageEl.classList.remove('hidden');
+                imageEl.onerror = () => {
+                    imageEl.classList.add('hidden');
+                    placeholderEl.textContent = 'IMAGE RELAY RETRYING';
+                };
+            } else {
+                placeholderEl.textContent = 'IMAGE RELAY RETRYING';
+            }
+            placeholderEl.textContent = '';
+        } catch (error) {
+            console.warn('Unable to load console asset', error);
+            if (localFallback) {
+                const fallbackImage = resolveNftImage(localFallback.metadata || localFallback.nft || localFallback) || '';
+                const fallbackName = localFallback.metadata?.name || localFallback.nft?.name || 'Gross Bro';
+                if (fallbackName) nameEl.textContent = fallbackName;
+                descriptionEl.textContent = BACKSTORIES[getDailyBroId()] || BACKSTORIES.default;
+                issuerEl.textContent = STRICT_ISSUER;
+                tokenIdEl.textContent = 'Ready';
+                if (fallbackImage) {
+                    imageEl.src = fallbackImage;
+                    imageEl.classList.remove('hidden');
+                } else {
+                    placeholderEl.textContent = 'IMAGE RELAY RETRYING';
+                }
+            } else {
+                placeholderEl.textContent = 'IMAGE RELAY RETRYING';
+            }
+        }
+    }
+
+    async function loadNfts() {
+
+        if (!state.wallet) return;
+        state.loadingNfts = true;
+        const grid = document.getElementById('nft-grid');
+        if (grid) grid.innerHTML = '<div class="col-span-full rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-5 text-center text-sm text-[#00ffc8]/60">Loading token roster…</div>';
+        try {
+            const rawNfts = await fetchXrplNftsByWallet(state.wallet);
+            const filtered = rawNfts.filter(isStrictMatch).sort((a, b) => getNftSerial(a) - getNftSerial(b));
+            state.nfts = [];
+            for (const nft of filtered) {
+                const tokenId = getNftId(nft);
+                const metadata = await fetchMetadataFromTokenUri(getTokenUri(nft));
+                state.nfts.push({ nft, metadata, tokenId });
+            }
+            const saved = getStoredState();
+            state.selectedTokenId = saved.selectedTokenId || state.selectedTokenId || (state.nfts[0]?.tokenId || '');
+            state.fusedTokenId = saved.fusedTokenId || state.fusedTokenId || '';
+            if (!state.fusedTokenId && state.selectedTokenId) {
+                const fused = local(`${operativeKey(state.selectedTokenId)}`, null);
+                if (fused?.tokenId) state.fusedTokenId = fused.tokenId;
+            }
+            renderNftGrid();
+            renderOperativePanel();
+            renderChatFace();
+            renderChatHistory();
+            loadFieldReport();
+            bindChatInput();
+            if (state.currentTab === 2) renderFusionLabState();
+        } catch (error) {
+            console.error(error);
+            if (grid) grid.innerHTML = '<div class="col-span-full rounded-[24px] border border-red-400/30 bg-black/35 p-5 text-center text-sm text-red-300">Could not load NFTs.</div>';
+        } finally {
+            state.loadingNfts = false;
+        }
+    }
+
+    function renderFusionLabState() {
+        renderOperativePanel();
+    }
+
+    async function loadLeaderboard() {
+        const body = document.getElementById('leaderboard-body');
+        if (!body) return;
+        try {
+            let rows = [];
+            if (SUPABASE_URL && SUPABASE_KEY) {
+                const data = await supabaseSelect(STATS_TABLE, 'select=holder,points,chat_time,win_loss&order=points.desc&limit=10').catch(() => null);
+                if (Array.isArray(data) && data.length) rows = data;
+            }
+            if (!rows.length) {
+                rows = Array.from({ length: 10 }, (_, i) => ({
+                    holder: `Operative ${i + 1}`,
+                    points: 1000 - i * 61,
+                    chat_time: `${String((i + 1) * 6).padStart(2, '0')}m`,
+                    win_loss: `${Math.max(51, 91 - i * 3)}%`
+                }));
+            }
+            body.innerHTML = rows.slice(0, 10).map((row, i) => `
+                <div class="leaderboard-row grid grid-cols-[72px,1.4fr,110px,120px,120px] gap-2 px-4 py-4 text-sm sm:text-base items-center">
+                    <div class="text-[#00ffc8]/70">#${i + 1}</div>
+                    <div class="font-medium text-[#f1fffd]">${escapeHtml(row.holder || row.name || `Holder ${i + 1}`)}</div>
+                    <div class="text-[#00ffc8]">${escapeHtml(row.points ?? 0)}</div>
+                    <div class="text-[#d6fff7]/80">${escapeHtml(row.chat_time || row.chatTime || `${String((i + 1) * 6).padStart(2, '0')}m`)}</div>
+                    <div class="text-[#d6fff7]/80">${escapeHtml(row.win_loss || row.winLoss || `${Math.max(51, 91 - i * 3)}%`)}</div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error(error);
+            body.innerHTML = '<div class="px-4 py-5 text-sm text-[#00ffc8]/60">Leaderboard data unavailable.</div>';
+        }
+    }
+
+    function renderChatBubble(entry) {
+        const isUser = entry.role === 'user';
+        const label = isUser ? 'YOU' : (entry.role || 'SYSTEM').toUpperCase();
+        const bubbleClass = isUser ? 'chat-bubble-user' : 'chat-bubble-system';
+        return `<div class="${bubbleClass} rounded-[18px] p-3 text-sm leading-7"><div class="mb-2 text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">${escapeHtml(label)}</div><div>${escapeHtml(entry.message || entry.content || '')}</div></div>`;
+    }
+
+    function renderChatHistory() {
+        const panel = document.getElementById('chat-history');
+        if (!panel) return;
+        if (!state.chatHistory.length) {
+            panel.innerHTML = '<div class="rounded-[18px] border border-[#00ffc8]/12 bg-black/20 p-3 text-sm text-[#00ffc8]/60">No comms yet. Send a directive to initialize the chat log.</div>';
+            return;
+        }
+        panel.innerHTML = state.chatHistory.map(renderChatBubble).join('');
+        panel.scrollTop = panel.scrollHeight;
+    }
+
+    function renderChatFace() {
+        const face = document.getElementById('chat-face');
+        if (!face) return;
+        const operative = state.operative;
+        if (!state.wallet || !operative || !operative.image) {
+            face.innerHTML = '<div class="hero-frame rounded-[18px] border border-[#00ffc8]/12 bg-black/20"></div>';
+            return;
+        }
+        face.innerHTML = '<div class="hero-frame mx-auto w-full max-w-[28rem] overflow-hidden rounded-[24px] border border-[#00ffc8]/20 bg-black/60 shadow-[0_0_30px_rgba(0,255,200,0.12)]"><img src="' + escapeHtml(operative.image) + '" alt="operative link" class="hero-image" onerror="this.style.display=\'none\'" /></div>';
+    }
+
+    function generateFieldReport(operative, dayKey) {
+        const seed = `${operative.tokenId}|${dayKey}`;
+        return [
+            `${dayKey} intelligence briefing for the active operative.`,
+            `Signal profile: bro-clean and steady.`,
+            `The operative remains tethered to the Gross Bros terminal with a ${pick(BRIEFING_SEEDS, seed, 'calm')} posture, reading the grid for fractures before they become events.`,
+            `Today’s report indicates ${pick(REPORTEVENTS, seed, 'stable conditions')}.`,
+            `Recommendation: keep the channel warm, preserve the fused token, and pin the intel cache to wallet + tokenId.`
+        ].join(' ');
+    }
+
+    async function loadFieldReport(force = false) {
+        const panel = document.getElementById('field-report');
+        const dayEl = document.getElementById('report-day');
+        const active = currentEntry();
+        if (!panel) return;
+        if (!state.wallet || !active) {
+            panel.innerHTML = '<div class="text-[#00ffc8]/60">Select an operative to generate the intelligence briefing.</div>';
+            return;
+        }
+        const dayKey = todayKey();
+        const key = reportKey(active.tokenId, dayKey);
+        if (!force) {
+            const cached = local(key, null);
+            if (cached?.report) {
+                panel.innerHTML = `<div class="space-y-3"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Cached intelligence</div><div>${escapeHtml(cached.report).replace(/\n/g, '<br>')}</div></div>`;
+                if (dayEl) dayEl.textContent = `Day ${dayKey} • Token ${active.tokenId}`;
+                state.report = cached.report;
+                return;
+            }
+        }
+        const report = generateFieldReport(buildOperativeFromMetadata(active.nft, active.metadata || {}), dayKey);
+        state.report = report;
+        awardOperatorPoints('daily-activity', OPERATOR_POINTS_BASE_ACTIVITY).catch(() => null);
+        panel.innerHTML = `<div class="space-y-3"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Briefing ${dayKey}</div><div>${escapeHtml(report).replace(/\n/g, '<br>')}</div></div>`;
+        if (dayEl) dayEl.textContent = `Day ${dayKey} • Token ${active.tokenId}`;
+        store(key, { report, day_key: dayKey, updated_at: new Date().toISOString() });
+        supabaseUpsert(REPORT_TABLE, {
+            cache_key: key,
+            wallet_address: state.wallet,
+            token_id: active.tokenId,
+            day_key: dayKey,
+            report_text: report,
+            operative_name: state.operative?.name || active.nft?.name || '',
+            metadata: JSON.stringify({ name: state.operative?.name, faction: state.operative?.faction, traits: state.operative?.traits || [] })
+        }).catch(() => null);
+    }
+
+    async function persistChat(entry) {
+        if (!state.operative?.tokenId) return;
+        state.chatHistory.push(entry);
+        const key = chatKey(state.operative.tokenId);
+        store(key, state.chatHistory);
+        if (SUPABASE_URL && SUPABASE_KEY) {
+            await supabaseUpsert(CHAT_TABLE, {
+                cache_key: `${key}:${Date.now()}:${entry.role}`,
+                wallet_address: state.wallet,
+                token_id: state.operative.tokenId,
+                role: entry.role,
+                message: entry.message,
+                operative_name: state.operative.name,
+                metadata: JSON.stringify({ name: state.operative.name, faction: state.operative.faction, traits: state.operative.traits }),
+                created_at: entry.created_at || new Date().toISOString()
+            }).catch(() => null);
+        }
+    }
+
+    async function loadChatHistory() {
+        const panel = document.getElementById('chat-history');
+        if (!panel || !state.wallet || !state.operative?.tokenId) return;
+        const key = chatKey(state.operative.tokenId);
+        let history = local(key, []);
+        if (!Array.isArray(history)) history = [];
+        if (SUPABASE_URL && SUPABASE_KEY) {
+            try {
+                const rows = await supabaseSelect(CHAT_TABLE, `select=role,message,created_at&wallet_address=eq.${encodeURIComponent(state.wallet)}&token_id=eq.${encodeURIComponent(state.operative.tokenId)}&order=created_at.asc&limit=100`);
+                if (Array.isArray(rows) && rows.length) {
+                    history = rows.map((r) => ({ role: r.role || 'system', message: r.message || r.content || '', created_at: r.created_at || new Date().toISOString() }));
+                }
+            } catch {}
+        }
+        state.chatHistory = history;
+        renderChatHistory();
+    }
+
+    function renderChatTerminal() {
+        renderChatFace();
+        renderChatHistory();
+        loadFieldReport();
+    }
+
+    function renderFusionLab() {
+        renderOperativePanel();
+        updateFusionQuotePanel();
+        if (state.operative?.tokenId) renderChatTerminal();
+    }
+
+    async function selectNft(tokenId) {
+        state.selectedTokenId = tokenId;
+        const current = currentEntry();
+        if (current && !state.fusedTokenId) state.operative = buildOperativeFromMetadata(current.nft, current.metadata || {});
+        store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
+        renderNftGrid();
+        renderOperativePanel();
+        if (state.operative?.tokenId) renderChatTerminal();
+    }
+    window.selectNft = selectNft;
+
+    async function connectXaman() {
+        const walletText = document.getElementById('wallet-text');
+        try {
+            if (walletText) walletText.textContent = 'CONNECTING...';
+            await persistFrequencyLog({
+                cache_key: `freq:xaman-connect:${Date.now()}`,
+                message: 'Xaman sign-in requested',
+                content: 'Xaman sign-in requested',
+                created_at: new Date().toISOString()
+            });
+            const payload = await createXamanPayload({
+                return_url: { web: XAMAN_RETURN_URL }
+            });
+            const redirectUrl = getXamanPayloadRedirect(payload);
+            const uuid = getXamanPayloadUuid(payload);
+            if (!uuid) {
+                throw new Error('Missing Xaman payload uuid.');
+            }
+            store(SESSION_KEY, { connected: false, pendingUuid: uuid });
+            startXamanPolling(uuid);
+            if (typeof redirectUrl === 'string' && redirectUrl) {
+                window.location.href = redirectUrl;
+            }
+        } catch (error) {
+            console.error(error);
+            await persistFrequencyLog({
+                cache_key: 'freq:xaman:error:' + Date.now(),
+                message: 'Xaman connect failed',
+                content: 'Xaman connect failed',
+                created_at: new Date().toISOString()
+            }).catch(() => null);
+            state.connected = false;
+            renderWalletUI();
+        }
+    }
+    window.connectXaman = connectXaman;
+
+    async function triggerFusion() {
+        if (!state.wallet) {
+            connectXaman();
+            return;
+        }
+        if (!state.selectedTokenId) {
+            renderOperativePanel();
+            return;
+        }
+        try {
+            const built = buildFusionPaymentTx();
+            const payloadRequest = {
+                txjson: built.txjson,
+                options: {
+                    return_url: { web: XAMAN_RETURN_URL },
+                    pathfinding: built.quote.mode !== 'XRP'
+                }
+            };
+            const payload = await createXamanPayload(payloadRequest, async (event) => {
+                const signed = Boolean(event?.signed || event?.resolved?.signed || event?.data?.signed || event?.meta?.signed);
+                if (!signed) return;
+                state.fusedTokenId = state.selectedTokenId;
+                const active = currentEntry();
+                if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
+                store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
+                store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
+                renderOperativePanel();
+                renderChatTerminal();
+            });
+            updateFusionStatus('Prepared ' + built.quote.label + ' payment for $' + FUSION_PRICE_USD + ' USD.');
+            const redirectUrl = getXamanPayloadRedirect(payload);
+            if (typeof redirectUrl === 'string' && redirectUrl) window.location.href = redirectUrl;
+            if (!window.xumm?.payload?.createAndSubscribe) {
+                let attempts = 0;
+                const uuid = getXamanPayloadUuid(payload);
+                const interval = setInterval(async () => {
+                    attempts++;
+                    if (attempts > 35) {
+                        clearInterval(interval);
+                        return;
+                    }
+                    if (!uuid) return;
+                    const check = await fetch('/api/xaman?action=check-payload&uuid=' + uuid);
+                    const status = await check.json();
+                    if ((status.meta && status.meta.signed) || status.signed) {
+                        clearInterval(interval);
+                        state.fusedTokenId = state.selectedTokenId;
+                        const active = currentEntry();
+                        if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
+                        store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
+                        store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
+                        renderOperativePanel();
+                        renderChatTerminal();
+                    } else if (status.meta && status.meta.expired) {
+                        clearInterval(interval);
+                    }
+                }, 2500);
+            }
+        } catch (error) {
+            console.error(error);
+            updateFusionStatus(error?.message || 'Fusion payment could not be prepared.');
+        }
+    }
+    window.triggerFusion = triggerFusion;
+    window.fuseSelectedNft = triggerFusion;
+
+    async function sendChatMessage() {
+        const input = document.getElementById('chat-input');
+        if (!input || !state.operative?.tokenId) return;
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = '';
+        if (text.toLowerCase() === 'fuse') {
+            await triggerFusion();
+            return;
+        }
+        const operative = state.operative;
+        const messages = buildChatMessages(operative, text);
+        await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream, text/plain, application/json' },
+                body: JSON.stringify({
+                    demoMode: state.demoMode === true,
+                    operative: {
+                        name: operative.name,
+                        faction: operative.faction,
+                        backstory: operative.backstory || '',
+                        traits: operative.traits || [],
+                        tokenId: operative.tokenId
+                    },
+                    messages,
+                    stream: true
+                })
+            });
+            if (!response.ok) throw new Error('Chat request failed: ' + response.status);
+
+            let reply = '';
+            if (response.body) {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let streamed = '';
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    streamed += decoder.decode(value, { stream: true });
+                    reply = streamed;
+                }
+                reply += decoder.decode();
+            } else {
+                reply = await response.text().catch(() => '');
+            }
+
+            let finalReply = reply.trim();
+            if (finalReply.startsWith('{')) {
+                try {
+                    const data = JSON.parse(finalReply);
+                    finalReply = String(data?.reply || data?.message || data?.content || data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || data?.output || data?.result || finalReply).trim();
+                } catch (_) {
+                    finalReply = finalReply;
+                }
+            }
+            if (!finalReply) finalReply = 'Static lost. Try again, bro.';
+            await persistChat({ role: 'system', message: finalReply, created_at: new Date().toISOString() });
+        } catch (error) {
+            console.error(error);
+            await persistChat({ role: 'system', message: 'Signal collapsed mid-relay. Try again, bro.', created_at: new Date().toISOString() });
+        }
+        awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
+        renderChatHistory();
+    }
+    window.sendChatMessage = sendChatMessage;
+    function bindChatInput() {
+        const input = document.getElementById('chat-input');
+        if (!input || input.dataset.boundEnter === '1') return;
+        input.dataset.boundEnter = '1';
+        input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendChatMessage();
+            }
+        });
+    }
+
+
+    function switchTab(n) {
+        state.currentTab = n;
+        document.querySelectorAll('.tab-content').forEach((el) => el.classList.remove('active'));
+        const target = document.getElementById('content-' + n);
+        if (target) target.classList.add('active');
+        document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('tab-active', i === n));
+        if (n === 2) {
+            renderFusionLab();
+            updateFusionQuotePanel();
+            if (state.wallet && state.operative?.tokenId) {
+                loadChatHistory();
+                loadFieldReport();
+                bindChatInput();
+            }
+        }
+    }
+    window.switchTab = switchTab;
+
+    function setBootSeen() {
+        try { sessionStorage.setItem(BOOT_KEY, '1'); } catch {}
+    }
+
+    function shouldShowBoot() {
+        try { return sessionStorage.getItem(BOOT_KEY) !== '1'; } catch { return true; }
+    }
+
+    function showBootSequence() {
+        const overlay = document.getElementById('boot-overlay');
+        const stream = document.getElementById('boot-stream');
+        const checks = document.getElementById('boot-checks');
+        const progress = document.getElementById('boot-progress');
+        const progressLabel = document.getElementById('boot-progress-label');
+        const statusLine = document.getElementById('boot-status-line');
+        if (!overlay || !stream || !checks || !progress || !progressLabel || !statusLine) return;
+        const steps = [
+            'LOAD ALIEN BROADCAST OS CORE',
+            'MOUNT XRPL SIGNAL BUS',
+            'SCAN WALLET AND OPERATIVE ROUTES',
+            'VERIFY NFT RELAY STRUCTURE',
+            'SYNC FIELD REPORT CACHE',
+            'STABILIZE CHAT TERMINAL'
+        ];
+        const checksList = [
+            'POWER BUS .......... ONLINE',
+            'SCANLINES ......... CALIBRATED',
+            'XRPL LINK .......... READY',
+            'NFT GRID ........... STABLE',
+            'TERMINAL CACHE ..... ARMED'
+        ];
+        const streamLines = [];
+        let progressValue = 0;
+        let cursor = 0;
+        overlay.classList.remove('hidden');
+        checks.innerHTML = checksList.map((item) => '<div class="rounded-xl border border-[#00ffc8]/12 bg-black/25 px-3 py-2">' + item + '</div>').join('');
+        const timer = setInterval(() => {
+            progressValue = Math.min(100, progressValue + (cursor < 6 ? 9 : 15));
+            const phase = steps[Math.min(steps.length - 1, Math.floor(cursor / 2))];
+            const line = String(cursor + 1).padStart(2, '0') + ' :: ' + phase + ' :: OK';
+            streamLines.push(line);
+            if (streamLines.length > 6) streamLines.shift();
+            stream.innerHTML = streamLines.map((item) => '<div>' + item + '</div>').join('');
+            statusLine.textContent = phase;
+            progress.style.width = progressValue + '%';
+            progressLabel.textContent = progressValue + '%';
+            cursor += 1;
+            if (progressValue >= 100) {
+                clearInterval(timer);
+                setTimeout(() => overlay.classList.add('hidden'), 350);
+                setBootSeen();
+            }
+        }, 220);
+    }
+
+    async function init() {
+
+        updateFusionQuotePanel();
+        refreshXrpUsdPrice().catch(() => null);
+        setInterval(() => refreshXrpUsdPrice().catch(() => null), 10 * 60 * 1000);
+
+        const savedSession = local(SESSION_KEY, null);
+        const savedState = getStoredState();
+        if (savedSession?.connected && savedSession?.address) {
+            state.wallet = savedSession.address;
+            state.connected = true;
+        }
+        if (savedState?.selectedTokenId) state.selectedTokenId = savedState.selectedTokenId;
+        if (savedState?.fusedTokenId) state.fusedTokenId = savedState.fusedTokenId;
+        renderWalletUI();
+        updateFusionQuotePanel();
+        if (shouldShowBoot()) showBootSequence(); else setBootSeen();
+        await loadWarningTicker();
+        await loadLeaderboard();
+        const pendingXamanUuid = getPendingXamanUuid();
+        if (!state.wallet && pendingXamanUuid) {
+            startXamanPolling(pendingXamanUuid);
+        }
+        if (state.wallet) {
+            await loadNfts();
+            await loadDailyBro();
+        } else {
+            await loadDailyBro();
+        }
+        renderOperativePanel();
+        renderChatFace();
+        renderChatHistory();
+        loadFieldReport();
+        bindChatInput();
+        const launchDemoButton = document.getElementById('launch-neural-link-demo');
+        if (launchDemoButton && launchDemoButton.dataset.boundDemo !== '1') {
+            launchDemoButton.dataset.boundDemo = '1';
+            launchDemoButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                launchNeuralLinkDemo();
+            });
+        }
+        switchTab(0);
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+})();
+</script>
 </body>
 </html>
