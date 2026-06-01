@@ -1471,7 +1471,7 @@
       const btn = event ? event.currentTarget : null;
       if (btn) btn.style.pointerEvents = 'none';
       try {
-        const res = await fetch('/api/xaman', {
+        const res = await fetch('/api/xaman?action=create-payload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -1661,35 +1661,8 @@
         }
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
     }
-    window.startChatStream = function() {
-      const terminal = document.getElementById('chat-terminal');
-      if (!terminal) {
-        console.error('Chat terminal div not found. Add id="chat-terminal" to your output div.');
-        return;
-      }
-      terminal.innerHTML = '';
-      const status = document.createElement('div');
-      status.textContent = 'Connecting to stream...';
-      status.style.opacity = '0.6';
-      terminal.appendChild(status);
-      const eventSource = new EventSource('/api/chat');
-      window.currentChatStream = eventSource;
-      eventSource.onopen = () => {
-        status.remove();
-      };
-      eventSource.onmessage = (event) => {
-        const line = document.createElement('div');
-        line.textContent = event.data;
-        terminal.appendChild(line);
-        terminal.scrollTop = terminal.scrollHeight;
-      };
-      eventSource.onerror = (err) => {
-        console.error('SSE error:', err);
-        const errMsg = document.createElement('div');
-        errMsg.textContent = 'Stream ended or connection lost.';
-        errMsg.style.color = '#f66';
-        terminal.appendChild(errMsg);
-      };
+    window.startChatStream = async function() {
+      return await sendChatMessage();
     };
     window.sendChatMessage = sendChatMessage;
     function bindChatInput() {
