@@ -849,7 +849,7 @@
         const tokenId = state.operative?.tokenId || 'guest';
         state.chatHistory.push({ role: 'system', message, created_at: new Date().toISOString() });
         store(chatKey(tokenId), state.chatHistory);
-        renderChatHistory();
+        scheduleChatHistoryRender();
     }
 
     function isGuestMode() {
@@ -1250,7 +1250,7 @@
             renderOperativePanel();
             renderChatFace();
         updateTradeUI();
-            renderChatHistory();
+            scheduleChatHistoryRender();
             loadFieldReport();
             bindChatInput();
             if (state.currentTab === 2) renderFusionLabState();
@@ -1305,6 +1305,8 @@
         return `<div class="${bubbleClass} rounded-[18px] p-3 text-sm leading-7"><div class="mb-2 text-[10px] uppercase tracking-[0.42em] text-[#00ffc8]/55">${escapeHtml(label)}</div><div>${escapeHtml(entry.message || entry.content || '')}</div></div>`;
     }
 
+    let chatRenderFrame = null;
+
     function renderChatHistory() {
         const panel = document.getElementById('chat-history');
         if (!panel) return;
@@ -1314,6 +1316,15 @@
         }
         panel.innerHTML = state.chatHistory.map(renderChatBubble).join('');
         panel.scrollTop = panel.scrollHeight;
+        panel.getBoundingClientRect();
+    }
+
+    function scheduleChatHistoryRender() {
+        if (chatRenderFrame) return;
+        chatRenderFrame = requestAnimationFrame(() => {
+            chatRenderFrame = null;
+            renderChatHistory();
+        });
     }
 
     function renderChatFace() {
@@ -1409,13 +1420,13 @@
             } catch {}
         }
         state.chatHistory = history;
-        renderChatHistory();
+        scheduleChatHistoryRender();
     }
 
     function renderChatTerminal() {
         renderChatFace();
         updateTradeUI();
-        renderChatHistory();
+        scheduleChatHistoryRender();
         loadFieldReport();
     }
 
@@ -1564,7 +1575,7 @@
 
         const liveReply = { role: 'system', message: '', created_at: new Date().toISOString() };
         state.chatHistory.push(liveReply);
-        renderChatHistory();
+        scheduleChatHistoryRender();
 
         try {
             const response = await fetch('/api/chat', {
@@ -1589,7 +1600,7 @@
                 const textBody = await response.text().catch(() => '');
                 liveReply.message = textBody.trim() || 'Relay fallback active. Try again in a moment.';
                 store(chatKey(operative.tokenId), state.chatHistory);
-                renderChatHistory();
+                scheduleChatHistoryRender();
                 return;
             }
 
@@ -1619,7 +1630,7 @@
                         if (token) {
                             finalReply += token;
                             liveReply.message = finalReply;
-                            renderChatHistory();
+                            scheduleChatHistoryRender();
                         }
                     }
                     splitIndex = buffer.indexOf('\n\n');
@@ -1645,10 +1656,10 @@
             console.error(error);
             liveReply.message = 'Relay fallback active. Try again in a moment.';
             store(chatKey(operative.tokenId), state.chatHistory);
-            renderChatHistory();
+            scheduleChatHistoryRender();
         }
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
-        renderChatHistory();
+        scheduleChatHistoryRender();
     }
     window.sendChatMessage = sendChatMessage;
     function updateTradeUI() {
@@ -1789,7 +1800,7 @@
         renderOperativePanel();
         renderChatFace();
         updateTradeUI();
-        renderChatHistory();
+        scheduleChatHistoryRender();
         loadFieldReport();
         updateTradeUI();
         bindChatInput();
