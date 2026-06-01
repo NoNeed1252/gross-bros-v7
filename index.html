@@ -228,7 +228,7 @@
             </div>
         </div>
 
-        <div onclick="return window.connectXaman ? window.connectXaman() : false" role="button" tabindex="0" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
+        <button type="button" onclick="return window.connectXaman ? window.connectXaman() : false" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
             <i class="fa-solid fa-wallet"></i>
             <span id="wallet-text">CONNECT XAMAN</span>
         </div>
@@ -285,7 +285,7 @@
                                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Daily Intelligence Briefing</div>
                                     <h4 class="header-font text-xl sm:text-3xl mt-2">FIELD REPORT</h4>
                                 </div>
-                                <button onclick="loadFieldReport(true)" class="button-aura rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Refresh</button>
+                                <button type="button" onclick="return window.loadFieldReport ? window.loadFieldReport(true) : false" class="button-aura rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Refresh</button>
                             </div>
                             <div id="report-day" class="mt-4 text-[11px] uppercase tracking-[0.45em] text-[#00ffc8]/55"></div>
                             <div id="field-report" class="mt-4 rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-4 sm:p-5 text-sm sm:text-base leading-7 text-[#ddfff9]/85 min-h-[160px]"></div>
@@ -301,7 +301,7 @@
                             <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Link demo access</div>
                             <h4 class="header-font text-xl sm:text-3xl mt-2">LAUNCH NEURAL LINK DEMO</h4>
                         </div>
-                        <button id="launch-neural-link-demo" type="button" onclick="return window.launchNeuralLinkDemo ? window.launchNeuralLinkDemo() : false" class="button-aura rounded-2xl px-5 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em]">LAUNCH NEURAL LINK DEMO</button>
+                        <button id="launch-neural-link-demo" type="button" onclick="launchNeuralLinkDemo()" class="button-aura rounded-2xl px-5 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em]">LAUNCH NEURAL LINK DEMO</button>
                     </div>
                     <p class="mt-4 text-sm sm:text-base leading-7 text-[#00ffc8]/75">Launch the Neural Link terminal without a wallet connection.</p>
                 </div>
@@ -317,8 +317,8 @@
                     <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
                     <div class="mt-4 flex gap-3">
                         <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
-                        <button onclick="triggerFusion()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
-                        <button type="button" onclick="return window.sendChatMessage ? window.sendChatMessage() : false" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
+                        <button type="button" onclick="return window.triggerFusion ? window.triggerFusion() : false" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
+                        <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
                     </div>
                 </div>
             </div>
@@ -652,64 +652,20 @@
         return payload?.created?.uuid || payload?.uuid || payload?.payload?.uuid || payload?.response?.uuid || payload?.session?.uuid || '';
     }
 
-    function getPendingXamanUuid() {
-        const params = new URL(window.location.href).searchParams;
-        const savedSession = local(SESSION_KEY, null);
-        return params.get('uuid') || params.get('xaman_uuid') || savedSession?.pendingUuid || '';
-    }
-
-    async function pollXamanPayload(uuid) {
-        if (!uuid) return;
-        let attempts = 0;
-        const interval = setInterval(async () => {
-            attempts += 1;
-            if (attempts > 40) {
-                clearInterval(interval);
-                return;
-            }
-            try {
-                const check = await fetch('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(uuid));
-                const status = await check.json();
-                if ((status.meta && status.meta.signed) || status.signed || status.resolved?.signed) {
-                    clearInterval(interval);
-                    const session = local(SESSION_KEY, null);
-                    const address = status.response?.account || status.account || status.resolved?.account || session?.address || '';
-                    if (address) {
-                        state.wallet = address;
-                        state.connected = true;
-                        store(SESSION_KEY, { connected: true, address, wallet: address });
-                    }
-                    if (session?.pendingAction === 'fusion') {
-                        state.fusedTokenId = session.pendingTokenId || state.selectedTokenId || state.fusedTokenId;
-                        const active = currentEntry();
-                        if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
-                        if (state.fusedTokenId) {
-                            store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
-                            store(operativeKey(state.fusedTokenId), { tokenId: state.fusedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
-                        }
-                    }
-                    renderWalletUI();
-                    await loadNfts();
-                    await loadLeaderboard();
-                    renderFusionLab();
-                    const returnUrl = getXamanPayloadRedirect(status);
-                    if (returnUrl) window.location.assign(returnUrl);
-                } else if (status.meta && status.meta.expired) {
-                    clearInterval(interval);
+    async function createXamanPayload(payloadRequest, onSigned) {
+        if (window.xumm?.payload?.createAndSubscribe) {
+            return await window.xumm.payload.createAndSubscribe(payloadRequest, async (event) => {
+                if ((event?.signed || event?.resolved?.signed || event?.data?.signed) && typeof onSigned === 'function') {
+                    await onSigned(event);
                 }
-            } catch (error) {
-                console.error(error);
-            }
-        }, 2500);
-    }
+            });
+        }
 
-    async function createXamanPayload(payloadRequest) {
         const res = await fetch('/api/xaman?action=create-payload', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payloadRequest)
         });
-        if (!res.ok) throw new Error('Failed to create Xaman payload: ' + res.status);
         return await res.json();
     }
 
@@ -932,6 +888,7 @@
     }
 
     window.launchNeuralLinkDemo = launchNeuralLinkDemo;
+    window.loadFieldReport = loadFieldReport;
 
     function renderConsole() {
         return;
@@ -1202,8 +1159,6 @@
         }).catch(() => null);
     }
 
-    window.loadFieldReport = loadFieldReport;
-
     async function persistChat(entry) {
         if (!state.operative?.tokenId) return;
         state.chatHistory.push(entry);
@@ -1280,7 +1235,7 @@
             };
 
             const payload = await createXamanPayload(payloadRequest);
-            const redirectUrl = getXamanPayloadRedirect(payload);
+            const redirectUrl = getXamanPayloadRedirect(payload) || payload?.next?.always || payload?.created?.next?.always;
             const uuid = getXamanPayloadUuid(payload);
 
             if (!redirectUrl) throw new Error('Missing Xaman payload redirect URL.');
@@ -1312,21 +1267,47 @@
                     Destination: CONFIG.TREASURY_WALLET,
                     Amount: '50000000'
                 },
-                options: {
-                    return_url: { web: XAMAN_RETURN_URL + '?uuid={id}' }
-                },
-                custom_meta: {
-                    identifier: 'gross-bros-fusion',
-                    instruction: 'Fuse the selected Gross Bros operative.'
-                }
+                return_url: { web: XAMAN_RETURN_URL }
             };
-            const payload = await createXamanPayload(payloadRequest);
+            const payload = await createXamanPayload(payloadRequest, async (event) => {
+                const signed = Boolean(event?.signed || event?.resolved?.signed || event?.data?.signed || event?.meta?.signed);
+                if (!signed) return;
+                state.fusedTokenId = state.selectedTokenId;
+                const active = currentEntry();
+                if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
+                store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
+                store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
+                renderOperativePanel();
+                renderChatTerminal();
+            });
             const redirectUrl = getXamanPayloadRedirect(payload);
-            const uuid = getXamanPayloadUuid(payload);
-            if (!redirectUrl) throw new Error('Missing Xaman payload redirect URL.');
-            if (!uuid) throw new Error('Missing Xaman payload uuid.');
-            store(SESSION_KEY, { connected: true, address: state.wallet, wallet: state.wallet, pendingUuid: uuid, pendingAction: 'fusion', pendingTokenId: state.selectedTokenId });
-            window.location.assign(redirectUrl);
+            if (typeof redirectUrl === 'string' && redirectUrl) window.location.assign(redirectUrl);
+            if (!window.xumm?.payload?.createAndSubscribe) {
+                let attempts = 0;
+                const uuid = getXamanPayloadUuid(payload);
+                const interval = setInterval(async () => {
+                    attempts++;
+                    if (attempts > 35) {
+                        clearInterval(interval);
+                        return;
+                    }
+                    if (!uuid) return;
+                    const check = await fetch('/api/xaman?action=check-payload&uuid=' + uuid);
+                    const status = await check.json();
+                    if ((status.meta && status.meta.signed) || status.signed) {
+                        clearInterval(interval);
+                        state.fusedTokenId = state.selectedTokenId;
+                        const active = currentEntry();
+                        if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
+                        store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
+                        store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
+                        renderOperativePanel();
+                        renderChatTerminal();
+                    } else if (status.meta && status.meta.expired) {
+                        clearInterval(interval);
+                    }
+                }, 2500);
+            }
         } catch (error) {
             console.error(error);
         }
@@ -1557,26 +1538,6 @@
                 event.preventDefault();
                 launchNeuralLinkDemo();
             });
-        }
-        const walletButton = document.querySelector('[onclick*="connectXaman"]');
-        if (walletButton && walletButton.dataset.boundWallet !== '1') {
-            walletButton.dataset.boundWallet = '1';
-            walletButton.addEventListener('click', (event) => {
-                event.preventDefault();
-                window.connectXaman && window.connectXaman();
-            });
-        }
-        const sendButton = document.querySelector('[onclick*="sendChatMessage"]');
-        if (sendButton && sendButton.dataset.boundSend !== '1') {
-            sendButton.dataset.boundSend = '1';
-            sendButton.addEventListener('click', (event) => {
-                event.preventDefault();
-                window.sendChatMessage && window.sendChatMessage();
-            });
-        }
-        const pendingUuid = getPendingXamanUuid();
-        if (!state.connected && pendingUuid) {
-            pollXamanPayload(pendingUuid);
         }
         switchTab(0);
     }
