@@ -228,10 +228,10 @@
             </div>
         </div>
 
-        <button id="xaman-connect-button" type="button" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
+        <div onclick="connectXaman()" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
             <i class="fa-solid fa-wallet"></i>
-            <span id="wallet-text">CONNECT XAMAN</span>
-        </button>
+            <span id="wallet-text">CONNECT WALLET</span>
+        </div>
 
         <p id="xaman-status" class="text-[11px] sm:text-sm text-[#00ffc8]/60 text-center lg:text-right">Wallet disconnected.</p>
     </div>
@@ -652,21 +652,73 @@
         return payload?.uuid || payload?.payload?.uuid || payload?.response?.uuid || payload?.session?.uuid || '';
     }
 
-    async function createXamanPayload(payloadRequest, onSigned) {
-        if (window.xumm?.payload?.createAndSubscribe) {
-            return await window.xumm.payload.createAndSubscribe(payloadRequest, async (event) => {
-                if ((event?.signed || event?.resolved?.signed || event?.data?.signed) && typeof onSigned === 'function') {
-                    await onSigned(event);
-                }
-            });
-        }
+    function getPendingXamanUuid() {
+        const params = new URL(window.location.href).searchParams;
+        const savedSession = local(SESSION_KEY, null);
+        return params.get('uuid') || params.get('xaman_uuid') || savedSession?.pendingUuid || '';
+    }
 
+    function extractXamanAccount(status) {
+        return status?.response?.account || status?.account || status?.resolved?.account || status?.data?.account || '';
+    }
+
+    async function createXamanPayload(payloadRequest) {
         const res = await fetch('/api/xaman?action=create-payload', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payloadRequest)
         });
-        return await res.json();
+        const payload = await res.json().catch(() => null);
+        if (!res.ok) {
+            throw new Error((payload && payload.error) ? payload.error : `Failed to create Xaman payload (${res.status})`);
+        }
+        return payload;
+    }
+
+    async function completeXamanConnection(status) {
+        const address = extractXamanAccount(status);
+        if (address) {
+            state.wallet = address;
+            state.connected = true;
+            store(SESSION_KEY, { connected: true, address, wallet: address });
+            renderWalletUI();
+            await loadNfts();
+            await loadLeaderboard();
+            renderFusionLab();
+            await persistFrequencyLog({
+                cache_key: 'freq:xaman:connected:' + Date.now(),
+                message: 'Xaman wallet connected',
+                content: 'Xaman wallet connected',
+                created_at: new Date().toISOString()
+            }).catch(() => null);
+        }
+        const returnUrl = getXamanPayloadRedirect(status);
+        if (returnUrl) window.location.assign(returnUrl);
+    }
+
+    function startXamanPolling(uuid) {
+        let attempts = 0;
+        const interval = setInterval(async () => {
+            attempts++;
+            if (attempts > 35) {
+                clearInterval(interval);
+                state.connected = false;
+                renderWalletUI();
+                return;
+            }
+            if (!uuid) return;
+            const check = await fetch('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(uuid));
+            const status = await check.json();
+            if ((status.meta && status.meta.signed) || status.signed) {
+                clearInterval(interval);
+                await completeXamanConnection(status);
+            } else if (status.meta && status.meta.expired) {
+                clearInterval(interval);
+                state.connected = false;
+                renderWalletUI();
+            }
+        }, 2500);
+        return interval;
     }
 
     function reportKey(tokenId, dayKey) {
@@ -831,7 +883,7 @@
         const xamanStatus = document.getElementById('xaman-status');
         const xrpAmount = document.getElementById('xrp-amount');
         const monitor = document.getElementById('main-monitor');
-        if (walletText) walletText.textContent = state.connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
+        if (walletText) walletText.textContent = state.connected ? 'WALLET CONNECTED' : 'CONNECT WALLET';
         if (xamanStatus) xamanStatus.textContent = state.connected ? `Connected: ${shortAddress(state.wallet)}` : 'Wallet disconnected.';
         if (xrpAmount) xrpAmount.textContent = state.connected ? `CONNECTED BRO: ${shortAddress(state.wallet)}` : '';
         if (monitor) monitor.classList.toggle('connected-glow', state.connected);
@@ -1221,46 +1273,34 @@
         const walletText = document.getElementById('wallet-text');
         try {
             if (walletText) walletText.textContent = 'CONNECTING...';
+            await persistFrequencyLog({
+                cache_key: `freq:xaman-connect:${Date.now()}`,
+                message: 'Xaman sign-in requested',
+                content: 'Xaman sign-in requested',
+                created_at: new Date().toISOString()
+            });
             const payload = await createXamanPayload({
                 return_url: { web: XAMAN_RETURN_URL }
             });
             const redirectUrl = getXamanPayloadRedirect(payload);
-            if (typeof redirectUrl === 'string' && redirectUrl) window.location.assign(redirectUrl);
-            let attempts = 0;
             const uuid = getXamanPayloadUuid(payload);
-            const interval = setInterval(async () => {
-                attempts++;
-                if (attempts > 35) {
-                    clearInterval(interval);
-                    state.connected = false;
-                    renderWalletUI();
-                    return;
-                }
-                if (!uuid) return;
-                const check = await fetch('/api/xaman?action=check-payload&uuid=' + uuid);
-                const status = await check.json();
-                if ((status.meta && status.meta.signed) || status.signed) {
-                    clearInterval(interval);
-                    const address = (status.response && status.response.account) || status.account || '';
-                    if (address) {
-                        state.wallet = address;
-                        state.connected = true;
-                        store(SESSION_KEY, { connected: true, address, wallet: address });
-                        renderWalletUI();
-                        await loadNfts();
-                        await loadLeaderboard();
-                        renderFusionLab();
-                    }
-                    const returnUrl = getXamanPayloadRedirect(status);
-                    if (returnUrl) window.location.assign(returnUrl);
-                } else if (status.meta && status.meta.expired) {
-                    clearInterval(interval);
-                    state.connected = false;
-                    renderWalletUI();
-                }
-            }, 2500);
+            if (!uuid) {
+                throw new Error('Missing Xaman payload uuid.');
+            }
+            store(SESSION_KEY, { connected: false, pendingUuid: uuid });
+            startXamanPolling(uuid);
+            if (typeof redirectUrl === 'string' && redirectUrl) {
+                const opened = window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+                if (!opened) window.location.assign(redirectUrl);
+            }
         } catch (error) {
             console.error(error);
+            await persistFrequencyLog({
+                cache_key: 'freq:xaman:error:' + Date.now(),
+                message: 'Xaman connect failed',
+                content: 'Xaman connect failed',
+                created_at: new Date().toISOString()
+            }).catch(() => null);
             state.connected = false;
             renderWalletUI();
         }
@@ -1493,13 +1533,17 @@
         if (shouldShowBoot()) showBootSequence(); else setBootSeen();
         await loadWarningTicker();
         await loadLeaderboard();
+        const pendingXamanUuid = getPendingXamanUuid();
+        if (!state.wallet && pendingXamanUuid) {
+            startXamanPolling(pendingXamanUuid);
+        }
         if (state.wallet) {
             await loadNfts();
             await loadDailyBro();
         } else {
             await loadDailyBro();
         }
-        renderOperativePanel();
+                renderOperativePanel();
         renderChatFace();
         renderChatHistory();
         loadFieldReport();
@@ -1510,14 +1554,6 @@
             launchDemoButton.addEventListener('click', (event) => {
                 event.preventDefault();
                 launchNeuralLinkDemo();
-            });
-        }
-        const xamanButton = document.getElementById('xaman-connect-button');
-        if (xamanButton && xamanButton.dataset.boundConnect !== '1') {
-            xamanButton.dataset.boundConnect = '1';
-            xamanButton.addEventListener('click', (event) => {
-                event.preventDefault();
-                connectXaman();
             });
         }
         switchTab(0);
