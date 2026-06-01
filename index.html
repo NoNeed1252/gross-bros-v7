@@ -58,6 +58,16 @@
         .chat-bubble-system { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); }
         .cmd-input { background: rgba(0,0,0,0.35); border: 1px solid rgba(0,255,200,0.2); color: #d4fff6; outline: none; }
         .cmd-input:focus { border-color: rgba(0,255,200,0.56); box-shadow: 0 0 0 3px rgba(0,255,200,0.08); }
+        .token-picker { position: relative; }
+        .token-search-row { display: flex; gap: 10px; align-items: stretch; }
+        .token-search-row input { flex: 1; }
+        .token-dropdown { position: absolute; left: 0; right: 0; top: calc(100% + 8px); z-index: 40; border-radius: 18px; border: 1px solid rgba(0,255,200,0.18); background: linear-gradient(180deg, rgba(4, 12, 11, 0.98), rgba(0, 0, 0, 0.96)); box-shadow: 0 18px 44px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.02); overflow: hidden; max-height: 260px; overflow-y: auto; }
+        .token-option { width: 100%; display: grid; gap: 2px; text-align: left; border: 0; border-bottom: 1px solid rgba(0,255,200,0.08); border-radius: 0; padding: 12px 14px; background: transparent; color: #d9fff8; letter-spacing: 0.08em; text-transform: uppercase; }
+        .token-option:last-child { border-bottom: 0; }
+        .token-option:hover, .token-option:focus-visible { outline: none; background: rgba(0,255,200,0.08); }
+        .token-option strong { color: #00ffc8; font-size: 12px; letter-spacing: 0.18em; }
+        .token-option span { color: rgba(236,245,218,0.62); font-size: 11px; letter-spacing: 0.12em; }
+        .token-hint { color: rgba(236,245,218,0.58); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 8px; line-height: 1.5; }
 
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap');
         :root { --cyan: #00ffc8; }
@@ -332,9 +342,14 @@
                             </div>
                         </div>
                         <div id="fusion-meme-fields" class="grid gap-3 sm:grid-cols-3 hidden">
-                            <label class="block rounded-[22px] border border-[#00ffc8]/12 bg-black/35 p-4">
-                                <div class="text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/55">Meme token code</div>
-                                <input id="fusion-meme-currency" value="PEPE" oninput="updateFusionMemeField('currency', this.value)" class="cmd-input mt-3 w-full rounded-2xl px-4 py-3 text-sm" placeholder="PEPE" maxlength="20" />
+                            <label class="block rounded-[22px] border border-[#00ffc8]/12 bg-black/35 p-4 sm:col-span-2">
+                                <div class="text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/55">Search XRPL token</div>
+                                <input id="fusion-meme-currency" value="PEPE" list="fusion-token-options" oninput="updateFusionMemeField('currency', this.value)" class="cmd-input mt-3 w-full rounded-2xl px-4 py-3 text-sm" placeholder="Search $FUZZY, $ATM, $ARMY or any XRPL token" maxlength="20" />
+                                <datalist id="fusion-token-options">
+                                    <option value="FUZZY">$FUZZY</option>
+                                    <option value="ATM">$ATM</option>
+                                    <option value="ARMY">$ARMY</option>
+                                </datalist>
                             </label>
                             <label class="block rounded-[22px] border border-[#00ffc8]/12 bg-black/35 p-4">
                                 <div class="text-[10px] uppercase tracking-[0.35em] text-[#00ffc8]/55">Meme token issuer</div>
@@ -613,7 +628,7 @@
 
     function getFusionMemeConfig() {
         return {
-            currency: String(state.memeCurrency || DEFAULT_MEME_CURRENCY).trim().toUpperCase() || DEFAULT_MEME_CURRENCY,
+            currency: String(state.memeCurrency || DEFAULT_MEME_CURRENCY).trim().replace(/^\$/, '').toUpperCase() || DEFAULT_MEME_CURRENCY,
             issuer: String(state.memeIssuer || '').trim(),
             usdPrice: Number(String(state.memeUsdPrice || '').replace(/[^0-9.]/g, ''))
         };
@@ -644,7 +659,7 @@
                     amountValue: '',
                     txAmount: null,
                     ready: false,
-                    error: 'Enter a meme token code, issuer, and USD price to calculate the fusion amount.'
+                    error: 'Search or enter a meme token code, issuer, and USD price to calculate the fusion amount.'
                 };
             }
             const amount = FUSION_PRICE_USD / meme.usdPrice;
@@ -737,7 +752,7 @@
     }
 
     function updateFusionMemeField(field, value) {
-        if (field === 'currency') state.memeCurrency = String(value || '').toUpperCase();
+        if (field === 'currency') state.memeCurrency = String(value || '').replace(/^\$/, '').toUpperCase();
         if (field === 'issuer') state.memeIssuer = String(value || '').trim();
         if (field === 'usdPrice') state.memeUsdPrice = String(value || '').trim();
         updateFusionQuotePanel();
@@ -893,7 +908,7 @@
     }
 
     function getXamanPayloadRedirect(payload) {
-        return payload?.next?.always || payload?.payload?.next?.always || payload?.response?.next?.always || '';
+        return payload?.created?.next?.always || payload?.next?.always || payload?.payload?.next?.always || payload?.response?.next?.always || payload?.created?.next?.no_push_msg_received || payload?.next?.no_push_msg_received || payload?.payload?.next?.no_push_msg_received || payload?.response?.next?.no_push_msg_received || '';
     }
 
     function getXamanPayloadUuid(payload) {
@@ -941,7 +956,7 @@
             }).catch(() => null);
         }
         const returnUrl = getXamanPayloadRedirect(status);
-        if (returnUrl) window.location.href = returnUrl;
+        if (returnUrl) window.location.assign(returnUrl);
     }
 
     function startXamanPolling(uuid) {
@@ -1131,7 +1146,7 @@
         const xamanStatus = document.getElementById('xaman-status');
         const xrpAmount = document.getElementById('xrp-amount');
         const monitor = document.getElementById('main-monitor');
-        if (walletText) walletText.textContent = state.connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
+        if (walletText) walletText.textContent = state.connected ? 'XAMAN CONNECTED' : 'CONNECT WALLET';
         if (xamanStatus) xamanStatus.textContent = state.connected ? 'Connected: ' + shortAddress(state.wallet) : 'Wallet disconnected.';
         if (xrpAmount) xrpAmount.textContent = state.connected ? 'CONNECTED BRO: ' + shortAddress(state.wallet) : '';
         if (monitor) monitor.classList.toggle('connected-glow', state.connected);
@@ -1541,7 +1556,7 @@
             store(SESSION_KEY, { connected: false, pendingUuid: uuid });
             startXamanPolling(uuid);
             if (typeof redirectUrl === 'string' && redirectUrl) {
-                window.location.href = redirectUrl;
+                window.location.assign(redirectUrl);
             }
         } catch (error) {
             console.error(error);
@@ -1570,7 +1585,10 @@
             const built = buildFusionPaymentTx();
             const payloadRequest = {
                 txjson: built.txjson,
-                return_url: { web: XAMAN_RETURN_URL }
+                options: {
+                    return_url: { web: XAMAN_RETURN_URL },
+                    pathfinding: built.quote.mode !== 'XRP'
+                }
             };
             const payload = await createXamanPayload(payloadRequest, async (event) => {
                 const signed = Boolean(event?.signed || event?.resolved?.signed || event?.data?.signed || event?.meta?.signed);
@@ -1626,6 +1644,10 @@
         const text = input.value.trim();
         if (!text) return;
         input.value = '';
+        if (text.toLowerCase() === 'fuse') {
+            await triggerFusion();
+            return;
+        }
         const operative = state.operative;
         const messages = buildChatMessages(operative, text);
         await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
