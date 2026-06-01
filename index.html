@@ -58,6 +58,16 @@
         .chat-bubble-system { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); }
         .cmd-input { background: rgba(0,0,0,0.35); border: 1px solid rgba(0,255,200,0.2); color: #d4fff6; outline: none; }
         .cmd-input:focus { border-color: rgba(0,255,200,0.56); box-shadow: 0 0 0 3px rgba(0,255,200,0.08); }
+        .token-picker { position: relative; }
+        .token-search-row { display: flex; gap: 10px; align-items: stretch; }
+        .token-search-row input { flex: 1; }
+        .token-dropdown { position: absolute; left: 0; right: 0; top: calc(100% + 8px); z-index: 40; border-radius: 18px; border: 1px solid rgba(0,255,200,0.18); background: linear-gradient(180deg, rgba(4, 12, 11, 0.98), rgba(0, 0, 0, 0.96)); box-shadow: 0 18px 44px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.02); overflow: hidden; max-height: 260px; overflow-y: auto; }
+        .token-option { width: 100%; display: grid; gap: 2px; text-align: left; border: 0; border-bottom: 1px solid rgba(0,255,200,0.08); border-radius: 0; padding: 12px 14px; background: transparent; color: #d9fff8; letter-spacing: 0.08em; text-transform: uppercase; }
+        .token-option:last-child { border-bottom: 0; }
+        .token-option:hover, .token-option:focus-visible { outline: none; background: rgba(0,255,200,0.08); }
+        .token-option strong { color: #00ffc8; font-size: 12px; letter-spacing: 0.18em; }
+        .token-option span { color: rgba(236,245,218,0.62); font-size: 11px; letter-spacing: 0.12em; }
+        .token-hint { color: rgba(236,245,218,0.58); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 8px; line-height: 1.5; }
 
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap');
         :root { --cyan: #00ffc8; }
@@ -194,6 +204,7 @@
             #content-2 #chat-shell #chat-input { width: 100%; }
         }
     </style>
+    <script src="https://xaman.app/assets/cdn/xumm.min.js"></script>
 </head>
 
 
@@ -228,10 +239,10 @@
             </div>
         </div>
 
-        <button type="button" onclick="return window.connectXaman ? window.connectXaman() : false" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
+        <div onclick="connectXaman()" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
             <i class="fa-solid fa-wallet"></i>
-            <span id="wallet-text">CONNECT XAMAN</span>
-        </button>
+            <span id="wallet-text">CONNECT WALLET</span>
+        </div>
 
         <p id="xaman-status" class="text-[11px] sm:text-sm text-[#00ffc8]/60 text-center lg:text-right">Wallet disconnected.</p>
     </div>
@@ -270,9 +281,6 @@
                 <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Storyline archive</div>
                     <h2 class="header-font text-3xl sm:text-5xl mt-3">TRANSMISSION LOGS</h2>
-                    <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <span class="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#00ffc8]/55">The demo is available in Neural Link for everyone.</span>
-                    </div>
                 <div class="space-y-4 text-[#00ffc8]/78 leading-7 text-sm sm:text-base">
                             <p>Before the collapse, the Gross Bros chased a fracture of light across the ledger.</p>
                             <p>When the BTC miners breached the perimeter, the survivors fused into machine-linked guardians.</p>
@@ -285,7 +293,7 @@
                                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Daily Intelligence Briefing</div>
                                     <h4 class="header-font text-xl sm:text-3xl mt-2">FIELD REPORT</h4>
                                 </div>
-                                <button type="button" onclick="return window.loadFieldReport ? window.loadFieldReport(true) : false" class="button-aura rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Refresh</button>
+                                <button onclick="loadFieldReport(true)" class="button-aura rounded-2xl px-4 py-3 text-[10px] uppercase tracking-[0.35em]">Refresh</button>
                             </div>
                             <div id="report-day" class="mt-4 text-[11px] uppercase tracking-[0.45em] text-[#00ffc8]/55"></div>
                             <div id="field-report" class="mt-4 rounded-[24px] border border-[#00ffc8]/15 bg-black/35 p-4 sm:p-5 text-sm sm:text-base leading-7 text-[#ddfff9]/85 min-h-[160px]"></div>
@@ -295,16 +303,6 @@
         </div>
         <div id="content-2" class="tab-content">
             <div class="max-w-4xl mx-auto space-y-5">
-                <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Link demo access</div>
-                            <h4 class="header-font text-xl sm:text-3xl mt-2">LAUNCH NEURAL LINK DEMO</h4>
-                        </div>
-                        <button id="launch-neural-link-demo" type="button" onclick="return window.launchNeuralLinkDemo ? window.launchNeuralLinkDemo() : false" class="button-aura rounded-2xl px-5 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em]">LAUNCH NEURAL LINK DEMO</button>
-                    </div>
-                    <p class="mt-4 text-sm sm:text-base leading-7 text-[#00ffc8]/75">Launch the Neural Link terminal without a wallet connection.</p>
-                </div>
                 <div id="chat-face" class="inner-panel rounded-[2rem] p-5 sm:p-6"></div>
                 <div id="chat-shell" class="inner-panel rounded-[2rem] p-5 sm:p-6 hidden-tab">
                     <div class="flex items-center justify-between gap-4 portrait-stack">
@@ -312,13 +310,14 @@
                             <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">In-world comms terminal</div>
                             <h4 class="header-font text-xl sm:text-3xl mt-2">CHAT TERMINAL</h4>
                         </div>
-                        <div class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">Fused</div>
+                        <div id="trade-badge" class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">TRADE LOCKED</div>
                     </div>
                     <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
                     <div class="mt-4 flex gap-3">
                         <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
-                        <button type="button" onclick="return window.triggerFusion ? window.triggerFusion() : false" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
-                        <button type="button" onclick="return window.sendChatMessage ? window.sendChatMessage() : false" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
+                        <button onclick="triggerFusion()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
+                        <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
+                        <button id="trade-command" onclick="triggerTrade()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em] hidden-tab">TRADE</button>
                     </div>
                 </div>
             </div>
@@ -379,7 +378,7 @@
 <script>
 (function () {
     const CONFIG = {
-        XAMAN_API_KEY: '88e5dad9-93bf-4e2b-a4b8-563f16545c2d',
+        XAMANAPIKEY: '88e5dad9-93bf-4e2b-a4b8-563f16545c2d',
         XAMAN_API_SECRET: '__XAMAN_API_SECRET__',
         SUPABASE_URL: '__SUPABASE_URL__',
         SUPABASE_KEY: '__SUPABASE_KEY__',
@@ -388,13 +387,17 @@
         XAMAN_RETURN_URL: 'https://grossbros.vercel.app',
         STRICT_TAXON: '1',
     };
-    const XAMAN_API_KEY = CONFIG.XAMAN_API_KEY;
+    const XAMAN_API_KEY = CONFIG.XAMANAPIKEY;
     const XAMAN_API_SECRET = CONFIG.XAMAN_API_SECRET;
     const XAMAN_RETURN_URL = CONFIG.XAMAN_RETURN_URL;
     const STRICT_ISSUER = CONFIG.ISSUER_ADDRESS;
     const STRICT_TAXON = CONFIG.STRICT_TAXON;
     const TOTAL_BROS = 214;
+    const FUSION_PRICE_USD = 50;
     const FUSION_XRP = 50;
+    const RLUSD_ISSUER = 'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De';
+    const RLUSD_CURRENCY_HEX = '524C555344000000000000000000000000000000';
+    const DEFAULT_MEME_CURRENCY = 'PEPE';
     const XRPL_RPC_URLS = ['https://xrplcluster.com/', 'https://s2.ripple.com:51234/'];
     const SUPABASE_URL = CONFIG.SUPABASE_URL || window.SUPABASE_URL || window.__SUPABASE_URL || window.NEXT_PUBLIC_SUPABASE_URL || '';
     const SUPABASE_KEY = CONFIG.SUPABASE_KEY || window.SUPABASE_ANON_KEY || window.__SUPABASE_ANON_KEY || window.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -404,6 +407,7 @@
     const SESSION_KEY = 'grossbros:xaman-session';
     const STATE_KEY = 'grossbros:state';
     const BOOT_KEY = 'grossbros:boot-seen';
+    const GUEST_COUNT_KEY = 'grossbros:guest-chat-count';
     const local = (key, fallback = null) => {
         try {
             const raw = localStorage.getItem(key);
@@ -427,6 +431,15 @@
         report: '',
         currentTab: 0,
         loadingNfts: false,
+        fusionMode: 'XRP',
+        fusionStatus: '',
+        xrpUsdPrice: null,
+        memeCurrency: DEFAULT_MEME_CURRENCY,
+        memeIssuer: '',
+        memeUsdPrice: '',
+        guestChatCount: 0,
+        guestChatLimit: 5,
+        tradeUnlocked: false,
     };
 
     const BACKSTORIES = Object.fromEntries(Array.from({ length: TOTAL_BROS }, (_, index) => {
@@ -520,6 +533,194 @@
     function shortAddress(address) {
         const a = String(address || '');
         return a.length > 12 ? `${a.slice(0, 6)}…${a.slice(-6)}` : a;
+    }
+
+    function toFixedTrim(value, decimals = 6) {
+        const num = Number(value);
+        if (!Number.isFinite(num)) return '';
+        return num.toFixed(decimals).replace(/\.?0+$/, '');
+    }
+
+    function isValidXrplAccount(value) {
+        return /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(String(value || '').trim());
+    }
+
+    function utf8ToHex(textValue) {
+        const bytes = new TextEncoder().encode(String(textValue || '').trim());
+        return Array.from(bytes).map((byte) => byte.toString(16).padStart(2, '0')).join('').toUpperCase();
+    }
+
+    function encodeCurrencyCode(code) {
+        const normalized = String(code || '').trim().toUpperCase();
+        if (!normalized) return '';
+        if (normalized === 'RLUSD') return RLUSD_CURRENCY_HEX;
+        if (normalized.length === 3 && /^[A-Z0-9]{3}$/.test(normalized)) return normalized;
+        return utf8ToHex(normalized).padEnd(40, '0').slice(0, 40);
+    }
+
+    function getFusionModeLabel(mode = state.fusionMode) {
+        if (mode === 'RLUSD') return 'RLUSD';
+        if (mode === 'MEME') return 'Meme token';
+        return 'XRP';
+    }
+
+    function getFusionMemeConfig() {
+        return {
+            currency: String(state.memeCurrency || DEFAULT_MEME_CURRENCY).trim().replace(/^\$/, '').toUpperCase() || DEFAULT_MEME_CURRENCY,
+            issuer: String(state.memeIssuer || '').trim(),
+            usdPrice: Number(String(state.memeUsdPrice || '').replace(/[^0-9.]/g, ''))
+        };
+    }
+
+    function getFusionQuote() {
+        const mode = state.fusionMode || 'XRP';
+        if (mode === 'RLUSD') {
+            return {
+                mode,
+                label: 'RLUSD',
+                unitPriceUsd: 1,
+                amountValue: toFixedTrim(FUSION_PRICE_USD, 2),
+                txAmount: {
+                    currency: RLUSD_CURRENCY_HEX,
+                    issuer: RLUSD_ISSUER,
+                    value: toFixedTrim(FUSION_PRICE_USD, 2)
+                },
+                ready: true
+            };
+        }
+        if (mode === 'MEME') {
+            const meme = getFusionMemeConfig();
+            if (!meme.currency || !meme.issuer || !Number.isFinite(meme.usdPrice) || meme.usdPrice <= 0) {
+                return {
+                    mode,
+                    label: meme.currency || 'Meme token',
+                    amountValue: '',
+                    txAmount: null,
+                    ready: false,
+                    error: 'Search or enter a meme token code, issuer, and USD price to calculate the fusion amount.'
+                };
+            }
+            const amount = FUSION_PRICE_USD / meme.usdPrice;
+            return {
+                mode,
+                label: meme.currency,
+                unitPriceUsd: meme.usdPrice,
+                amountValue: toFixedTrim(amount, 8),
+                txAmount: {
+                    currency: encodeCurrencyCode(meme.currency),
+                    issuer: meme.issuer,
+                    value: toFixedTrim(amount, 8)
+                },
+                ready: true
+            };
+        }
+        if (!Number.isFinite(state.xrpUsdPrice) || state.xrpUsdPrice <= 0) {
+            return {
+                mode: 'XRP',
+                label: 'XRP',
+                amountValue: '',
+                txAmount: null,
+                ready: false,
+                error: 'Loading live XRP price…'
+            };
+        }
+        const amount = FUSION_PRICE_USD / state.xrpUsdPrice;
+        return {
+            mode: 'XRP',
+            label: 'XRP',
+            unitPriceUsd: state.xrpUsdPrice,
+            amountValue: toFixedTrim(amount, 6),
+            txAmount: toFixedTrim(amount * 1000000, 0),
+            ready: true
+        };
+    }
+
+    function updateFusionStatus(message) {
+        state.fusionStatus = message || '';
+        const statusEl = document.getElementById('fusion-status');
+        if (statusEl) statusEl.textContent = state.fusionStatus || '';
+    }
+
+    function updateFusionQuotePanel() {
+        const quote = getFusionQuote();
+        const pill = document.getElementById('fusion-mode-pill');
+        const pillCopy = document.getElementById('fusion-mode-pill-copy');
+        const quoteEl = document.getElementById('fusion-quote');
+        const amountEl = document.getElementById('fusion-amount');
+        const modeButtons = {
+            XRP: document.getElementById('fusion-mode-xrp'),
+            RLUSD: document.getElementById('fusion-mode-rlusd'),
+            MEME: document.getElementById('fusion-mode-meme')
+        };
+        const memeFields = document.getElementById('fusion-meme-fields');
+        const fuseButton = document.getElementById('fusion-action');
+        const selectedLabel = getFusionModeLabel();
+        if (pill) pill.textContent = selectedLabel;
+        if (pillCopy) pillCopy.textContent = selectedLabel;
+        Object.entries(modeButtons).forEach(([mode, btn]) => {
+            if (!btn) return;
+            const active = mode === (state.fusionMode || 'XRP');
+            btn.classList.toggle('bg-[#00ffc8]', active);
+            btn.classList.toggle('text-black', active);
+            btn.classList.toggle('border-[#00ffc8]', active);
+            btn.classList.toggle('bg-black/30', !active);
+            btn.classList.toggle('text-[#d9fff8]', !active);
+        });
+        if (memeFields) memeFields.classList.toggle('hidden', (state.fusionMode || 'XRP') !== 'MEME');
+        if (quoteEl) {
+            if (quote.ready) {
+                const unit = quote.mode === 'XRP' ? 'XRP' : quote.mode === 'RLUSD' ? 'RLUSD' : quote.label;
+                const prefix = quote.mode === 'XRP' ? `1 XRP ≈ $${toFixedTrim(quote.unitPriceUsd, 4)}` : quote.mode === 'RLUSD' ? '1 RLUSD ≈ $1.00' : `1 ${quote.label} ≈ $${toFixedTrim(quote.unitPriceUsd, 8)}`;
+                quoteEl.textContent = `${prefix} • Fusion price is $${FUSION_PRICE_USD} USD.`;
+                if (amountEl) amountEl.textContent = `${quote.amountValue} ${unit}`;
+                updateFusionStatus(`Ready to pay with ${unit}.`);
+                if (fuseButton) fuseButton.disabled = false;
+            } else {
+                quoteEl.textContent = quote.error || 'Enter token data to calculate the fusion amount.';
+                if (amountEl) amountEl.textContent = '—';
+                updateFusionStatus(quote.error || 'Token quote unavailable.');
+                if (fuseButton) fuseButton.disabled = true;
+            }
+        }
+    }
+
+    function setFusionMode(mode) {
+        state.fusionMode = mode;
+        updateFusionQuotePanel();
+    }
+
+    function updateFusionMemeField(field, value) {
+        if (field === 'currency') state.memeCurrency = String(value || '').replace(/^\$/, '').toUpperCase();
+        if (field === 'issuer') state.memeIssuer = String(value || '').trim();
+        if (field === 'usdPrice') state.memeUsdPrice = String(value || '').trim();
+        updateFusionQuotePanel();
+    }
+
+    async function refreshXrpUsdPrice() {
+        try {
+            const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd', { cache: 'no-store' });
+            const data = await response.json();
+            const price = Number(data?.ripple?.usd);
+            if (Number.isFinite(price) && price > 0) {
+                state.xrpUsdPrice = price;
+                updateFusionQuotePanel();
+            }
+        } catch (error) {
+            console.warn('Unable to refresh XRP price', error);
+        }
+    }
+
+    function buildFusionPaymentTx() {
+        const quote = getFusionQuote();
+        if (!quote.ready || !quote.txAmount) {
+            throw new Error(quote.error || 'Select a payment token and amount.');
+        }
+        const txjson = {
+            TransactionType: 'Payment',
+            Destination: CONFIG.TREASURY_WALLET,
+            Amount: quote.mode === 'XRP' ? String(quote.txAmount) : quote.txAmount
+        };
+        return { txjson, quote };
     }
 
     function parseMaybeJson(value) {
@@ -633,7 +834,7 @@
     function currentEntry() {
         const fused = state.fusedTokenId ? state.nfts.find((item) => item.tokenId === state.fusedTokenId) : null;
         const selected = state.selectedTokenId ? state.nfts.find((item) => item.tokenId === state.selectedTokenId) : null;
-        return fused || selected || state.nfts[0] || null;
+        return fused || selected || state.nfts[0] || { tokenId: 'guest', name: 'Guest Operative', faction: 'Independent', traits: [], backstory: 'A default terminal identity for unconnected users.', image: '', raw: null, metadata: {} };
     }
 
     function operativeKey(tokenId) {
@@ -641,7 +842,22 @@
     }
 
     function chatKey(tokenId) {
-        return `${STATE_KEY}:chat:${state.wallet}:${tokenId}`;
+        const walletKey = state.wallet || 'guest';
+        return `${STATE_KEY}:chat:${walletKey}:${tokenId}`;
+    }
+    function setGuestPrompt(message) {
+        const tokenId = state.operative?.tokenId || 'guest';
+        state.chatHistory.push({ role: 'system', message, created_at: new Date().toISOString() });
+        store(chatKey(tokenId), state.chatHistory);
+        renderChatHistory();
+    }
+
+    function isGuestMode() {
+        return !state.wallet;
+    }
+
+    function remainingGuestMessages() {
+        return Math.max(0, state.guestChatLimit - state.guestChatCount);
     }
 
     function getXamanPayloadRedirect(payload) {
@@ -649,24 +865,76 @@
     }
 
     function getXamanPayloadUuid(payload) {
-        return payload?.created?.uuid || payload?.uuid || payload?.payload?.uuid || payload?.response?.uuid || payload?.session?.uuid || '';
+        return payload?.uuid || payload?.payload?.uuid || payload?.response?.uuid || payload?.session?.uuid || '';
     }
 
-    async function createXamanPayload(payloadRequest, onSigned) {
-        if (window.xumm?.payload?.createAndSubscribe) {
-            return await window.xumm.payload.createAndSubscribe(payloadRequest, async (event) => {
-                if ((event?.signed || event?.resolved?.signed || event?.data?.signed) && typeof onSigned === 'function') {
-                    await onSigned(event);
-                }
-            });
-        }
+    function getPendingXamanUuid() {
+        const params = new URL(window.location.href).searchParams;
+        const savedSession = local(SESSION_KEY, null);
+        return params.get('uuid') || params.get('xaman_uuid') || savedSession?.pendingUuid || '';
+    }
 
+    function extractXamanAccount(status) {
+        return status?.response?.account || status?.account || status?.resolved?.account || status?.data?.account || '';
+    }
+
+    async function createXamanPayload(payloadRequest) {
         const res = await fetch('/api/xaman?action=create-payload', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payloadRequest)
         });
-        return await res.json();
+        const payload = await res.json().catch(() => null);
+        if (!res.ok) {
+            throw new Error((payload && payload.error) ? payload.error : `Failed to create Xaman payload (${res.status})`);
+        }
+        return payload;
+    }
+
+    async function completeXamanConnection(status) {
+        const address = extractXamanAccount(status);
+        if (address) {
+            state.wallet = address;
+            state.connected = true;
+            store(SESSION_KEY, { connected: true, address, wallet: address });
+            renderWalletUI();
+            await loadNfts();
+            await loadLeaderboard();
+            renderFusionLab();
+            await persistFrequencyLog({
+                cache_key: 'freq:xaman:connected:' + Date.now(),
+                message: 'Xaman wallet connected',
+                content: 'Xaman wallet connected',
+                created_at: new Date().toISOString()
+            }).catch(() => null);
+        }
+        const returnUrl = getXamanPayloadRedirect(status);
+        if (returnUrl) window.location.href = returnUrl;
+    }
+
+    function startXamanPolling(uuid) {
+        let attempts = 0;
+        const interval = setInterval(async () => {
+            attempts++;
+            if (attempts > 35) {
+                clearInterval(interval);
+                state.connected = false;
+                renderWalletUI();
+                return;
+            }
+            if (!uuid) return;
+            const check = await fetch('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(uuid));
+            const status = await check.json();
+            if ((status.meta && status.meta.signed) || status.signed) {
+                clearInterval(interval);
+                await completeXamanConnection(status);
+            } else if (status.meta && status.meta.expired) {
+                clearInterval(interval);
+                state.connected = false;
+                renderWalletUI();
+            }
+        }, 2500);
+        return interval;
     }
 
     function reportKey(tokenId, dayKey) {
@@ -831,64 +1099,12 @@
         const xamanStatus = document.getElementById('xaman-status');
         const xrpAmount = document.getElementById('xrp-amount');
         const monitor = document.getElementById('main-monitor');
-        if (walletText) walletText.textContent = state.connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
-        if (xamanStatus) xamanStatus.textContent = state.connected ? `Connected: ${shortAddress(state.wallet)}` : 'Wallet disconnected.';
-        if (xrpAmount) xrpAmount.textContent = state.connected ? `CONNECTED BRO: ${shortAddress(state.wallet)}` : '';
+        if (walletText) walletText.textContent = state.connected ? 'XAMAN CONNECTED' : 'CONNECT WALLET';
+        if (xamanStatus) xamanStatus.textContent = state.connected ? 'Connected: ' + shortAddress(state.wallet) : 'Wallet disconnected.';
+        if (xrpAmount) xrpAmount.textContent = state.connected ? 'CONNECTED BRO: ' + shortAddress(state.wallet) : '';
         if (monitor) monitor.classList.toggle('connected-glow', state.connected);
+        updateFusionQuotePanel();
     }
-
-    function launchNeuralLinkDemo() {
-        const demoTokenId = 'demo-neural-link';
-        const demoWallet = 'DEMO-NEURAL-LINK';
-        const demoReport = 'Demo mode initialized. The Neural Link terminal is online. Use the Neural Link terminal to explore the Gross Bros demo, send a directive, and watch the relay respond in real time.';
-        const demoHistory = [
-            { role: 'system', message: 'Neural Link demo initialized. Use the terminal to explore the Gross Bros relay.' },
-            { role: 'assistant', message: 'Demo mode active. Type a message or press SEND to query the relay.' }
-        ];
-
-        state.demoMode = true;
-        if (!state.wallet) {
-            state.wallet = demoWallet;
-            state.connected = true;
-        }
-
-        state.nfts = [{
-            tokenId: demoTokenId,
-            nft: { tokenId: demoTokenId, name: 'Neural Link Demo' },
-            metadata: {
-                name: 'Neural Link Demo',
-                faction: 'Gross Bros',
-                traits: ['Guided Demo', 'Console Launch'],
-                image: ''
-            }
-        }];
-        state.selectedTokenId = demoTokenId;
-        state.fusedTokenId = demoTokenId;
-        state.operative = buildOperativeFromMetadata(state.nfts[0].nft, state.nfts[0].metadata);
-        state.chatHistory = demoHistory;
-
-        store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
-        store(chatKey(demoTokenId), demoHistory);
-        store(reportKey(demoTokenId, todayKey()), { report: demoReport, day_key: todayKey(), updated_at: new Date().toISOString() });
-
-        renderWalletUI();
-        renderNftGrid();
-        switchTab(2);
-        renderOperativePanel();
-        renderChatFace();
-        renderChatHistory();
-        loadFieldReport();
-        bindChatInput();
-
-        const input = document.getElementById('chat-input');
-        if (input) {
-            input.placeholder = 'Demo mode active — send a directive to the Neural Link...';
-            input.focus();
-        }
-    }
-
-    window.launchNeuralLinkDemo = launchNeuralLinkDemo;
-    window.loadFieldReport = loadFieldReport;
 
     function renderConsole() {
         return;
@@ -914,14 +1130,13 @@
         const selectedEntry = state.selectedTokenId ? state.nfts.find((item) => item.tokenId === state.selectedTokenId) : null;
         const fusedEntry = state.fusedTokenId ? state.nfts.find((item) => item.tokenId === state.fusedTokenId) : null;
         const activeEntry = fusedEntry || selectedEntry || null;
-        state.operative = activeEntry ? buildOperativeFromMetadata(activeEntry.nft, activeEntry.metadata || {}) : null;
+        state.operative = activeEntry && activeEntry.nft
+            ? buildOperativeFromMetadata(activeEntry.nft, activeEntry.metadata || {})
+            : { tokenId: 'guest', name: 'Guest Operative', faction: 'Independent', traits: ['Guest Access'], backstory: 'A default terminal identity for unconnected users.', image: '', raw: null, metadata: {} };
         if (!chatShell) return;
-        if (!state.wallet || !activeEntry) {
-            chatShell.classList.add('hidden-tab');
-            return;
-        }
         chatShell.classList.remove('hidden-tab');
         renderChatFace();
+        updateTradeUI();
     }
 
     function renderNftGrid() {
@@ -1034,6 +1249,7 @@
             renderNftGrid();
             renderOperativePanel();
             renderChatFace();
+        updateTradeUI();
             renderChatHistory();
             loadFieldReport();
             bindChatInput();
@@ -1055,7 +1271,7 @@
         if (!body) return;
         try {
             let rows = [];
-            if (SUPABASE_URL && SUPABASE_KEY) {
+            if (SUPABASE_URL && SUPABASE_KEY && state.wallet) {
                 const data = await supabaseSelect(STATS_TABLE, 'select=holder,points,chat_time,win_loss&order=points.desc&limit=10').catch(() => null);
                 if (Array.isArray(data) && data.length) rows = data;
             }
@@ -1094,18 +1310,23 @@
         if (!panel) return;
         if (!state.chatHistory.length) {
             panel.innerHTML = '<div class="rounded-[18px] border border-[#00ffc8]/12 bg-black/20 p-3 text-sm text-[#00ffc8]/60">No comms yet. Send a directive to initialize the chat log.</div>';
+            panel.scrollTop = panel.scrollHeight;
+            panel.getBoundingClientRect();
+            void panel.offsetHeight;
             return;
         }
         panel.innerHTML = state.chatHistory.map(renderChatBubble).join('');
         panel.scrollTop = panel.scrollHeight;
+        panel.getBoundingClientRect();
+        void panel.offsetHeight;
     }
 
     function renderChatFace() {
         const face = document.getElementById('chat-face');
         if (!face) return;
         const operative = state.operative;
-        if (!state.wallet || !operative || !operative.image) {
-            face.innerHTML = '<div class="hero-frame rounded-[18px] border border-[#00ffc8]/12 bg-black/20"></div>';
+        if (!operative || !operative.image) {
+            face.innerHTML = '<div class="hero-frame rounded-[18px] border border-[#00ffc8]/12 bg-black/20 p-4 text-sm text-[#00ffc8]/60">Guest link active. Connect wallet for holder mode and fuse for trade access.</div>';
             return;
         }
         face.innerHTML = '<div class="hero-frame mx-auto w-full max-w-[28rem] overflow-hidden rounded-[24px] border border-[#00ffc8]/20 bg-black/60 shadow-[0_0_30px_rgba(0,255,200,0.12)]"><img src="' + escapeHtml(operative.image) + '" alt="operative link" class="hero-image" onerror="this.style.display=\'none\'" /></div>';
@@ -1148,7 +1369,7 @@
         panel.innerHTML = `<div class="space-y-3"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Briefing ${dayKey}</div><div>${escapeHtml(report).replace(/\n/g, '<br>')}</div></div>`;
         if (dayEl) dayEl.textContent = `Day ${dayKey} • Token ${active.tokenId}`;
         store(key, { report, day_key: dayKey, updated_at: new Date().toISOString() });
-        supabaseUpsert(REPORT_TABLE, {
+        if (SUPABASE_URL && SUPABASE_KEY && state.wallet) supabaseUpsert(REPORT_TABLE, {
             cache_key: key,
             wallet_address: state.wallet,
             token_id: active.tokenId,
@@ -1159,12 +1380,14 @@
         }).catch(() => null);
     }
 
+    window.loadFieldReport = loadFieldReport;
+
     async function persistChat(entry) {
         if (!state.operative?.tokenId) return;
         state.chatHistory.push(entry);
         const key = chatKey(state.operative.tokenId);
         store(key, state.chatHistory);
-        if (SUPABASE_URL && SUPABASE_KEY) {
+        if (SUPABASE_URL && SUPABASE_KEY && state.wallet) {
             await supabaseUpsert(CHAT_TABLE, {
                 cache_key: `${key}:${Date.now()}:${entry.role}`,
                 wallet_address: state.wallet,
@@ -1180,11 +1403,11 @@
 
     async function loadChatHistory() {
         const panel = document.getElementById('chat-history');
-        if (!panel || !state.wallet || !state.operative?.tokenId) return;
+        if (!panel || !state.operative?.tokenId) return;
         const key = chatKey(state.operative.tokenId);
         let history = local(key, []);
         if (!Array.isArray(history)) history = [];
-        if (SUPABASE_URL && SUPABASE_KEY) {
+        if (SUPABASE_URL && SUPABASE_KEY && state.wallet) {
             try {
                 const rows = await supabaseSelect(CHAT_TABLE, `select=role,message,created_at&wallet_address=eq.${encodeURIComponent(state.wallet)}&token_id=eq.${encodeURIComponent(state.operative.tokenId)}&order=created_at.asc&limit=100`);
                 if (Array.isArray(rows) && rows.length) {
@@ -1198,12 +1421,14 @@
 
     function renderChatTerminal() {
         renderChatFace();
+        updateTradeUI();
         renderChatHistory();
         loadFieldReport();
     }
 
     function renderFusionLab() {
         renderOperativePanel();
+        updateFusionQuotePanel();
         if (state.operative?.tokenId) renderChatTerminal();
     }
 
@@ -1222,29 +1447,33 @@
         const walletText = document.getElementById('wallet-text');
         try {
             if (walletText) walletText.textContent = 'CONNECTING...';
-
-            const payloadRequest = {
-                txjson: { TransactionType: 'SignIn' },
-                options: {
-                    return_url: { web: XAMAN_RETURN_URL + '?uuid={id}' }
-                },
-                custom_meta: {
-                    identifier: 'gross-bros-signin',
-                    instruction: 'Sign in to the Gross Bros Neural Link.'
-                }
-            };
-
-            const payload = await createXamanPayload(payloadRequest);
-            const redirectUrl = getXamanPayloadRedirect(payload) || payload?.next?.always || payload?.created?.next?.always;
+            await persistFrequencyLog({
+                cache_key: `freq:xaman-connect:${Date.now()}`,
+                message: 'Xaman sign-in requested',
+                content: 'Xaman sign-in requested',
+                created_at: new Date().toISOString()
+            });
+            const payload = await createXamanPayload({
+                return_url: { web: XAMAN_RETURN_URL }
+            });
+            const redirectUrl = getXamanPayloadRedirect(payload);
             const uuid = getXamanPayloadUuid(payload);
-
-            if (!redirectUrl) throw new Error('Missing Xaman payload redirect URL.');
-            if (!uuid) throw new Error('Missing Xaman payload uuid.');
-
+            if (!uuid) {
+                throw new Error('Missing Xaman payload uuid.');
+            }
             store(SESSION_KEY, { connected: false, pendingUuid: uuid });
-            window.location.assign(redirectUrl);
+            startXamanPolling(uuid);
+            if (typeof redirectUrl === 'string' && redirectUrl) {
+                window.location.href = redirectUrl;
+            }
         } catch (error) {
             console.error(error);
+            await persistFrequencyLog({
+                cache_key: 'freq:xaman:error:' + Date.now(),
+                message: 'Xaman connect failed',
+                content: 'Xaman connect failed',
+                created_at: new Date().toISOString()
+            }).catch(() => null);
             state.connected = false;
             renderWalletUI();
         }
@@ -1261,13 +1490,13 @@
             return;
         }
         try {
+            const built = buildFusionPaymentTx();
             const payloadRequest = {
-                txjson: {
-                    TransactionType: 'Payment',
-                    Destination: CONFIG.TREASURY_WALLET,
-                    Amount: '50000000'
-                },
-                return_url: { web: XAMAN_RETURN_URL }
+                txjson: built.txjson,
+                options: {
+                    return_url: { web: XAMAN_RETURN_URL },
+                    pathfinding: built.quote.mode !== 'XRP'
+                }
             };
             const payload = await createXamanPayload(payloadRequest, async (event) => {
                 const signed = Boolean(event?.signed || event?.resolved?.signed || event?.data?.signed || event?.meta?.signed);
@@ -1280,8 +1509,9 @@
                 renderOperativePanel();
                 renderChatTerminal();
             });
+            updateFusionStatus('Prepared ' + built.quote.label + ' payment for $' + FUSION_PRICE_USD + ' USD.');
             const redirectUrl = getXamanPayloadRedirect(payload);
-            if (typeof redirectUrl === 'string' && redirectUrl) window.location.assign(redirectUrl);
+            if (typeof redirectUrl === 'string' && redirectUrl) window.location.href = redirectUrl;
             if (!window.xumm?.payload?.createAndSubscribe) {
                 let attempts = 0;
                 const uuid = getXamanPayloadUuid(payload);
@@ -1310,6 +1540,7 @@
             }
         } catch (error) {
             console.error(error);
+            updateFusionStatus(error?.message || 'Fusion payment could not be prepared.');
         }
     }
     window.triggerFusion = triggerFusion;
@@ -1329,11 +1560,14 @@
             store(GUEST_COUNT_KEY, state.guestChatCount);
             return;
         }
-
         input.value = '';
         const operative = state.operative || { name: 'Guest Operative', faction: 'Independent', backstory: 'Default neural link identity.', traits: [], tokenId: 'guest' };
         const messages = buildChatMessages(operative, text);
         await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
+        if (isGuestMode()) {
+            state.guestChatCount += 1;
+            store(GUEST_COUNT_KEY, state.guestChatCount);
+        }
 
         const liveReply = { role: 'system', message: '', created_at: new Date().toISOString() };
         state.chatHistory.push(liveReply);
@@ -1344,8 +1578,6 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
                 body: JSON.stringify({
-                    demoMode: state.demoMode === true,
-                    stream: true,
                     operative: {
                         name: operative.name,
                         faction: operative.faction,
@@ -1354,7 +1586,8 @@
                         tokenId: operative.tokenId,
                         walletAddress: state.wallet || ''
                     },
-                    messages
+                    messages,
+                    stream: true
                 })
             });
             if (!response.ok) throw new Error('Chat request failed: ' + response.status);
@@ -1409,17 +1642,39 @@
             buffer += decoder.decode();
             flushEvents();
 
-            liveReply.message = finalReply.trim() || 'Relay fallback active. Try again in a moment.';
+            if (!finalReply.trim()) finalReply = 'Relay fallback active. Try again in a moment.';
+            liveReply.message = finalReply.trim();
             store(chatKey(operative.tokenId), state.chatHistory);
-            renderChatHistory();
+            if (isGuestMode() && remainingGuestMessages() <= 0) {
+                setGuestPrompt('Guest limit reached. CONNECT WALLET or FUSE to restore neural link access.');
+            }
         } catch (error) {
             console.error(error);
-            liveReply.message = 'Signal collapsed mid-relay. Try again in a moment.';
+            liveReply.message = 'Relay fallback active. Try again in a moment.';
             store(chatKey(operative.tokenId), state.chatHistory);
             renderChatHistory();
         }
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
+        renderChatHistory();
     }
+    window.sendChatMessage = sendChatMessage;
+    function updateTradeUI() {
+        const tradeCommand = document.getElementById('trade-command');
+        const tradeBadge = document.getElementById('trade-badge');
+        const unlocked = Boolean(state.wallet && state.fusedTokenId);
+        state.tradeUnlocked = unlocked;
+        if (tradeCommand) tradeCommand.classList.toggle('hidden-tab', !unlocked);
+        if (tradeBadge) tradeBadge.textContent = unlocked ? 'TRADE UNLOCKED' : (state.wallet ? 'HOLDER MODE' : 'GUEST MODE');
+    }
+
+    async function triggerTrade() {
+        if (!state.tradeUnlocked) {
+            setGuestPrompt('TRADE locked. Fuse a holder wallet to enable bot trading.');
+            return;
+        }
+        setGuestPrompt('TRADE channel unlocked.');
+    }
+
     window.sendChatMessage = sendChatMessage;
     function bindChatInput() {
         const input = document.getElementById('chat-input');
@@ -1442,7 +1697,9 @@
         document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('tab-active', i === n));
         if (n === 2) {
             renderFusionLab();
-            if (state.wallet && state.operative?.tokenId) {
+            updateFusionQuotePanel();
+            updateTradeUI();
+            if (state.operative?.tokenId) {
                 loadChatHistory();
                 loadFieldReport();
                 bindChatInput();
@@ -1508,6 +1765,10 @@
 
     async function init() {
 
+        updateFusionQuotePanel();
+        refreshXrpUsdPrice().catch(() => null);
+        setInterval(() => refreshXrpUsdPrice().catch(() => null), 10 * 60 * 1000);
+
         const savedSession = local(SESSION_KEY, null);
         const savedState = getStoredState();
         if (savedSession?.connected && savedSession?.address) {
@@ -1516,10 +1777,16 @@
         }
         if (savedState?.selectedTokenId) state.selectedTokenId = savedState.selectedTokenId;
         if (savedState?.fusedTokenId) state.fusedTokenId = savedState.fusedTokenId;
+        state.guestChatCount = Number(local(GUEST_COUNT_KEY, 0) || 0) || 0;
         renderWalletUI();
+        updateFusionQuotePanel();
         if (shouldShowBoot()) showBootSequence(); else setBootSeen();
         await loadWarningTicker();
         await loadLeaderboard();
+        const pendingXamanUuid = getPendingXamanUuid();
+        if (!state.wallet && pendingXamanUuid) {
+            startXamanPolling(pendingXamanUuid);
+        }
         if (state.wallet) {
             await loadNfts();
             await loadDailyBro();
@@ -1528,18 +1795,12 @@
         }
         renderOperativePanel();
         renderChatFace();
+        updateTradeUI();
         renderChatHistory();
         loadFieldReport();
+        updateTradeUI();
         bindChatInput();
-        const launchDemoButton = document.getElementById('launch-neural-link-demo');
-        if (launchDemoButton && launchDemoButton.dataset.boundDemo !== '1') {
-            launchDemoButton.dataset.boundDemo = '1';
-            launchDemoButton.addEventListener('click', (event) => {
-                event.preventDefault();
-                launchNeuralLinkDemo();
-            });
-        }
-        switchTab(0);
+        switchTab(2);
     }
 
     window.addEventListener('DOMContentLoaded', init);
