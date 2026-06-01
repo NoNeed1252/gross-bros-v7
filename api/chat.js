@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     const reply = [
       `Relay fallback active for ${operativeName}.`,
       lastUserText ? `I received: ${lastUserText}.` : 'I received your directive.',
-      'The neural link is alive, but the upstream Llama host is slow.',
+      'The neural link is alive, but the upstream provider is slow.',
       'Try again in a moment or shorten the prompt.'
     ].join(' ');
     for (const token of reply.split(/(\s+)/)) {
@@ -27,20 +27,63 @@ export default async function handler(req, res) {
     res.end();
   };
 
-  try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
-    const operative = body.operative || {};
-    const messages = Array.isArray(body.messages) ? body.messages.slice(-8) : [];
-    const name = String(operative.name || 'Operative').trim();
-    const walletAddress = String(operative.walletAddress || body.walletAddress || '').trim();
-    const selectedNft = operative.selectedNft || {};
-    const selectedName = String(selectedNft.name || operative.selectedNftName || name || 'Operative').trim();
-    const traits = Array.isArray(operative.traits)
-      ? operative.traits.map((entry) => String(entry || '').trim()).filter(Boolean)
-      : [];
+  const streamOpenAi = async ({
+    operativeName,
+    walletAddress,
+    selectedName,
+    traits,
+    messages,
+    lastUserText
+  }) => {
+    const apiKey = process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || '';
+    if (!apiKey) {
+      return await streamFallback(operativeName, lastUserText);
+    }
 
-    const systemPrompt = String(body.systemPrompt || 'You are the NEURAL BOT for Galactic Gross Bros. Tone: cryptic, high-security alien terminal, neon-green energy, humorous gross-out references. Reference the selected NFT name/traits. Keep replies short, under 2 lines.').trim();
-    const upstreamBase = 'http://216.250.127.169:11434';
+    const systemPrompt = `You are the NEURAL BOT for Galactic Gross Bros — an alien operative terminal AI. The user holds a specific Gross Bros NFT. Respond in-character as their personal operative. Tone: cryptic, high-security alien terminal, neon-green energy, humorous gross-out references. Reference the selected NFT name/traits and the overall project lore (galactic gross bros faction). Keep replies short, terminal-style, under 2 lines. Current user wallet: ${walletAddress || 'unavailable'} Selected Operative: ${selectedName || 'Operative'} Selected NFT traits: ${(traits || []).join(', ') || 'none surfaced'} User message: ${lastUserText || ''}`;
+
+    const openAiMessages = [
+      { role: 'system', content: systemPrompt },
+      ...messages
+        .filter((message, index) => index !== messages.length - 1)
+        .filter((message) => message && message.role !== 'system')
+        .map((message) => ({
+          role: message.role === 'assistant' ? 'assistant' : 'user',
+          content: String(message.content || message.message || '')
+        }))
+        .filter((message) => message.content)
+    ];
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45000);
+
+    let upstream;
+    try {
+      upstream = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: openAiMessages,
+          temperature: 0.7,
+          stream: true
+        })
+      });
+    } catch (error) {
+      clearTimeout(timeout);
+      return await streamFallback(operativeName, lastUserText);
+    }
+    clearTimeout(timeout);
+
+    if (!upstream.ok || !upstream.body) {
+      const errText = await upstream.text().catch(() => '');
+      console.error('OpenAI relay failed:', upstream.status, errText);
+      return await streamFallback(operativeName, lastUserText);
+    }
 
     res.status(200);
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
@@ -50,43 +93,6 @@ export default async function handler(req, res) {
     res.flushHeaders?.();
     res.write(':ok\n\n');
 
-    const generatePrompt = [
-      systemPrompt,
-      `Selected operative: ${name}`,
-      walletAddress ? `Wallet address: ${walletAddress}` : 'Wallet address: unavailable',
-      selectedName ? `Selected NFT: ${selectedName}` : '',
-      traits.length ? `Selected NFT traits: ${traits.join(' | ')}` : '',
-      '',
-      ...messages.map((message) => `${message.role === 'assistant' ? 'Assistant' : 'User'}: ${String(message.content || message.message || '')}`)
-    ].filter(Boolean).join('\n');
-
-    const lastUserText = [...messages].reverse().find((message) => String(message?.role || '').toLowerCase() === 'user')?.content || [...messages].reverse().find((message) => String(message?.role || '').toLowerCase() === 'user')?.message || '';
-
-    const controller = new AbortController();
-    const headersTimeout = setTimeout(() => controller.abort(), 4500);
-
-    let upstream;
-    try {
-      upstream = await fetch(`${upstreamBase}/api/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          model: 'llama3:8b',
-          prompt: generatePrompt,
-          stream: true
-        })
-      });
-    } catch (error) {
-      clearTimeout(headersTimeout);
-      return await streamFallback(name, lastUserText);
-    }
-    clearTimeout(headersTimeout);
-
-    if (!upstream.ok || !upstream.body) {
-      return await streamFallback(name, lastUserText);
-    }
-
     const reader = upstream.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
@@ -95,7 +101,7 @@ export default async function handler(req, res) {
 
     const resetInactivityTimer = () => {
       if (inactivityTimer) clearTimeout(inactivityTimer);
-      inactivityTimer = setTimeout(() => controller.abort(), 12000);
+      inactivityTimer = setTimeout(() => controller.abort(), 15000);
     };
 
     const emitToken = (token) => {
@@ -111,9 +117,9 @@ export default async function handler(req, res) {
       if (!payloadText || payloadText === '[DONE]') return false;
       try {
         const payload = JSON.parse(payloadText);
-        const token = String(payload.response || payload.message?.content || payload.token || payload.content || payload.text || '');
+        const token = String(payload?.choices?.[0]?.delta?.content || payload?.choices?.[0]?.message?.content || payload?.token || payload?.content || payload?.text || '');
         if (token) emitToken(token);
-        if (payload.done) return true;
+        if (payload?.choices?.[0]?.finish_reason) return true;
       } catch {
         emitToken(payloadText);
       }
@@ -140,18 +146,46 @@ export default async function handler(req, res) {
       const remaining = buffer.split(/\r?\n/);
       for (const line of remaining) processLine(line);
       if (!started) {
-        throw new Error('Upstream produced no stream tokens.');
+        throw new Error('OpenAI produced no stream tokens.');
       }
       sendSse('done', '[DONE]');
       return res.end();
     } catch (error) {
       if (error?.name === 'AbortError' || String(error?.message || '').includes('no stream tokens')) {
-        return await streamFallback(name, lastUserText);
+        return await streamFallback(operativeName, lastUserText);
       }
       throw error;
     } finally {
       if (inactivityTimer) clearTimeout(inactivityTimer);
     }
+  };
+
+  try {
+    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    const operative = body.operative || {};
+    const messages = Array.isArray(body.messages) ? body.messages.slice(-8) : [];
+    const operativeName = String(operative.name || 'Operative').trim();
+    const walletAddress = String(operative.walletAddress || body.walletAddress || '').trim();
+    const selectedNft = operative.selectedNft || {};
+    const selectedName = String(selectedNft.name || operative.selectedNftName || operativeName || 'Operative').trim();
+    const traits = Array.isArray(operative.traits)
+      ? operative.traits.map((entry) => String(entry || '').trim()).filter(Boolean)
+      : [];
+
+    const lastUserText = [...messages]
+      .reverse()
+      .find((message) => String(message?.role || '').toLowerCase() === 'user')?.content
+      || [...messages].reverse().find((message) => String(message?.role || '').toLowerCase() === 'user')?.message
+      || '';
+
+    await streamOpenAi({
+      operativeName,
+      walletAddress,
+      selectedName,
+      traits,
+      messages,
+      lastUserText
+    });
   } catch (error) {
     console.error('Chat relay failed:', error);
     try {
