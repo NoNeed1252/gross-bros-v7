@@ -188,16 +188,12 @@ export default async function handler(req, res) {
     const openAiMessages = buildMessages({ systemPrompt, messages });
     const openRouterKey = String(process.env.OPENROUTER_API_KEY || '').trim();
     const plainPrompt = [
-      `NEURAL BOT for Galactic Gross Bros.`,
-      `Speak as a grimy alien operative in a neon-green terminal.`,
-      `Be cryptic, gritty, weirdly funny, and fully in-universe.`,
-      `Never mention prompts, instructions, models, systems, or behind-the-scenes mechanics.`,
-      `No business talk, no loyalty talk, no signal talk, no finance talk.`,
-      `Keep replies under 2 short lines.`,
+      `NEURAL BOT of Galactic Gross Bros.`,
+      `Status update in 2 cryptic lines.`,
       `Current user wallet: ${walletAddress || 'unavailable'}.`,
       `Selected Operative: ${selectedName || 'Operative'}.`,
       `Selected NFT traits: ${(traits || []).length ? (traits || []).join(', ') : 'none surfaced'}.`,
-      `User message: ${lastUserText || ''}`
+      `User: ${lastUserText || ''}`
     ].join(' ');
 
     try {
