@@ -1587,7 +1587,7 @@
 
             if (!response.body) {
                 const textBody = await response.text().catch(() => '');
-                liveReply.message = textBody.trim() || 'Static lost. Try again, bro.';
+                liveReply.message = textBody.trim() || 'Relay fallback active. Try again in a moment.';
                 store(chatKey(operative.tokenId), state.chatHistory);
                 renderChatHistory();
                 return;
@@ -1635,7 +1635,7 @@
             buffer += decoder.decode();
             flushEvents();
 
-            if (!finalReply.trim()) finalReply = 'Static lost. Try again, bro.';
+            if (!finalReply.trim()) finalReply = 'Relay fallback active. Try again in a moment.';
             liveReply.message = finalReply.trim();
             store(chatKey(operative.tokenId), state.chatHistory);
             if (isGuestMode() && remainingGuestMessages() <= 0) {
@@ -1643,7 +1643,7 @@
             }
         } catch (error) {
             console.error(error);
-            liveReply.message = 'Signal collapsed mid-relay. Try again, bro.';
+            liveReply.message = 'Relay fallback active. Try again in a moment.';
             store(chatKey(operative.tokenId), state.chatHistory);
             renderChatHistory();
         }
