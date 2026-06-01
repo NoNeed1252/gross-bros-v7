@@ -27,71 +27,52 @@ export default async function handler(req, res) {
     res.end();
   };
 
-  const streamOpenRouter = async ({
+  const buildSystemPrompt = ({ walletAddress, selectedName, traits, lastUserText }) =>
+    `You are the NEURAL BOT for Galactic Gross Bros — an alien operative terminal AI. The user holds a specific Gross Bros NFT. Respond in-character as their personal operative. Tone: cryptic, high-security alien terminal, neon-green energy, humorous gross-out references. Reference the selected NFT name/traits and the overall project lore (galactic gross bros faction). Keep replies short, terminal-style, under 2 lines. Current user wallet: ${walletAddress || 'unavailable'} Selected Operative: ${selectedName || 'Operative'} User message: ${lastUserText || ''}${(traits || []).length ? ` Selected NFT traits: ${(traits || []).join(', ')}` : ''}`;
+
+  const buildMessages = ({ systemPrompt, messages }) => [
+    { role: 'system', content: systemPrompt },
+    ...messages
+      .map((message) => ({
+        role: message.role === 'assistant' ? 'assistant' : 'user',
+        content: String(message.content || message.message || '')
+      }))
+      .filter((message) => message.content)
+  ];
+
+  const streamOpenAICompatible = async ({
+    providerName,
+    endpoint,
+    headers,
+    payload,
     operativeName,
-    walletAddress,
-    selectedName,
-    traits,
-    messages,
     lastUserText
   }) => {
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-      return await streamFallback(operativeName, lastUserText);
-    }
-
-    const systemPrompt = `You are the NEURAL BOT for Galactic Gross Bros — an alien operative terminal AI. The user holds a specific Gross Bros NFT. Respond in-character as their personal operative. Tone: cryptic, high-security alien terminal, neon-green energy, humorous gross-out references. Reference the selected NFT name/traits and the overall project lore (galactic gross bros faction). Keep replies short, terminal-style, under 2 lines. Current user wallet: ${walletAddress || 'unavailable'} Selected Operative: ${selectedName || 'Operative'} Selected NFT traits: ${(traits || []).join(', ') || 'none surfaced'} User message: ${lastUserText || ''}`;
-
-    const openRouterMessages = [
-      { role: 'system', content: systemPrompt },
-      ...messages
-        .map((message) => ({
-          role: message.role === 'assistant' ? 'assistant' : 'user',
-          content: String(message.content || message.message || '')
-        }))
-        .filter((message) => message.content)
-    ];
-
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 45000);
 
     let upstream;
     try {
-      upstream = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      upstream = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://grossbros.vercel.app',
-          'X-Title': 'Gross Bros Chat'
+          Accept: 'text/event-stream',
+          ...headers
         },
         signal: controller.signal,
-        body: JSON.stringify({
-          model: 'huggingfaceh4/zephyr-7b-beta:free',
-          messages: openRouterMessages,
-          temperature: 0.7,
-          stream: true
-        })
+        body: JSON.stringify(payload)
       });
     } catch (error) {
       clearTimeout(timeout);
-      return await streamFallback(operativeName, lastUserText);
+      throw new Error(`${providerName} fetch failed: ${error?.message || String(error)}`);
     }
     clearTimeout(timeout);
 
     if (!upstream.ok || !upstream.body) {
       const errText = await upstream.text().catch(() => '');
-      console.error('OpenRouter relay failed:', upstream.status, errText);
-      return await streamFallback(operativeName, lastUserText);
+      throw new Error(`${providerName} response failed: ${upstream.status} ${errText}`.trim());
     }
-
-    res.status(200);
-    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no');
-    res.flushHeaders?.();
-    res.write(':ok\n\n');
 
     const reader = upstream.body.getReader();
     const decoder = new TextDecoder();
@@ -101,7 +82,7 @@ export default async function handler(req, res) {
 
     const resetInactivityTimer = () => {
       if (inactivityTimer) clearTimeout(inactivityTimer);
-      inactivityTimer = setTimeout(() => controller.abort(), 15000);
+      inactivityTimer = setTimeout(() => controller.abort(), 20000);
     };
 
     const emitToken = (token) => {
@@ -120,6 +101,7 @@ export default async function handler(req, res) {
         const token = String(
           payload?.choices?.[0]?.delta?.content ||
           payload?.choices?.[0]?.message?.content ||
+          payload?.choices?.[0]?.delta?.reasoning ||
           payload?.token ||
           payload?.content ||
           payload?.text ||
@@ -150,21 +132,69 @@ export default async function handler(req, res) {
         }
       }
       buffer += decoder.decode();
-      const remaining = buffer.split(/\r?\n/);
-      for (const line of remaining) processLine(line);
-      if (!started) {
-        throw new Error('OpenRouter produced no stream tokens.');
-      }
+      for (const line of buffer.split(/\r?\n/)) processLine(line);
+      if (!started) throw new Error(`${providerName} produced no stream tokens.`);
       sendSse('done', '[DONE]');
       return res.end();
     } catch (error) {
       if (error?.name === 'AbortError' || String(error?.message || '').includes('no stream tokens')) {
-        return await streamFallback(operativeName, lastUserText);
+        throw new Error(`${providerName} stream failed: ${error?.message || String(error)}`);
       }
       throw error;
     } finally {
       if (inactivityTimer) clearTimeout(inactivityTimer);
     }
+  };
+
+  const tryProviders = async ({ operativeName, lastUserText, systemPrompt, messages }) => {
+    const openAiMessages = buildMessages({ systemPrompt, messages });
+    const openRouterKey = String(process.env.OPENROUTER_API_KEY || '').trim();
+
+    const providers = [];
+    if (openRouterKey) {
+      providers.push({
+        providerName: 'OpenRouter',
+        endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+        headers: {
+          Authorization: `Bearer ${openRouterKey}`,
+          'HTTP-Referer': 'https://grossbros.vercel.app',
+          'X-Title': 'Gross Bros Chat'
+        },
+        payload: {
+          model: 'huggingfaceh4/zephyr-7b-beta:free',
+          messages: openAiMessages,
+          temperature: 0.7,
+          stream: true
+        }
+      });
+    }
+
+    providers.push({
+      providerName: 'Pollinations',
+      endpoint: 'https://text.pollinations.ai/openai',
+      headers: {},
+      payload: {
+        model: 'gpt-oss-20b',
+        messages: openAiMessages,
+        temperature: 0.7,
+        stream: true
+      }
+    });
+
+    let lastError = null;
+    for (const provider of providers) {
+      try {
+        return await streamOpenAICompatible({
+          ...provider,
+          operativeName,
+          lastUserText
+        });
+      } catch (error) {
+        lastError = error;
+        console.error(`${provider.providerName} chat relay failed:`, error?.message || error);
+      }
+    }
+    throw lastError || new Error('No provider succeeded.');
   };
 
   try {
@@ -185,21 +215,25 @@ export default async function handler(req, res) {
       || [...messages].reverse().find((message) => String(message?.role || '').toLowerCase() === 'user')?.message
       || '';
 
-    await streamOpenRouter({
-      operativeName,
-      walletAddress,
-      selectedName,
-      traits,
-      messages,
-      lastUserText
-    });
+    res.status(200);
+    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders?.();
+    res.write(':ok\n\n');
+
+    const systemPrompt = buildSystemPrompt({ walletAddress, selectedName, traits, lastUserText });
+    await tryProviders({ operativeName, lastUserText, systemPrompt, messages });
   } catch (error) {
     console.error('Chat relay failed:', error);
     try {
-      res.status(500);
-      res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-      res.setHeader('Cache-Control', 'no-cache, no-transform');
-      res.setHeader('Connection', 'keep-alive');
+      if (!res.headersSent) {
+        res.status(500);
+        res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-cache, no-transform');
+        res.setHeader('Connection', 'keep-alive');
+      }
       res.write(`event: error\ndata: ${JSON.stringify({ error: 'Chat relay failed', details: error?.message || String(error) })}\n\n`);
       res.end();
     } catch {}
