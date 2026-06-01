@@ -1,1 +1,98 @@
-<PLACEHOLDER>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="xaman-api-key" content="88e5dad9-93bf-4e2b-a4b8-563f16545c2d" />
+  <title>Gross Bros</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: Inter, system-ui, sans-serif;
+      background: #050816;
+      color: #e5f7ff;
+    }
+    main {
+      width: min(920px, calc(100vw - 32px));
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      background: rgba(8, 15, 33, 0.92);
+      box-shadow: 0 20px 70px rgba(0,0,0,0.35);
+    }
+    header { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+    h1 { margin: 0; font-size: clamp(1.6rem, 3vw, 2.4rem); }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 18px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #03111a;
+      background: linear-gradient(135deg, #9cf7ff, #62f4c8);
+      box-shadow: 0 10px 28px rgba(98,244,200,0.25);
+    }
+    button.secondary {
+      color: #e5f7ff;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: none;
+    }
+    .panel {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    #chat-terminal {
+      min-height: 240px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    #chat-terminal > div { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  </style>
+  <script>
+window.connectXaman = async function() {
+  const res = await fetch('/api/xaman', { method: 'POST' });
+  const payload = await res.json();
+  if (payload?.next?.always) window.location.href = payload.next.always;
+};
+window.startChatStream = function() {
+  const terminal = document.getElementById('chat-terminal');
+  terminal.innerHTML = '';
+  const eventSource = new EventSource('/api/chat');
+  eventSource.onmessage = (e) => {
+    const line = document.createElement('div');
+    line.textContent = e.data;
+    terminal.appendChild(line);
+  };
+};
+  </script>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Gross Bros</h1>
+        <p style="margin:8px 0 0;color:rgba(229,247,255,0.72)">Connect Xaman, then stream chat updates from the API.</p>
+      </div>
+      <div class="actions">
+        <button type="button" onclick="connectXaman()">Connect Wallet</button>
+        <button type="button" class="secondary" onclick="startChatStream()">Send</button>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div id="chat-terminal"></div>
+    </section>
+  </main>
+</body>
+</html>
