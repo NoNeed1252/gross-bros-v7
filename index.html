@@ -1441,12 +1441,37 @@
     }
     window.selectNft = selectNft;
 
-    window.connectXaman = async function() {
-      const res = await fetch('/api/xaman', { method: 'POST' });
-      const payload = await res.json();
-      if (payload?.next?.always) window.location.href = payload.next.always;
-    };
-    const connectXaman = window.connectXaman;
+    async function connectXaman() {
+        const walletText = document.getElementById('wallet-text');
+        try {
+            if (walletText) walletText.textContent = 'CONNECTING...';
+            const payloadRequest = {
+                txjson: { TransactionType: 'SignIn' },
+                options: {
+                    submit: false,
+                    expire: 5
+                },
+                return_url: { web: XAMAN_RETURN_URL }
+            };
+            const payload = await createXamanPayload(payloadRequest);
+            const uuid = getXamanPayloadUuid(payload);
+            const redirectUrl = getXamanPayloadRedirect(payload);
+            if (!uuid) throw new Error('Missing Xaman payload uuid.');
+            savePendingXamanUuid(uuid);
+            startXamanPolling(uuid);
+            if (typeof redirectUrl === 'string' && redirectUrl) {
+                window.location.assign(redirectUrl);
+            } else {
+                throw new Error('Missing Xaman redirect URL.');
+            }
+        } catch (error) {
+            console.error(error);
+            clearPendingXamanUuid();
+            state.connected = false;
+            renderWalletUI();
+        }
+    }
+    window.connectXaman = connectXaman;
 
     async function triggerFusion() {
         if (!state.wallet) {
@@ -1627,14 +1652,7 @@
     }
     window.sendChatMessage = sendChatMessage;
     window.startChatStream = function() {
-      const terminal = document.getElementById('chat-terminal');
-      terminal.innerHTML = '';
-      const eventSource = new EventSource('/api/chat');
-      eventSource.onmessage = (e) => {
-        const line = document.createElement('div');
-        line.textContent = e.data;
-        terminal.appendChild(line);
-      };
+        return sendChatMessage();
     };
     const startChatStream = window.startChatStream;
 
