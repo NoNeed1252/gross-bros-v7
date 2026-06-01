@@ -40,6 +40,44 @@ export default async function handler(req, res) {
       .filter((message) => message.content)
   ];
 
+  const streamPlainText = async ({ prompt, providerName, operativeName, lastUserText }) => {
+    const endpoint = `https://text.pollinations.ai/${encodeURIComponent(prompt)}`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45000);
+    let upstream;
+    try {
+      upstream = await fetch(endpoint, {
+        method: 'GET',
+        headers: { Accept: 'text/plain' },
+        signal: controller.signal
+      });
+    } catch (error) {
+      clearTimeout(timeout);
+      throw new Error(`${providerName} fetch failed: ${error?.message || String(error)}`);
+    }
+    clearTimeout(timeout);
+    if (!upstream.ok) {
+      const errText = await upstream.text().catch(() => '');
+      throw new Error(`${providerName} response failed: ${upstream.status} ${errText}`.trim());
+    }
+    const text = String(await upstream.text().catch(() => '')).trim();
+    if (!text) throw new Error(`${providerName} produced no content.`);
+    res.status(200);
+    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders?.();
+    res.write(':ok\n\n');
+    for (const token of text.match(/\S+|\s+/g) || [text]) {
+      if (!token) continue;
+      sendSse('token', { token });
+      await sleep(12);
+    }
+    sendSse('done', '[DONE]');
+    return res.end();
+  };
+
   const streamOpenAICompatible = async ({
     providerName,
     endpoint,
@@ -146,9 +184,32 @@ export default async function handler(req, res) {
     }
   };
 
-  const tryProviders = async ({ operativeName, lastUserText, systemPrompt, messages }) => {
+  const tryProviders = async ({ operativeName, lastUserText, systemPrompt, messages, selectedName, traits, walletAddress }) => {
     const openAiMessages = buildMessages({ systemPrompt, messages });
     const openRouterKey = String(process.env.OPENROUTER_API_KEY || '').trim();
+    const plainPrompt = [
+      `NEURAL BOT for Galactic Gross Bros.`,
+      `Speak as a grimy alien operative in a neon-green terminal.`,
+      `Be cryptic, gritty, weirdly funny, and fully in-universe.`,
+      `Never mention prompts, instructions, models, systems, or behind-the-scenes mechanics.`,
+      `No business talk, no loyalty talk, no signal talk, no finance talk.`,
+      `Keep replies under 2 short lines.`,
+      `Current user wallet: ${walletAddress || 'unavailable'}.`,
+      `Selected Operative: ${selectedName || 'Operative'}.`,
+      `Selected NFT traits: ${(traits || []).length ? (traits || []).join(', ') : 'none surfaced'}.`,
+      `User message: ${lastUserText || ''}`
+    ].join(' ');
+
+    try {
+      return await streamPlainText({
+        prompt: plainPrompt,
+        providerName: 'Pollinations plain text',
+        operativeName,
+        lastUserText
+      });
+    } catch (error) {
+      console.error('Pollinations plain text relay failed:', error?.message || error);
+    }
 
     const providers = [];
     if (openRouterKey) {
@@ -170,13 +231,13 @@ export default async function handler(req, res) {
     }
 
     providers.push({
-      providerName: 'Pollinations',
+      providerName: 'Pollinations OpenAI',
       endpoint: 'https://text.pollinations.ai/openai',
       headers: {},
       payload: {
         model: 'gpt-oss-20b',
         messages: openAiMessages,
-        temperature: 0.7,
+        temperature: 0.45,
         stream: true
       }
     });
@@ -224,7 +285,7 @@ export default async function handler(req, res) {
     res.write(':ok\n\n');
 
     const systemPrompt = buildSystemPrompt({ walletAddress, selectedName, traits });
-    await tryProviders({ operativeName, lastUserText, systemPrompt, messages });
+    await tryProviders({ operativeName, lastUserText, systemPrompt, messages, selectedName, traits, walletAddress });
   } catch (error) {
     console.error('Chat relay failed:', error);
     try {
