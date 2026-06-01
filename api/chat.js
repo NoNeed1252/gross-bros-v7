@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     ...messages
       .map((message) => ({
         role: message.role === 'assistant' ? 'assistant' : 'user',
-        content: String(message.content || message.message || '')
+        content: String(message.content || message.message || )
       }))
       .filter((message) => message.content)
   ];
@@ -132,7 +132,7 @@ export default async function handler(req, res) {
     };
 
     const processLine = (line) => {
-      const trimmed = String(line || '').trim();
+      const trimmed = String(line || ).trim();
       if (!trimmed) return false;
       const payloadText = trimmed.startsWith('data:') ? trimmed.slice(5).trim() : trimmed;
       if (!payloadText || payloadText === '[DONE]') return false;
@@ -177,7 +177,7 @@ export default async function handler(req, res) {
       sendSse('done', '[DONE]');
       return res.end();
     } catch (error) {
-      if (error?.name === 'AbortError' || String(error?.message || '').includes('no stream tokens')) {
+      if (error?.name === 'AbortError' || String(error?.message || ).includes('no stream tokens')) {
         throw new Error(`${providerName} stream failed: ${error?.message || String(error)}`);
       }
       throw error;
@@ -188,12 +188,12 @@ export default async function handler(req, res) {
 
   const tryProviders = async ({ operativeName, lastUserText, systemPrompt, messages, selectedName, traits, walletAddress }) => {
     const openAiMessages = buildMessages({ systemPrompt, messages });
-    const openRouterKey = String(process.env.OPENROUTER_API_KEY || '').trim();
+    const openRouterKey = String(process.env.OPENROUTER_API_KEY || ).trim();
     const plainPrompt = [
       `NEURAL BOT of Galactic Gross Bros.`,
       `Operative: ${selectedName || 'Operative'}.`,
       `Traits: ${(traits || []).length ? (traits || []).join(', ') : 'none surfaced'}.`,
-      `User: ${lastUserText || ''}`
+      `User: ${lastUserText || }`
     ].join(' ');
 
     try {
@@ -257,18 +257,18 @@ export default async function handler(req, res) {
     const operative = body.operative || {};
     const messages = Array.isArray(body.messages) ? body.messages.slice(-8) : [];
     const operativeName = String(operative.name || 'Operative').trim();
-    const walletAddress = String(operative.walletAddress || body.walletAddress || '').trim();
+    const walletAddress = String(operative.walletAddress || body.walletAddress || ).trim();
     const selectedNft = operative.selectedNft || {};
     const selectedName = String(selectedNft.name || operative.selectedNftName || operativeName || 'Operative').trim();
     const traits = Array.isArray(operative.traits)
-      ? operative.traits.map((entry) => String(entry || '').trim()).filter(Boolean)
+      ? operative.traits.map((entry) => String(entry || ).trim()).filter(Boolean)
       : [];
 
     const lastUserText = [...messages]
       .reverse()
-      .find((message) => String(message?.role || '').toLowerCase() === 'user')?.content
-      || [...messages].reverse().find((message) => String(message?.role || '').toLowerCase() === 'user')?.message
-      || '';
+      .find((message) => String(message?.role || ).toLowerCase() === 'user')?.content
+      || [...messages].reverse().find((message) => String(message?.role || ).toLowerCase() === 'user')?.message
+      || ;
 
     res.status(200);
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');

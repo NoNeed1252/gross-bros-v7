@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
-  const apiKey = String(process.env.XAMAN_API_KEY || '').trim();
-  const apiSecret = String(process.env.XAMAN_API_SECRET || '').trim();
+  const apiKey = String(process.env.XAMAN_API_KEY || ).trim();
+  const apiSecret = String(process.env.XAMAN_API_SECRET || ).trim();
   const baseUrl = 'https://xumm.app/api/v1/platform';
 
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -20,12 +20,12 @@ export default async function handler(req, res) {
     });
   }
 
-  const action = String(req.query?.action || '').trim();
+  const action = String(req.query?.action || ).trim();
   const body = typeof req.body === 'string'
     ? (() => { try { return JSON.parse(req.body || '{}'); } catch { return {}; } })()
     : (req.body && typeof req.body === 'object' ? req.body : {});
-  const uuid = String(req.query?.uuid || body.uuid || '').trim();
-  const destinationAddress = String(body.destinationAddress || req.query?.destinationAddress || '').trim();
+  const uuid = String(req.query?.uuid || body.uuid || ).trim();
+  const destinationAddress = String(body.destinationAddress || req.query?.destinationAddress || ).trim();
 
   try {
     if (action === 'create-payload') {
