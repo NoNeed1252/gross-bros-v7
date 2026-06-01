@@ -9,6 +9,24 @@ export default async function handler(req, res) {
     res.write(`data: ${typeof data === 'string' ? data : JSON.stringify(data)}\n\n`);
   };
 
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const streamFallback = async (operativeName, lastUserText) => {
+    const reply = [
+      `Relay fallback active for ${operativeName}.`,
+      lastUserText ? `I received: ${lastUserText}.` : 'I received your directive.',
+      'The neural link is alive, but the upstream Llama host is slow.',
+      'Try again in a moment or shorten the prompt.'
+    ].join(' ');
+    for (const token of reply.split(/(\s+)/)) {
+      if (!token) continue;
+      sendSse('token', { token });
+      await sleep(20);
+    }
+    sendSse('done', '[DONE]');
+    res.end();
+  };
+
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     const operative = body.operative || {};
@@ -32,9 +50,6 @@ export default async function handler(req, res) {
     res.flushHeaders?.();
     res.write(':ok\n\n');
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 45000);
-
     const generatePrompt = [
       systemPrompt,
       `Selected operative: ${name}`,
@@ -45,32 +60,47 @@ export default async function handler(req, res) {
       ...messages.map((message) => `${message.role === 'assistant' ? 'Assistant' : 'User'}: ${String(message.content || message.message || '')}`)
     ].filter(Boolean).join('\n');
 
-    const upstream = await fetch(`${upstreamBase}/api/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: 'llama3:8b',
-        prompt: generatePrompt,
-        stream: true
-      })
-    });
+    const lastUserText = [...messages].reverse().find((message) => String(message?.role || '').toLowerCase() === 'user')?.content || [...messages].reverse().find((message) => String(message?.role || '').toLowerCase() === 'user')?.message || '';
 
-    if (!upstream.ok) {
-      const text = await upstream.text().catch(() => '');
-      throw new Error(`Llama request failed: ${upstream.status} ${text}`.trim());
+    const controller = new AbortController();
+    const headersTimeout = setTimeout(() => controller.abort(), 4500);
+
+    let upstream;
+    try {
+      upstream = await fetch(`${upstreamBase}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: 'llama3:8b',
+          prompt: generatePrompt,
+          stream: true
+        })
+      });
+    } catch (error) {
+      clearTimeout(headersTimeout);
+      return await streamFallback(name, lastUserText);
     }
+    clearTimeout(headersTimeout);
 
-    if (!upstream.body) {
-      throw new Error('Upstream stream unavailable.');
+    if (!upstream.ok || !upstream.body) {
+      return await streamFallback(name, lastUserText);
     }
 
     const reader = upstream.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    let started = false;
+    let inactivityTimer;
+
+    const resetInactivityTimer = () => {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => controller.abort(), 12000);
+    };
 
     const emitToken = (token) => {
       if (!token) return;
+      started = true;
       sendSse('token', { token });
     };
 
@@ -91,9 +121,11 @@ export default async function handler(req, res) {
     };
 
     try {
+      resetInactivityTimer();
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
+        resetInactivityTimer();
         buffer += decoder.decode(value, { stream: true });
         let newlineIndex = buffer.indexOf('\n');
         while (newlineIndex >= 0) {
@@ -107,10 +139,18 @@ export default async function handler(req, res) {
       buffer += decoder.decode();
       const remaining = buffer.split(/\r?\n/);
       for (const line of remaining) processLine(line);
+      if (!started) {
+        throw new Error('Upstream produced no stream tokens.');
+      }
       sendSse('done', '[DONE]');
       return res.end();
+    } catch (error) {
+      if (error?.name === 'AbortError' || String(error?.message || '').includes('no stream tokens')) {
+        return await streamFallback(name, lastUserText);
+      }
+      throw error;
     } finally {
-      clearTimeout(timeout);
+      if (inactivityTimer) clearTimeout(inactivityTimer);
     }
   } catch (error) {
     console.error('Chat relay failed:', error);
