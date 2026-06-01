@@ -1,1 +1,318 @@
-test
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gross bros</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1a1f2f 0%, #0b0d14 55%, #05070b 100%);
+      color: #f3f4f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .card {
+      width: min(680px, 100%);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 24px;
+      background: rgba(10, 14, 25, .78);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 24px 80px rgba(0,0,0,.45);
+      padding: 32px;
+    }
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: .24em;
+      font-size: 12px;
+      color: #93c5fd;
+      margin: 0 0 10px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 6vw, 58px);
+      line-height: 1;
+    }
+    p {
+      margin: 16px 0 0;
+      color: #cbd5e1;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .status {
+      margin-top: 24px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      color: #e5e7eb;
+    }
+    .status.success { border-color: rgba(74, 222, 128, .35); background: rgba(34, 197, 94, .12); }
+    .status.error { border-color: rgba(248, 113, 113, .35); background: rgba(239, 68, 68, .10); }
+    .address {
+      margin-top: 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 14px;
+      color: #f8fafc;
+      word-break: break-all;
+      min-height: 22px;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease, background .15s ease;
+    }
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: .65; cursor: wait; transform: none; }
+    .primary { background: linear-gradient(135deg, #38bdf8, #8b5cf6); color: white; }
+    .secondary { background: rgba(255,255,255,.08); color: #e5e7eb; border: 1px solid rgba(255,255,255,.10); }
+    .fineprint {
+      margin-top: 18px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="eyebrow">gross bros</div>
+    <h1>Connect wallet</h1>
+    <p>Use Xaman to sign in. The button below creates a payload, redirects to the Xaman payload URL, and resumes here to show the signed XRPL address.</p>
+
+    <div id="status" class="status">Ready to connect.</div>
+    <div id="address" class="address"></div>
+
+    <div class="actions">
+      <button id="connectBtn" class="primary">CONNECT WALLET</button>
+      <button id="clearBtn" class="secondary" type="button">Clear session</button>
+    </div>
+
+    <div class="fineprint">If the payload expires or is cancelled, start a fresh connection from the button above.</div>
+  </main>
+
+  <script>
+    const XAMAN_API_KEY = "88e5dad9-93bf-4e2b-a4b8-563f16545c2d";
+    const API_BASES = [
+      "https://xaman.app/api/v1/platform",
+      "https://xumm.app/api/v1/platform"
+    ];
+    const STORAGE_KEY = "grossbros:xaman:pending-payload";
+    const POLL_INTERVAL_MS = 2500;
+    const POLL_TIMEOUT_MS = 180000;
+
+    const statusEl = document.getElementById('status');
+    const addressEl = document.getElementById('address');
+    const connectBtn = document.getElementById('connectBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
+    let activePoller = null;
+
+    function setStatus(message, kind = '') {
+      statusEl.textContent = message;
+      statusEl.className = `status ${kind}`.trim();
+    }
+
+    function setAddress(address) {
+      addressEl.textContent = address ? `Connected address: ${address}` : '';
+    }
+
+    function setBusy(isBusy) {
+      connectBtn.disabled = isBusy;
+      clearBtn.disabled = isBusy;
+    }
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    async function requestJson(url, init) {
+      const response = await fetch(url, init);
+      const text = await response.text();
+      let parsed;
+      try {
+        parsed = text ? JSON.parse(text) : {};
+      } catch {
+        parsed = { raw: text };
+      }
+      if (!response.ok) {
+        const detail = parsed?.error?.message || parsed?.message || parsed?.raw || `${response.status} ${response.statusText}`;
+        throw new Error(detail);
+      }
+      return parsed;
+    }
+
+    async function firstSuccessfulResult(taskFactory) {
+      let lastError = null;
+      for (const baseUrl of API_BASES) {
+        try {
+          return await taskFactory(baseUrl);
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw lastError || new Error('All Xaman API endpoints failed');
+    }
+
+    async function createPayload() {
+      return await firstSuccessfulResult(async (baseUrl) => {
+        return await requestJson(`${baseUrl}/payload`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': XAMAN_API_KEY
+          },
+          body: JSON.stringify({
+            txjson: {
+              TransactionType: 'SignIn'
+            },
+            options: {
+              expire: 5
+            }
+          })
+        });
+      });
+    }
+
+    async function getPayload(uuid) {
+      return await firstSuccessfulResult(async (baseUrl) => {
+        return await requestJson(`${baseUrl}/payload/${encodeURIComponent(uuid)}`, {
+          method: 'GET',
+          headers: {
+            'X-API-Key': XAMAN_API_KEY
+          }
+        });
+      });
+    }
+
+    function persistPending(payload) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        uuid: payload.uuid,
+        nextUrl: payload.next?.always || '',
+        createdAt: Date.now()
+      }));
+    }
+
+    function readPending() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function clearPending() {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+
+    async function pollUntilResolved(uuid) {
+      const startedAt = Date.now();
+      while (Date.now() - startedAt < POLL_TIMEOUT_MS) {
+        const payload = await getPayload(uuid);
+        const meta = payload?.meta || {};
+        const response = payload?.response || {};
+        const signedAddress = response.account || response.address || payload?.account || '';
+
+        if (meta.cancelled || meta.expired) {
+          clearPending();
+          setBusy(false);
+          setStatus('Connection was cancelled or expired.', 'error');
+          setAddress('');
+          return false;
+        }
+
+        if (meta.signed || meta.resolved || signedAddress) {
+          clearPending();
+          setBusy(false);
+          const address = signedAddress || 'Signed payload resolved, but no address was returned.';
+          if (signedAddress) {
+            setAddress(address);
+            setStatus('Wallet connected successfully.', 'success');
+          } else {
+            setAddress('');
+            setStatus(address, 'success');
+          }
+          return true;
+        }
+
+        await sleep(POLL_INTERVAL_MS);
+      }
+
+      setBusy(false);
+      setStatus('Timed out waiting for the payload signature. Try connecting again.', 'error');
+      return false;
+    }
+
+    async function startConnect() {
+      if (activePoller) {
+        return;
+      }
+
+      try {
+        setBusy(true);
+        setStatus('Creating Xaman payload...');
+        const payload = await createPayload();
+
+        if (!payload?.uuid || !payload?.next?.always) {
+          throw new Error('Xaman did not return a payload redirect URL.');
+        }
+
+        persistPending(payload);
+        setStatus('Redirecting to Xaman payload...');
+        window.location.assign(payload.next.always);
+      } catch (error) {
+        clearPending();
+        setBusy(false);
+        setStatus(`Could not start Xaman connect: ${error.message || error}`, 'error');
+      }
+    }
+
+    async function resumePendingPayload() {
+      const pending = readPending();
+      if (!pending?.uuid) {
+        return;
+      }
+
+      setBusy(true);
+      setStatus('Checking Xaman signature status...');
+      activePoller = pending.uuid;
+      try {
+        await pollUntilResolved(pending.uuid);
+      } finally {
+        activePoller = null;
+      }
+    }
+
+    connectBtn.addEventListener('click', startConnect);
+    clearBtn.addEventListener('click', () => {
+      clearPending();
+      setAddress('');
+      setBusy(false);
+      setStatus('Session cleared.');
+    });
+
+    resumePendingPayload();
+  </script>
+</body>
+</html>
