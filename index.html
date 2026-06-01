@@ -1467,34 +1467,28 @@
     }
     window.selectNft = selectNft;
 
-    async function connectXaman() {
-        const walletText = document.getElementById('wallet-text');
-        try {
-            if (walletText) walletText.textContent = 'CONNECTING...';
-            const payloadRequest = {
-                txjson: { TransactionType: 'SignIn' },
-                options: {
-                    submit: false,
-                    expire: 5
-                },
-                return_url: { web: XAMAN_RETURN_URL }
-            };
-            const payload = await createXamanPayload(payloadRequest);
-            const uuid = getXamanPayloadUuid(payload);
-            const redirectUrl = getXamanPayloadRedirect(payload);
-            if (!uuid) throw new Error('Missing Xaman payload uuid.');
-            if (!redirectUrl) throw new Error('Missing Xaman redirect URL.');
-            savePendingXamanUuid(uuid);
-            window.location.href = redirectUrl;
-            return;
-        } catch (error) {
-            console.error(error);
-            clearPendingXamanUuid();
-            state.connected = false;
-            renderWalletUI();
+    window.connectXaman = async function() {
+      const btn = event ? event.currentTarget : null;
+      if (btn) btn.style.pointerEvents = 'none';
+      try {
+        const res = await fetch('/api/xaman', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const payload = await res.json();
+        if (payload?.next?.always) {
+          window.location.href = payload.next.always;
+        } else {
+          throw new Error('Invalid payload response – no next.always URL');
         }
-    }
-    window.connectXaman = connectXaman;
+      } catch (err) {
+        console.error('Xaman connect error:', err);
+        alert('Xaman connection failed. Check console and /api/xaman logs.');
+      } finally {
+        if (btn) btn.style.pointerEvents = 'auto';
+      }
+    };
 
     async function triggerFusion() {
         if (!state.wallet) {
@@ -1514,16 +1508,46 @@
                     pathfinding: built.quote.mode !== 'XRP'
                 }
             };
-            const payload = await createXamanPayload(payloadRequest);
+            const payload = await createXamanPayload(payloadRequest, async (event) => {
+                const signed = Boolean(event?.signed || event?.resolved?.signed || event?.data?.signed || event?.meta?.signed);
+                if (!signed) return;
+                state.fusedTokenId = state.selectedTokenId;
+                const active = currentEntry();
+                if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
+                store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
+                store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
+                renderOperativePanel();
+                renderChatTerminal();
+            });
             updateFusionStatus('Prepared ' + built.quote.label + ' payment for $' + FUSION_PRICE_USD + ' USD.');
             const redirectUrl = getXamanPayloadRedirect(payload);
-            const uuid = getXamanPayloadUuid(payload);
-            if (uuid) savePendingXamanUuid(uuid);
-            if (typeof redirectUrl === 'string' && redirectUrl) {
-                window.location.href = redirectUrl;
+            if (typeof redirectUrl === 'string' && redirectUrl) window.location.href = redirectUrl;
+            if (!window.xumm?.payload?.createAndSubscribe) {
+                let attempts = 0;
+                const uuid = getXamanPayloadUuid(payload);
+                const interval = setInterval(async () => {
+                    attempts++;
+                    if (attempts > 35) {
+                        clearInterval(interval);
+                        return;
+                    }
+                    if (!uuid) return;
+                    const check = await fetch('/api/xaman?action=check-payload&uuid=' + uuid);
+                    const status = await check.json();
+                    if ((status.meta && status.meta.signed) || status.signed || status.resolved?.signed) {
+                        clearInterval(interval);
+                        state.fusedTokenId = state.selectedTokenId;
+                        const active = currentEntry();
+                        if (active) state.operative = buildOperativeFromMetadata(active.nft, active.metadata || {});
+                        store(STATE_KEY, { selectedTokenId: state.selectedTokenId, fusedTokenId: state.fusedTokenId });
+                        store(operativeKey(state.selectedTokenId), { tokenId: state.selectedTokenId, wallet: state.wallet, fused: true, at: new Date().toISOString() });
+                        renderOperativePanel();
+                        renderChatTerminal();
+                    }
+                }, 2500);
+                window.location.assign(redirectUrl);
                 return;
             }
-            throw new Error('Missing Xaman redirect URL.');
         } catch (error) {
             console.error(error);
             updateFusionStatus(error?.message || 'Fusion payment could not be prepared.');
@@ -1546,14 +1570,11 @@
             store(GUEST_COUNT_KEY, state.guestChatCount);
             return;
         }
+
         input.value = '';
         const operative = state.operative || { name: 'Guest Operative', faction: 'Independent', backstory: 'Default neural link identity.', traits: [], tokenId: 'guest' };
         const messages = buildChatMessages(operative, text);
         await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
-        if (isGuestMode()) {
-            state.guestChatCount += 1;
-            store(GUEST_COUNT_KEY, state.guestChatCount);
-        }
 
         const liveReply = { role: 'system', message: '', created_at: new Date().toISOString() };
         state.chatHistory.push(liveReply);
@@ -1564,6 +1585,8 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
                 body: JSON.stringify({
+                    demoMode: state.demoMode === true,
+                    stream: true,
                     operative: {
                         name: operative.name,
                         faction: operative.faction,
@@ -1572,8 +1595,7 @@
                         tokenId: operative.tokenId,
                         walletAddress: state.wallet || ''
                     },
-                    messages,
-                    stream: true
+                    messages
                 })
             });
             if (!response.ok) throw new Error('Chat request failed: ' + response.status);
@@ -1628,44 +1650,47 @@
             buffer += decoder.decode();
             flushEvents();
 
-            if (!finalReply.trim()) finalReply = 'Relay fallback active. Try again in a moment.';
-            liveReply.message = finalReply.trim();
+            liveReply.message = finalReply.trim() || 'Relay fallback active. Try again in a moment.';
             store(chatKey(operative.tokenId), state.chatHistory);
-            if (isGuestMode() && remainingGuestMessages() <= 0) {
-                setGuestPrompt('Guest limit reached. CONNECT WALLET or FUSE to restore neural link access.');
-            }
+            renderChatHistory();
         } catch (error) {
             console.error(error);
-            liveReply.message = 'Relay fallback active. Try again in a moment.';
+            liveReply.message = 'Signal collapsed mid-relay. Try again in a moment.';
             store(chatKey(operative.tokenId), state.chatHistory);
             renderChatHistory();
         }
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
-        renderChatHistory();
     }
-    window.sendChatMessage = sendChatMessage;
     window.startChatStream = function() {
-        return sendChatMessage();
+      const terminal = document.getElementById('chat-terminal');
+      if (!terminal) {
+        console.error('Chat terminal div not found. Add id="chat-terminal" to your output div.');
+        return;
+      }
+      terminal.innerHTML = '';
+      const status = document.createElement('div');
+      status.textContent = 'Connecting to stream...';
+      status.style.opacity = '0.6';
+      terminal.appendChild(status);
+      const eventSource = new EventSource('/api/chat');
+      window.currentChatStream = eventSource;
+      eventSource.onopen = () => {
+        status.remove();
+      };
+      eventSource.onmessage = (event) => {
+        const line = document.createElement('div');
+        line.textContent = event.data;
+        terminal.appendChild(line);
+        terminal.scrollTop = terminal.scrollHeight;
+      };
+      eventSource.onerror = (err) => {
+        console.error('SSE error:', err);
+        const errMsg = document.createElement('div');
+        errMsg.textContent = 'Stream ended or connection lost.';
+        errMsg.style.color = '#f66';
+        terminal.appendChild(errMsg);
+      };
     };
-    const startChatStream = window.startChatStream;
-
-    function updateTradeUI() {
-        const tradeCommand = document.getElementById('trade-command');
-        const tradeBadge = document.getElementById('trade-badge');
-        const unlocked = Boolean(state.wallet && state.fusedTokenId);
-        state.tradeUnlocked = unlocked;
-        if (tradeCommand) tradeCommand.classList.toggle('hidden-tab', !unlocked);
-        if (tradeBadge) tradeBadge.textContent = unlocked ? 'TRADE UNLOCKED' : (state.wallet ? 'HOLDER MODE' : 'GUEST MODE');
-    }
-
-    async function triggerTrade() {
-        if (!state.tradeUnlocked) {
-            setGuestPrompt('TRADE locked. Fuse a holder wallet to enable bot trading.');
-            return;
-        }
-        setGuestPrompt('TRADE channel unlocked.');
-    }
-
     window.sendChatMessage = sendChatMessage;
     function bindChatInput() {
         const input = document.getElementById('chat-input');
@@ -1688,295 +1713,7 @@
         document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('tab-active', i === n));
         if (n === 2) {
             renderFusionLab();
-            updateFusionQuotePanel();
-            updateTradeUI();
-            if (state.operative?.tokenId) {
-                loadChatHistory();
-                loadFieldReport();
-                bindChatInput();
-            }
-        }
-    }
-    window.switchTab = switchTab;
-
-    function setBootSeen() {
-        try { sessionStorage.setItem(BOOT_KEY, '1'); } catch {}
-    }
-
-    function shouldShowBoot() {
-        try { return sessionStorage.getItem(BOOT_KEY) !== '1'; } catch { return true; }
-    }
-
-    function showBootSequence() {
-        const overlay = document.getElementById('boot-overlay');
-        const stream = document.getElementById('boot-stream');
-        const checks = document.getElementById('boot-checks');
-        const progress = document.getElementById('boot-progress');
-        const progressLabel = document.getElementById('boot-progress-label');
-        const statusLine = document.getElementById('boot-status-line');
-        if (!overlay || !stream || !checks || !progress || !progressLabel || !statusLine) return;
-        const steps = [
-            'LOAD ALIEN BROADCAST OS CORE',
-            'MOUNT XRPL SIGNAL BUS',
-            'SCAN WALLET AND OPERATIVE ROUTES',
-            'VERIFY NFT RELAY STRUCTURE',
-            'SYNC FIELD REPORT CACHE',
-            'STABILIZE CHAT TERMINAL'
-        ];
-        const checksList = [
-            'POWER BUS .......... ONLINE',
-            'SCANLINES ......... CALIBRATED',
-            'XRPL LINK .......... READY',
-            'NFT GRID ........... STABLE',
-            'TERMINAL CACHE ..... ARMED'
-        ];
-        const streamLines = [];
-        let progressValue = 0;
-        let cursor = 0;
-        overlay.classList.remove('hidden');
-        checks.innerHTML = checksList.map((item) => '<div class="rounded-xl border border-[#00ffc8]/12 bg-black/25 px-3 py-2">' + item + '</div>').join('');
-        const timer = setInterval(() => {
-            progressValue = Math.min(100, progressValue + (cursor < 6 ? 9 : 15));
-            const phase = steps[Math.min(steps.length - 1, Math.floor(cursor / 2))];
-            const line = String(cursor + 1).padStart(2, '0') + ' :: ' + phase + ' :: OK';
-            streamLines.push(line);
-            if (streamLines.length > 6) streamLines.shift();
-            stream.innerHTML = streamLines.map((item) => '<div>' + item + '</div>').join('');
-            statusLine.textContent = phase;
-            progress.style.width = progressValue + '%';
-            progressLabel.textContent = progressValue + '%';
-            cursor += 1;
-            if (progressValue >= 100) {
-                clearInterval(timer);
-                setTimeout(() => overlay.classList.add('hidden'), 350);
-                setBootSeen();
-            }
-        }, 220);
-    }
-
-    async function init() {
-
-        updateFusionQuotePanel();
-        refreshXrpUsdPrice().catch(() => null);
-        setInterval(() => refreshXrpUsdPrice().catch(() => null), 10 * 60 * 1000);
-
-        const savedSession = local(SESSION_KEY, null);
-        const savedState = getStoredState();
-        if (savedSession?.connected && savedSession?.address) {
-            state.wallet = savedSession.address;
-            state.connected = true;
-        }
-        if (savedState?.selectedTokenId) state.selectedTokenId = savedState.selectedTokenId;
-        if (savedState?.fusedTokenId) state.fusedTokenId = savedState.fusedTokenId;
-        state.guestChatCount = Number(local(GUEST_COUNT_KEY, 0) || 0) || 0;
-        renderWalletUI();
-        updateFusionQuotePanel();
-        if (shouldShowBoot()) showBootSequence(); else setBootSeen();
-        await loadWarningTicker();
-        await loadLeaderboard();
-        const pendingXamanUuid = getPendingXamanUuid();
-        if (!state.wallet && pendingXamanUuid) {
-            startXamanPolling(pendingXamanUuid);
-        }
-        if (state.wallet) {
-            await loadNfts();
-            await loadDailyBro();
-        } else {
-            await loadDailyBro();
-        }
-        renderOperativePanel();
-        renderChatFace();
-        updateTradeUI();
-        renderChatHistory();
-        loadFieldReport();
-        updateTradeUI();
-        bindChatInput();
-        switchTab(2);
-    }
-
-    window.addEventListener('DOMContentLoaded', init);
-})();
-</script>
-</body>
-</html> + FUSION_PRICE_USD + ' USD.');
-            const redirectUrl = getXamanPayloadRedirect(payload);
-            if (typeof redirectUrl === 'string' && redirectUrl) {
-                savePendingXamanUuid(getXamanPayloadUuid(payload));
-                window.location.href = redirectUrl;
-                return;
-            }
-        } catch (error) {
-            console.error(error);
-            updateFusionStatus(error?.message || 'Fusion payment could not be prepared.');
-        }
-    }
-        } catch (error) {
-            console.error(error);
-            updateFusionStatus(error?.message || 'Fusion payment could not be prepared.');
-        }
-    }
-    window.triggerFusion = triggerFusion;
-    window.fuseSelectedNft = triggerFusion;
-
-    async function sendChatMessage() {
-        const input = document.getElementById('chat-input');
-        if (!input) return;
-        const text = input.value.trim();
-        if (!text) return;
-        if (text.toLowerCase() === 'fuse') {
-            await triggerFusion();
-            return;
-        }
-        if (isGuestMode() && remainingGuestMessages() <= 0) {
-            setGuestPrompt('Guest limit reached. CONNECT WALLET or FUSE to restore neural link access.');
-            store(GUEST_COUNT_KEY, state.guestChatCount);
-            return;
-        }
-        input.value = '';
-        const operative = state.operative || { name: 'Guest Operative', faction: 'Independent', backstory: 'Default neural link identity.', traits: [], tokenId: 'guest' };
-        const messages = buildChatMessages(operative, text);
-        await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
-        if (isGuestMode()) {
-            state.guestChatCount += 1;
-            store(GUEST_COUNT_KEY, state.guestChatCount);
-        }
-
-        const liveReply = { role: 'system', message: '', created_at: new Date().toISOString() };
-        state.chatHistory.push(liveReply);
-        renderChatHistory();
-
-        try {
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-                body: JSON.stringify({
-                    operative: {
-                        name: operative.name,
-                        faction: operative.faction,
-                        backstory: operative.backstory || '',
-                        traits: operative.traits || [],
-                        tokenId: operative.tokenId,
-                        walletAddress: state.wallet || ''
-                    },
-                    messages,
-                    stream: true
-                })
-            });
-            if (!response.ok) throw new Error('Chat request failed: ' + response.status);
-
-            if (!response.body) {
-                const textBody = await response.text().catch(() => '');
-                liveReply.message = textBody.trim() || 'Relay fallback active. Try again in a moment.';
-                store(chatKey(operative.tokenId), state.chatHistory);
-                renderChatHistory();
-                return;
-            }
-
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-            let finalReply = '';
-
-            const flushEvents = () => {
-                let splitIndex = buffer.indexOf('\n\n');
-                while (splitIndex >= 0) {
-                    const chunk = buffer.slice(0, splitIndex);
-                    buffer = buffer.slice(splitIndex + 2);
-                    const lines = chunk.split('\n');
-                    for (const line of lines) {
-                        const trimmed = line.trim();
-                        if (!trimmed || !trimmed.startsWith('data:')) continue;
-                        const payloadText = trimmed.slice(5).trim();
-                        if (!payloadText || payloadText === '[DONE]') continue;
-                        let token = '';
-                        try {
-                            const payload = JSON.parse(payloadText);
-                            token = String(payload.token || payload.response || payload.message || payload.content || payload.text || '');
-                        } catch {
-                            token = payloadText;
-                        }
-                        if (token) {
-                            finalReply += token;
-                            liveReply.message = finalReply;
-                            renderChatHistory();
-                        }
-                    }
-                    splitIndex = buffer.indexOf('\n\n');
-                }
-            };
-
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                flushEvents();
-            }
-            buffer += decoder.decode();
-            flushEvents();
-
-            if (!finalReply.trim()) finalReply = 'Relay fallback active. Try again in a moment.';
-            liveReply.message = finalReply.trim();
-            store(chatKey(operative.tokenId), state.chatHistory);
-            if (isGuestMode() && remainingGuestMessages() <= 0) {
-                setGuestPrompt('Guest limit reached. CONNECT WALLET or FUSE to restore neural link access.');
-            }
-        } catch (error) {
-            console.error(error);
-            liveReply.message = 'Relay fallback active. Try again in a moment.';
-            store(chatKey(operative.tokenId), state.chatHistory);
-            renderChatHistory();
-        }
-        awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
-        renderChatHistory();
-    }
-    window.sendChatMessage = sendChatMessage;
-    window.startChatStream = function() {
-        return sendChatMessage();
-    };
-    const startChatStream = window.startChatStream;
-
-    function updateTradeUI() {
-        const tradeCommand = document.getElementById('trade-command');
-        const tradeBadge = document.getElementById('trade-badge');
-        const unlocked = Boolean(state.wallet && state.fusedTokenId);
-        state.tradeUnlocked = unlocked;
-        if (tradeCommand) tradeCommand.classList.toggle('hidden-tab', !unlocked);
-        if (tradeBadge) tradeBadge.textContent = unlocked ? 'TRADE UNLOCKED' : (state.wallet ? 'HOLDER MODE' : 'GUEST MODE');
-    }
-
-    async function triggerTrade() {
-        if (!state.tradeUnlocked) {
-            setGuestPrompt('TRADE locked. Fuse a holder wallet to enable bot trading.');
-            return;
-        }
-        setGuestPrompt('TRADE channel unlocked.');
-    }
-
-    window.sendChatMessage = sendChatMessage;
-    function bindChatInput() {
-        const input = document.getElementById('chat-input');
-        if (!input || input.dataset.boundEnter === '1') return;
-        input.dataset.boundEnter = '1';
-        input.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendChatMessage();
-            }
-        });
-    }
-
-
-    function switchTab(n) {
-        state.currentTab = n;
-        document.querySelectorAll('.tab-content').forEach((el) => el.classList.remove('active'));
-        const target = document.getElementById('content-' + n);
-        if (target) target.classList.add('active');
-        document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('tab-active', i === n));
-        if (n === 2) {
-            renderFusionLab();
-            updateFusionQuotePanel();
-            updateTradeUI();
-            if (state.operative?.tokenId) {
+            if (state.wallet && state.operative?.tokenId) {
                 loadChatHistory();
                 loadFieldReport();
                 bindChatInput();
