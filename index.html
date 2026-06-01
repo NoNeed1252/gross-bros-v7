@@ -228,10 +228,10 @@
             </div>
         </div>
 
-        <button id="xaman-connect-button" type="button" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
+        <div onclick="connectXaman()" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
             <i class="fa-solid fa-wallet"></i>
-            <span id="wallet-text">CONNECT WALLET</span>
-        </button>
+            <span id="wallet-text">CONNECT XAMAN</span>
+        </div>
 
         <p id="xaman-status" class="text-[11px] sm:text-sm text-[#00ffc8]/60 text-center lg:text-right">Wallet disconnected.</p>
     </div>
@@ -644,100 +644,32 @@
         return `${STATE_KEY}:chat:${state.wallet}:${tokenId}`;
     }
 
-    const XAMAN_PENDING_UUID_KEY = 'grossbros:xaman-pending-uuid';
     function getXamanPayloadRedirect(payload) {
         return payload?.created?.next?.always || payload?.next?.always || payload?.payload?.next?.always || payload?.response?.next?.always || payload?.created?.next?.no_push_msg_received || payload?.next?.no_push_msg_received || payload?.payload?.next?.no_push_msg_received || payload?.response?.next?.no_push_msg_received || '';
     }
 
     function getXamanPayloadUuid(payload) {
-        return payload?.uuid || payload?.payload?.uuid || payload?.response?.uuid || payload?.session?.uuid || payload?.created?.uuid || '';
-    }
-
-    function savePendingXamanUuid(uuid) {
-        if (!uuid) return;
-        try { sessionStorage.setItem(XAMAN_PENDING_UUID_KEY, uuid); } catch {}
-    }
-
-    function loadPendingXamanUuid() {
-        try { return String(sessionStorage.getItem(XAMAN_PENDING_UUID_KEY) || '').trim(); } catch { return ''; }
-    }
-
-    function clearPendingXamanUuid() {
-        try { sessionStorage.removeItem(XAMAN_PENDING_UUID_KEY); } catch {}
-    }
-
-    function getPendingXamanUuid() {
-        const params = new URL(window.location.href).searchParams;
-        return params.get('uuid') || params.get('payload_uuidv4') || params.get('payload_uuid') || params.get('xaman_uuid') || loadPendingXamanUuid();
-    }
-
-    function extractXamanAccount(status) {
-        return status?.response?.account || status?.account || status?.resolved?.account || status?.data?.account || '';
-    }
-
-    async function completeXamanConnection(status) {
-        const address = extractXamanAccount(status);
-        if (address) {
-            state.wallet = address;
-            state.connected = true;
-            store(SESSION_KEY, { connected: true, address, wallet: address });
-            clearPendingXamanUuid();
-            renderWalletUI();
-            await loadNfts();
-            await loadLeaderboard();
-            renderFusionLab();
-        }
-        const returnUrl = getXamanPayloadRedirect(status);
-        if (returnUrl) window.location.assign(returnUrl);
-    }
-
-    function startXamanPolling(uuid) {
-        let attempts = 0;
-        const interval = setInterval(async () => {
-            attempts += 1;
-            if (attempts > 45) {
-                clearInterval(interval);
-                state.connected = false;
-                renderWalletUI();
-                return;
-            }
-            if (!uuid) return;
-            try {
-                const check = await fetch('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(uuid));
-                const status = await check.json();
-                if ((status.meta && status.meta.signed) || status.signed) {
-                    clearInterval(interval);
-                    await completeXamanConnection(status);
-                } else if (status.meta && status.meta.expired) {
-                    clearInterval(interval);
-                    clearPendingXamanUuid();
-                    state.connected = false;
-                    renderWalletUI();
-                }
-            } catch (error) {
-                console.error(error);
-            }
-        }, 2500);
-        return interval;
+        return payload?.created?.uuid || payload?.uuid || payload?.payload?.uuid || payload?.response?.uuid || payload?.session?.uuid || '';
     }
 
     async function createXamanPayload(payloadRequest, onSigned) {
+        if (window.xumm?.payload?.createAndSubscribe) {
+            return await window.xumm.payload.createAndSubscribe(payloadRequest, async (event) => {
+                if ((event?.signed || event?.resolved?.signed || event?.data?.signed) && typeof onSigned === 'function') {
+                    await onSigned(event);
+                }
+            });
+        }
+
         const res = await fetch('/api/xaman?action=create-payload', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payloadRequest)
         });
-        const payload = await res.json().catch(() => null);
-        if (!res.ok || !payload) {
-            throw new Error((payload && (payload.error || payload.message)) || 'Failed to create Xaman payload (' + res.status + ')');
-        }
-        if (typeof onSigned === "function" && window.xumm?.payload?.createAndSubscribe) {
-            try {
-                await onSigned(payload);
-            } catch {}
-        }
-        return payload;
-    }    function reportKey(tokenId, dayKey) {
+        return await res.json();
+    }
+
+    function reportKey(tokenId, dayKey) {
         return `${STATE_KEY}:report:${state.wallet}:${tokenId}:${dayKey}`;
     }
 
@@ -899,7 +831,7 @@
         const xamanStatus = document.getElementById('xaman-status');
         const xrpAmount = document.getElementById('xrp-amount');
         const monitor = document.getElementById('main-monitor');
-        if (walletText) walletText.textContent = state.connected ? 'XAMAN CONNECTED' : 'CONNECT WALLET';
+        if (walletText) walletText.textContent = state.connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
         if (xamanStatus) xamanStatus.textContent = state.connected ? `Connected: ${shortAddress(state.wallet)}` : 'Wallet disconnected.';
         if (xrpAmount) xrpAmount.textContent = state.connected ? `CONNECTED BRO: ${shortAddress(state.wallet)}` : '';
         if (monitor) monitor.classList.toggle('connected-glow', state.connected);
@@ -1289,32 +1221,76 @@
         const walletText = document.getElementById('wallet-text');
         try {
             if (walletText) walletText.textContent = 'CONNECTING...';
+
             const payloadRequest = {
                 txjson: { TransactionType: 'SignIn' },
                 options: {
-                    submit: false,
-                    expire: 5
+                    return_url: { web: XAMAN_RETURN_URL + '?uuid={id}' }
                 },
-                return_url: { web: XAMAN_RETURN_URL }
+                custom_meta: {
+                    identifier: 'gross-bros-signin',
+                    instruction: 'Sign in to the Gross Bros Neural Link.'
+                }
             };
-            const payload = await createXamanPayload(payloadRequest);
-            const uuid = getXamanPayloadUuid(payload);
+
+            const payload = await createXamanPayload(payloadRequest, async () => null);
             const redirectUrl = getXamanPayloadRedirect(payload);
-            if (!uuid) throw new Error('Missing Xaman payload uuid.');
-            savePendingXamanUuid(uuid);
-            startXamanPolling(uuid);
-            if (typeof redirectUrl === 'string' && redirectUrl) {
-                window.location.assign(redirectUrl);
-            } else {
-                throw new Error('Missing Xaman redirect URL.');
+            const uuid = getXamanPayloadUuid(payload);
+
+            if (!uuid) {
+                throw new Error('Missing Xaman payload uuid.');
             }
+            if (!redirectUrl) {
+                throw new Error('Missing Xaman payload redirect URL.');
+            }
+
+            store(SESSION_KEY, { connected: false, pendingUuid: uuid });
+
+            let attempts = 0;
+            const interval = setInterval(async () => {
+                attempts++;
+                if (attempts > 35) {
+                    clearInterval(interval);
+                    state.connected = false;
+                    renderWalletUI();
+                    return;
+                }
+                if (!uuid) return;
+                try {
+                    const check = await fetch('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(uuid));
+                    const status = await check.json();
+                    if ((status.meta && status.meta.signed) || status.signed || status.resolved?.signed) {
+                        clearInterval(interval);
+                        const address = (status.response && status.response.account) || status.account || status.resolved?.account || '';
+                        if (address) {
+                            state.wallet = address;
+                            state.connected = true;
+                            store(SESSION_KEY, { connected: true, address, wallet: address });
+                            renderWalletUI();
+                            await loadNfts();
+                            await loadLeaderboard();
+                            renderFusionLab();
+                        }
+                        const returnUrl = getXamanPayloadRedirect(status);
+                        if (returnUrl) window.location.assign(returnUrl);
+                    } else if (status.meta && status.meta.expired) {
+                        clearInterval(interval);
+                        state.connected = false;
+                        renderWalletUI();
+                    }
+                } catch (pollError) {
+                    console.error(pollError);
+                }
+            }, 2500);
+
+            window.location.assign(redirectUrl);
         } catch (error) {
             console.error(error);
-            clearPendingXamanUuid();
             state.connected = false;
             renderWalletUI();
         }
-    }    window.connectXaman = connectXaman;
+    }
+    window.connectXaman = connectXaman;
 
     async function triggerFusion() {
         if (!state.wallet) {
@@ -1382,21 +1358,35 @@
 
     async function sendChatMessage() {
         const input = document.getElementById('chat-input');
-        if (!input || !state.operative?.tokenId) return;
+        if (!input) return;
         const text = input.value.trim();
         if (!text) return;
+        if (text.toLowerCase() === 'fuse') {
+            await triggerFusion();
+            return;
+        }
+        if (isGuestMode() && remainingGuestMessages() <= 0) {
+            setGuestPrompt('Guest limit reached. CONNECT WALLET or FUSE to restore neural link access.');
+            store(GUEST_COUNT_KEY, state.guestChatCount);
+            return;
+        }
+
         input.value = '';
-        const operative = state.operative;
+        const operative = state.operative || { name: 'Guest Operative', faction: 'Independent', backstory: 'Default neural link identity.', traits: [], tokenId: 'guest' };
         const messages = buildChatMessages(operative, text);
         await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
-        const liveReply = { role: "system", message: "", created_at: new Date().toISOString() };
+
+        const liveReply = { role: 'system', message: '', created_at: new Date().toISOString() };
         state.chatHistory.push(liveReply);
         renderChatHistory();
+
         try {
             const response = await fetch('/api/chat', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
+                headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
                 body: JSON.stringify({
+                    demoMode: state.demoMode === true,
+                    stream: true,
                     operative: {
                         name: operative.name,
                         faction: operative.faction,
@@ -1405,78 +1395,73 @@
                         tokenId: operative.tokenId,
                         walletAddress: state.wallet || ''
                     },
-                    messages,
-                    stream: true
+                    messages
                 })
             });
             if (!response.ok) throw new Error('Chat request failed: ' + response.status);
 
-            const decodeSseReply = async (res) => {
-                const parseBlock = (block) => {
-                    let reply = '';
-                    let eventName = '';
-                    let dataLines = [];
-                    for (const line of String(block || '').split(/\r?\n/)) {
-                        if (line.startsWith('event:')) eventName = line.slice(6).trim();
-                        else if (line.startsWith('data:')) dataLines.push(line.slice(5).trim());
-                    }
-                    const dataText = dataLines.join('\n').trim();
-                    if (!dataText || dataText === '[DONE]' || eventName === 'done') return '';
-                    if (dataText.startsWith('{')) {
+            if (!response.body) {
+                const textBody = await response.text().catch(() => '');
+                liveReply.message = textBody.trim() || 'Relay fallback active. Try again in a moment.';
+                store(chatKey(operative.tokenId), state.chatHistory);
+                renderChatHistory();
+                return;
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let finalReply = '';
+
+            const flushEvents = () => {
+                let splitIndex = buffer.indexOf('\n\n');
+                while (splitIndex >= 0) {
+                    const chunk = buffer.slice(0, splitIndex);
+                    buffer = buffer.slice(splitIndex + 2);
+                    const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        const trimmed = line.trim();
+                        if (!trimmed || !trimmed.startsWith('data:')) continue;
+                        const payloadText = trimmed.slice(5).trim();
+                        if (!payloadText || payloadText === '[DONE]') continue;
+                        let token = '';
                         try {
-                            const payload = JSON.parse(dataText);
-                            const token = String(payload?.token || payload?.reply || payload?.message || payload?.content || payload?.choices?.[0]?.delta?.content || payload?.choices?.[0]?.message?.content || payload?.choices?.[0]?.text || payload?.output || payload?.result || '').trim();
-                            if (token) reply += token;
-                            return reply;
-                        } catch {}
+                            const payload = JSON.parse(payloadText);
+                            token = String(payload.token || payload.response || payload.message || payload.content || payload.text || '');
+                        } catch {
+                            token = payloadText;
+                        }
+                        if (token) {
+                            finalReply += token;
+                            liveReply.message = finalReply;
+                            renderChatHistory();
+                        }
                     }
-                    return dataText;
-                };
-
-                if (!res.body) {
-                    const fallback = await res.text().catch(() => '');
-                    try {
-                        const parsed = JSON.parse(fallback);
-                        return String(parsed?.reply || parsed?.message || parsed?.content || parsed?.choices?.[0]?.message?.content || parsed?.choices?.[0]?.text || parsed?.output || parsed?.result || fallback).trim();
-                    } catch {
-                        return fallback.trim();
-                    }
+                    splitIndex = buffer.indexOf('\n\n');
                 }
-
-                const reader = res.body.getReader();
-                const decoder = new TextDecoder();
-                let buffer = '';
-                let reply = '';
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) break;
-                    buffer += decoder.decode(value, { stream: true });
-                    let separatorIndex = buffer.indexOf('\n\n');
-                    while (separatorIndex >= 0) {
-                        const block = buffer.slice(0, separatorIndex);
-                        buffer = buffer.slice(separatorIndex + 2);
-                        reply += parseBlock(block);
-                        separatorIndex = buffer.indexOf('\n\n');
-                    }
-                }
-                buffer += decoder.decode();
-                reply += parseBlock(buffer);
-                return reply.trim();
             };
 
-            const replyText = await decodeSseReply(response);
-            liveReply.message = replyText || 'Static lost. Try again, bro.';
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                flushEvents();
+            }
+            buffer += decoder.decode();
+            flushEvents();
+
+            liveReply.message = finalReply.trim() || 'Relay fallback active. Try again in a moment.';
             store(chatKey(operative.tokenId), state.chatHistory);
             renderChatHistory();
         } catch (error) {
             console.error(error);
-            liveReply.message = 'Signal collapsed mid-relay. Try again, bro.';
+            liveReply.message = 'Signal collapsed mid-relay. Try again in a moment.';
             store(chatKey(operative.tokenId), state.chatHistory);
             renderChatHistory();
         }
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
-        renderChatHistory();
-    }    window.sendChatMessage = sendChatMessage;
+    }
+    window.sendChatMessage = sendChatMessage;
     function bindChatInput() {
         const input = document.getElementById('chat-input');
         if (!input || input.dataset.boundEnter === '1') return;
@@ -1564,10 +1549,6 @@
 
     async function init() {
 
-        updateFusionQuotePanel();
-        refreshXrpUsdPrice().catch(() => null);
-        setInterval(() => refreshXrpUsdPrice().catch(() => null), 10 * 60 * 1000);
-
         const savedSession = local(SESSION_KEY, null);
         const savedState = getStoredState();
         if (savedSession?.connected && savedSession?.address) {
@@ -1576,16 +1557,10 @@
         }
         if (savedState?.selectedTokenId) state.selectedTokenId = savedState.selectedTokenId;
         if (savedState?.fusedTokenId) state.fusedTokenId = savedState.fusedTokenId;
-        state.guestChatCount = Number(local(GUEST_COUNT_KEY, 0) || 0) || 0;
         renderWalletUI();
-        updateFusionQuotePanel();
         if (shouldShowBoot()) showBootSequence(); else setBootSeen();
         await loadWarningTicker();
         await loadLeaderboard();
-        const pendingXamanUuid = getPendingXamanUuid();
-        if (!state.wallet && pendingXamanUuid) {
-            startXamanPolling(pendingXamanUuid);
-        }
         if (state.wallet) {
             await loadNfts();
             await loadDailyBro();
@@ -1594,10 +1569,8 @@
         }
         renderOperativePanel();
         renderChatFace();
-        updateTradeUI();
         renderChatHistory();
         loadFieldReport();
-        updateTradeUI();
         bindChatInput();
         const launchDemoButton = document.getElementById('launch-neural-link-demo');
         if (launchDemoButton && launchDemoButton.dataset.boundDemo !== '1') {
@@ -1608,7 +1581,9 @@
             });
         }
         switchTab(0);
-    }    window.addEventListener('DOMContentLoaded', init);
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
 })();
 </script>
 </body>
