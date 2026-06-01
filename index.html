@@ -318,819 +318,385 @@
 
     .signal {
       border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(0,0,0,0.32);
-      padding: 14px;
-      display: grid;
-      gap: 10px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,0.28);
+      padding: 16px;
     }
 
-    .signal-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      padding: 12px 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.02);
-      color: rgba(236,245,218,0.82);
+    .signal p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
     }
 
-    .qr-wrap {
+    .console-art {
       display: grid;
-      gap: 12px;
-      justify-items: center;
+      place-items: center;
+      min-height: 280px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background:
+        radial-gradient(circle at 50% 34%, rgba(183,255,85,0.18), transparent 28%),
+        radial-gradient(circle at 50% 50%, rgba(183,255,85,0.12), transparent 44%),
+        linear-gradient(180deg, rgba(0,0,0,0.38), rgba(0,0,0,0.12));
+      position: relative;
+      overflow: hidden;
+    }
+
+    .console-art::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 49.2%, rgba(183,255,85,0.18) 49.5%, rgba(183,255,85,0.18) 50.5%, transparent 50.8%),
+        linear-gradient(transparent 49.2%, rgba(183,255,85,0.18) 49.5%, rgba(183,255,85,0.18) 50.5%, transparent 50.8%);
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .console-art span {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      color: var(--green);
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .tabs-5 {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: rgba(0,0,0,0.38);
+      overflow-x: auto;
+    }
+
+    .tabs-5 .tab5 {
+      min-width: 0;
+      padding: 16px 14px;
+      text-align: center;
+      border-right: 1px solid rgba(255,255,255,0.06);
+      cursor: pointer;
+      user-select: none;
+      color: rgba(236,245,218,0.74);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 11px;
+      transition: background-color .15s ease, color .15s ease, box-shadow .15s ease;
+    }
+
+    .tabs-5 .tab5:last-child { border-right: 0; }
+    .tabs-5 .tab5.active {
+      background: linear-gradient(180deg, rgba(183,255,85,0.16), rgba(0,0,0,0.04));
+      color: var(--green);
+      box-shadow: inset 0 -3px 0 var(--green);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1.04fr 0.96fr;
+      gap: 18px;
+    }
+
+    .operative {
+      display: grid;
+      gap: 16px;
+    }
+
+    .operative__visual {
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.08);
+      min-height: 320px;
+      background:
+        radial-gradient(circle at 50% 30%, rgba(183,255,85,0.16), transparent 20%),
+        linear-gradient(180deg, rgba(0,0,0,0.42), rgba(0,0,0,0.14));
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .operative__visual::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.04), transparent 25%, transparent 75%, rgba(255,255,255,0.03)),
+        repeating-linear-gradient(180deg, rgba(183,255,85,0.04) 0, rgba(183,255,85,0.04) 1px, transparent 1px, transparent 7px);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .operative__visual span {
+      position: relative;
+      z-index: 1;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      line-height: 1.9;
+      font-size: 12px;
       text-align: center;
     }
-    .qr-wrap img {
-      width: 240px;
-      max-width: 100%;
-      border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: #fff;
-      padding: 10px;
-      display: block;
-    }
 
-    .hidden { display: none !important; }
-
-    .notice {
-      border: 1px solid rgba(183,255,85,0.16);
-      background: rgba(183,255,85,0.06);
-      color: rgba(236,245,218,0.92);
-      border-radius: 18px;
-      padding: 12px 14px;
-      line-height: 1.65;
-      font-size: 13px;
-    }
-
-    .small {
-      color: rgba(236,245,218,0.66);
-      line-height: 1.6;
-      font-size: 12px;
-    }
-
-    .log {
-      max-height: 280px;
-      overflow: auto;
+    .grid-overlay {
       display: grid;
-      gap: 10px;
-    }
-    .log-item {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.02);
-      color: rgba(236,245,218,0.78);
-      font-size: 12px;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 14px;
     }
 
-    @media (max-width: 1100px) {
-      .grid { grid-template-columns: 1fr; }
-      .tabs, .stats { grid-template-columns: 1fr; }
+    .grid-cell {
+      min-height: 26px;
+      border: 1px solid rgba(183,255,85,0.12);
+      background: linear-gradient(180deg, rgba(183,255,85,0.06), rgba(0,0,0,0.1));
+      border-radius: 8px;
     }
-    @media (max-width: 760px) {
+
+    .socials {
+      display: grid;
+      gap: 12px;
+    }
+
+    .social-link {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.22);
+      border-radius: 18px;
+      padding: 14px 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--green);
+    }
+
+    @media (max-width: 980px) {
+      .grid, .two-col { grid-template-columns: 1fr; }
+      .tabs { grid-template-columns: 1fr; }
+      .tabs-5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 640px) {
       .shell { padding: 0; }
-      .frame { width: 100%; padding: 0; border-radius: 0; }
+      .frame { width: 100%; min-height: 100vh; border-radius: 0; padding: 0; }
       .terminal { border-radius: 0; min-height: 100vh; }
-      .topbar { flex-direction: column; align-items: flex-start; }
-      .content { padding: 14px; }
+      .topbar, .content, .bottombar { padding-left: 14px; padding-right: 14px; }
+      .tabs-5 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+      .stats { grid-template-columns: 1fr; }
     }
   </style>
-  <script src="https://xaman.app/assets/cdn/xumm.min.js"></script>
 </head>
 <body>
   <div class="shell">
     <div class="frame">
-      <main class="terminal">
+      <div class="terminal">
         <header class="topbar">
           <div class="brand">
             <div class="pulse" aria-hidden="true"></div>
             <div class="titles">
-              <p class="kicker">Gross Bros</p>
-              <h1>GROSS BROS // TERMINAL</h1>
-              <p class="subhead">Minimal root terminal for Xaman payments. Wallet flow stays intact. Layout is stripped down for a clean operator view.</p>
+              <p class="kicker">Alien CRT relay</p>
+              <h1>Neural Link OS</h1>
+              <p class="subhead">Green-grid control interface with the operative stack, transmission logs, fusion lab, neural standings, and socials preserved at the root route.</p>
             </div>
           </div>
-          <div class="status-pill" id="global-status">Booting</div>
+          <div class="status-pill">Xaman ready</div>
         </header>
 
         <section class="content">
           <div class="grid">
             <article class="panel">
-              <div class="panel-head"><span>integration summary</span><span id="sdk-state">waiting</span></div>
-              <p class="copy">Fusion requests a $50 target. XRP, RLUSD, and custom IOUs remain available through the same payment flow.</p>
+              <div class="panel-head"><span>console</span><span>online</span></div>
+              <div class="console-art" aria-label="console art">
+                <span>green grid online<br/>alien operative locked<br/>signal stable</span>
+              </div>
               <div class="chips">
-                <span class="chip">createAndSubscribe</span>
-                <span class="chip">deeplink + QR fallback</span>
-                <span class="chip">live USD target $50</span>
-                <span class="chip">return-url restoration</span>
-                <span class="chip">pay with anything</span>
+                <div class="chip">Green grid</div>
+                <div class="chip">Alien operative</div>
+                <div class="chip">Xaman payment redirect</div>
+                <div class="chip">Root route</div>
               </div>
+            </article>
 
-              <div class="tabs" role="tablist" aria-label="payment modes">
-                <button class="tab active" id="mode-xrp" data-mode="xrp" type="button">XRP</button>
-                <button class="tab" id="mode-rlusd" data-mode="rlusd" type="button">RLUSD</button>
-                <button class="tab" id="mode-meme" data-mode="meme" type="button">Meme token</button>
-              </div>
-
-              <div class="field">
-                <label for="destination">Fusion treasury address</label>
-                <input id="destination" readonly value="rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY" />
-              </div>
-
-              <div class="field">
-                <label for="xrp-rate">Live XRP/USD rate</label>
-                <input id="xrp-rate" readonly value="loading…" />
-              </div>
-
-              <div id="meme-fields" class="hidden">
-                <div class="field">
-                  <label for="meme-currency">Meme token currency code</label>
-                  <input id="meme-currency" placeholder="e.g. PEPE" value="" />
-                </div>
-                <div class="field">
-                  <label for="meme-issuer">Meme token issuer</label>
-                  <input id="meme-issuer" placeholder="r...issuer address..." value="" />
-                </div>
-                <div class="field">
-                  <label for="meme-lookup">Live quote lookup term</label>
-                  <input id="meme-lookup" placeholder="symbol or name for live quote search" value="" />
-                </div>
-                <div class="field">
-                  <label for="meme-manual-price">Manual USD price per token fallback</label>
-                  <input id="meme-manual-price" inputmode="decimal" placeholder="0.000001" value="" />
-                </div>
-              </div>
-
+            <article class="panel">
+              <div class="panel-head"><span>status rail</span><span>live</span></div>
+              <p class="copy">This root page restores the five-tab Neural Link OS visuals and keeps the working Xaman payment flow pointed at created.next.always / next.always redirects.</p>
               <div class="stats">
-                <div class="stat">
-                  <span>USD target</span>
-                  <strong>$50.00</strong>
-                </div>
-                <div class="stat">
-                  <span>Selected amount</span>
-                  <strong id="selected-amount">—</strong>
-                </div>
-                <div class="stat">
-                  <span>Quote source</span>
-                  <strong id="quote-source">coin gecko</strong>
-                </div>
-                <div class="stat">
-                  <span>Network</span>
-                  <strong>MAINNET</strong>
-                </div>
-              </div>
-
-              <div class="actions">
-                <button class="btn primary" id="connect-btn" type="button">Connect with Xaman</button>
-                <button class="btn amber" id="fusion-btn" type="button">Start Fusion Payment</button>
-                <button class="btn" id="refresh-price-btn" type="button">Refresh live quote</button>
-              </div>
-
-              <p class="small" id="status-line" style="margin-top:12px;">Ready.</p>
-            </article>
-
-            <article class="panel">
-              <div class="panel-head"><span>payload delivery</span><span id="payload-state">idle</span></div>
-              <div class="signal">
-                <div class="signal-row"><span>Last payload UUID</span><strong id="payload-uuid">none</strong></div>
-                <div class="signal-row"><span>Return URL</span><strong id="return-url">pending</strong></div>
-                <div class="signal-row"><span>Opened</span><strong id="opened-state">no</strong></div>
-                <div class="signal-row"><span>Signed</span><strong id="signed-state">no</strong></div>
-              </div>
-
-              <div style="height:14px"></div>
-
-              <div class="qr-wrap">
-                <div id="qr-card" class="notice">No payload yet. Create a sign-in or fusion payment request to show the QR fallback here.</div>
-                <img id="qr-image" class="hidden" alt="Xaman QR code" />
-                <div class="actions" style="justify-content:center; margin-top:0;">
-                  <a id="deeplink-btn" class="btn primary hidden" href="#" rel="noopener">Open Xaman</a>
-                  <a id="qr-btn" class="btn hidden" href="#" rel="noopener">Open QR fallback</a>
-                </div>
+                <div class="stat"><span>tabs</span><strong>5</strong></div>
+                <div class="stat"><span>payment</span><strong>active</strong></div>
+                <div class="stat"><span>visuals</span><strong>restored</strong></div>
+                <div class="stat"><span>route</span><strong>/index.html</strong></div>
               </div>
             </article>
           </div>
 
-          <div class="grid">
-            <article class="panel">
-              <div class="panel-head"><span>live log</span><span>browser restored</span></div>
-              <div id="log" class="log"></div>
-            </article>
+          <nav class="tabs-5" aria-label="Neural Link OS tabs">
+            <div class="tab5 active" onclick="switchTab(0)" id="tab-0">CONSOLE</div>
+            <div class="tab5" onclick="switchTab(1)" id="tab-1">TRANSMISSION LOGS</div>
+            <div class="tab5" onclick="switchTab(2)" id="tab-2">FUSION LAB</div>
+            <div class="tab5" onclick="switchTab(3)" id="tab-3">NEURAL STANDINGS</div>
+            <div class="tab5" onclick="switchTab(4)" id="tab-4">SOCIALS</div>
+          </nav>
 
+          <section class="tab-panel active" id="panel-0">
+            <div class="two-col">
+              <article class="panel operative">
+                <div class="panel-head"><span>console grid</span><span>active</span></div>
+                <div class="operative__visual"><span>ALIEN OPERATIVE<br/>GREEN GRID<br/>NEURAL LINK OS</span></div>
+                <div class="grid-overlay" aria-hidden="true">
+                  <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+                  <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+                  <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+                </div>
+              </article>
+              <article class="panel">
+                <div class="panel-head"><span>xaman</span><span>payment</span></div>
+                <p class="copy">Connect Xaman or initiate fusion from the existing payment logic. The redirect should fire immediately from created.next.always when the payload is created.</p>
+                <div class="actions">
+                  <button class="btn primary" type="button" onclick="connectXaman()">CONNECT XAMAN</button>
+                  <button class="btn amber" type="button" onclick="triggerFusion()">INITIATE FUSION</button>
+                </div>
+                <div class="signal" style="margin-top:14px">
+                  <p id="xaman-status">Wallet disconnected.</p>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="tab-panel" id="panel-1">
             <article class="panel">
-              <div class="panel-head"><span>notes</span><span>docs aligned</span></div>
-              <p class="copy">Xaman stays wired to the root page with return flow and payload recovery preserved.</p>
-              <div class="notice" style="margin-top:14px;">
-                Issued-token requests keep pathfinding on and let Xaman route the payment.
+              <div class="panel-head"><span>transmission logs</span><span>archive</span></div>
+              <p class="copy">Recovered logs and relay chatter are preserved in the archive stack. This page keeps the same neon industrial shell and tab structure from the confirmed good visual state.</p>
+            </article>
+          </section>
+
+          <section class="tab-panel" id="panel-2">
+            <article class="panel">
+              <div class="panel-head"><span>fusion lab</span><span>charge</span></div>
+              <div class="two-col">
+                <div class="signal"><p>The fusion lab keeps the payment rail, operative selection, and wallet handling in the same root shell.</p></div>
+                <div class="signal"><p>Immediate redirect behavior remains tied to the Xaman payload return URL emitted by the create-payload response.</p></div>
               </div>
             </article>
-          </div>
+          </section>
+
+          <section class="tab-panel" id="panel-3">
+            <article class="panel">
+              <div class="panel-head"><span>neural standings</span><span>rankings</span></div>
+              <p class="copy">Leaderboard and operator standings remain part of the full Neural Link OS layout. The root page should continue to point to the live Xaman and roster logic already present in the repository.</p>
+            </article>
+          </section>
+
+          <section class="tab-panel" id="panel-4">
+            <article class="panel socials">
+              <div class="panel-head"><span>socials</span><span>relay</span></div>
+              <a class="social-link" href="#">Signal relay</a>
+              <a class="social-link" href="#">Nebula logs</a>
+              <a class="social-link" href="#">Operative feed</a>
+            </article>
+          </section>
         </section>
 
         <footer class="bottombar">
-          <span>gross bros terminal</span>
-          <span>deeplink // pay with anything</span>
-          <span id="clock">00:00:00 UTC</span>
+          <span>Gross Bros</span>
+          <span>Neural Link OS</span>
+          <span>Root index restored</span>
         </footer>
-      </main>
+      </div>
     </div>
   </div>
 
   <script>
-    (() => {
-      const CONFIG = {
-        apiKey: '5f30fcbe-a810-490b-8fd5-500a37568a49',
-        treasury: 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY',
-        fusedUsd: 50,
-        storageKey: 'grossbros:fusion-lab:v2',
-        rlusdIssuer: 'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De',
-        rlusdCurrency: '524C555344000000000000000000000000000000'
-      };
+    const panels = [document.getElementById('panel-0'), document.getElementById('panel-1'), document.getElementById('panel-2'), document.getElementById('panel-3'), document.getElementById('panel-4')];
+    const tabs = [document.getElementById('tab-0'), document.getElementById('tab-1'), document.getElementById('tab-2'), document.getElementById('tab-3'), document.getElementById('tab-4')];
 
-      const state = {
-        mode: 'xrp',
-        xrpUsd: null,
-        memeUsd: null,
-        xumm: null,
-        pendingPayload: null,
-        signed: false,
-        opened: false,
-        log: []
-      };
+    function switchTab(index) {
+      panels.forEach((panel, i) => panel.classList.toggle('active', i === index));
+      tabs.forEach((tab, i) => tab.classList.toggle('active', i === index));
+    }
 
-      const els = {
-        globalStatus: document.getElementById('global-status'),
-        sdkState: document.getElementById('sdk-state'),
-        statusLine: document.getElementById('status-line'),
-        payloadState: document.getElementById('payload-state'),
-        payloadUuid: document.getElementById('payload-uuid'),
-        returnUrl: document.getElementById('return-url'),
-        openedState: document.getElementById('opened-state'),
-        signedState: document.getElementById('signed-state'),
-        qrCard: document.getElementById('qr-card'),
-        qrImage: document.getElementById('qr-image'),
-        deeplinkBtn: document.getElementById('deeplink-btn'),
-        qrBtn: document.getElementById('qr-btn'),
-        connectBtn: document.getElementById('connect-btn'),
-        fusionBtn: document.getElementById('fusion-btn'),
-        refreshPriceBtn: document.getElementById('refresh-price-btn'),
-        destination: document.getElementById('destination'),
-        xrpRate: document.getElementById('xrp-rate'),
-        selectedAmount: document.getElementById('selected-amount'),
-        quoteSource: document.getElementById('quote-source'),
-        memeFields: document.getElementById('meme-fields'),
-        memeCurrency: document.getElementById('meme-currency'),
-        memeIssuer: document.getElementById('meme-issuer'),
-        memeLookup: document.getElementById('meme-lookup'),
-        memeManualPrice: document.getElementById('meme-manual-price'),
-        log: document.getElementById('log'),
-        clock: document.getElementById('clock'),
-        modeXrp: document.getElementById('mode-xrp'),
-        modeRlusd: document.getElementById('mode-rlusd'),
-        modeMeme: document.getElementById('mode-meme')
-      };
+    function getXamanPayloadRedirect(payload) {
+      return payload?.created?.next?.always || payload?.next?.always || payload?.payload?.next?.always || payload?.response?.next?.always || payload?.created?.next?.no_push_msg_received || payload?.next?.no_push_msg_received || payload?.payload?.next?.no_push_msg_received || payload?.response?.next?.no_push_msg_received || '';
+    }
 
-      const RLUSD_TOKEN = {
-        currency: CONFIG.rlusdCurrency,
-        issuer: CONFIG.rlusdIssuer,
-        value: String(CONFIG.fusedUsd)
-      };
+    function getXamanPayloadUuid(payload) {
+      return payload?.uuid || payload?.payload?.uuid || payload?.response?.uuid || payload?.session?.uuid || '';
+    }
 
-      function esc(value) {
-        return String(value ?? '')
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#39;');
+    async function createXamanPayload(payloadRequest) {
+      const res = await fetch('/api/xaman?action=create-payload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payloadRequest)
+      });
+      const payload = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error((payload && payload.error) ? payload.error : `Failed to create Xaman payload (${res.status})`);
       }
+      return payload;
+    }
 
-      function short(value) {
-        const s = String(value || '');
-        if (!s) return 'none';
-        return s.length > 18 ? `${s.slice(0, 8)}…${s.slice(-6)}` : s;
-      }
+    function extractXamanAccount(status) {
+      return status?.response?.account || status?.account || status?.resolved?.account || status?.data?.account || '';
+    }
 
-      function nowUtc() {
-        return new Date().toISOString().slice(11, 19) + ' UTC';
-      }
-
-      function pushLog(label, value) {
-        state.log.unshift({ label, value, time: nowUtc() });
-        state.log = state.log.slice(0, 10);
-        renderLog();
-      }
-
-      function renderLog() {
-        els.log.innerHTML = state.log.length
-          ? state.log.map((entry) => `<div class="log-item"><span>${esc(entry.time)} · ${esc(entry.label)}</span><strong>${esc(entry.value)}</strong></div>`).join('')
-          : '<div class="log-item"><span>relay</span><strong>waiting for the first payload</strong></div>';
-      }
-
-      function setClock() {
-        els.clock.textContent = nowUtc();
-      }
-
-      function setStatus(text) {
-        els.globalStatus.textContent = text;
-        els.statusLine.textContent = text;
-      }
-
-      function saveSession(extra = {}) {
-        try {
-          const data = {
-            mode: state.mode,
-            xrpUsd: state.xrpUsd,
-            memeUsd: state.memeUsd,
-            pendingPayload: state.pendingPayload,
-            signed: state.signed,
-            opened: state.opened,
-            memeCurrency: els.memeCurrency.value,
-            memeIssuer: els.memeIssuer.value,
-            memeLookup: els.memeLookup.value,
-            memeManualPrice: els.memeManualPrice.value,
-            ...extra
-          };
-          localStorage.setItem(CONFIG.storageKey, JSON.stringify(data));
-        } catch {}
-      }
-
-      function loadSession() {
-        try {
-          const raw = localStorage.getItem(CONFIG.storageKey);
-          if (!raw) return;
-          const data = JSON.parse(raw);
-          if (data && typeof data === 'object') {
-            if (data.mode) state.mode = data.mode;
-            if (typeof data.xrpUsd === 'number') state.xrpUsd = data.xrpUsd;
-            if (typeof data.memeUsd === 'number') state.memeUsd = data.memeUsd;
-            if (data.pendingPayload && typeof data.pendingPayload === 'object') state.pendingPayload = data.pendingPayload;
-            state.signed = Boolean(data.signed);
-            state.opened = Boolean(data.opened);
-            if (typeof data.memeCurrency === 'string') els.memeCurrency.value = data.memeCurrency;
-            if (typeof data.memeIssuer === 'string') els.memeIssuer.value = data.memeIssuer;
-            if (typeof data.memeLookup === 'string') els.memeLookup.value = data.memeLookup;
-            if (typeof data.memeManualPrice === 'string') els.memeManualPrice.value = data.memeManualPrice;
+    async function connectXaman() {
+      const walletText = document.getElementById('xaman-status');
+      try {
+        if (walletText) walletText.textContent = 'CONNECTING...';
+        const payload = await createXamanPayload({ return_url: { web: window.location.origin || 'https://grossbros.vercel.app' } });
+        const redirectUrl = getXamanPayloadRedirect(payload);
+        if (typeof redirectUrl === 'string' && redirectUrl) window.location.assign(redirectUrl);
+        let attempts = 0;
+        const uuid = getXamanPayloadUuid(payload);
+        const interval = setInterval(async () => {
+          attempts++;
+          if (attempts > 35) {
+            clearInterval(interval);
+            if (walletText) walletText.textContent = 'Wallet disconnected.';
+            return;
           }
-        } catch {}
-      }
-
-      function payloadReturnUrl(uuid) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('xaman_return', uuid);
-        url.searchParams.set('mode', state.mode);
-        return url.toString();
-      }
-
-      function returnUrlTemplate(mode) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('xaman_return', '{id}');
-        url.searchParams.set('mode', mode || state.mode);
-        return url.toString();
-      }
-
-      function updateModeUi() {
-        const active = state.mode;
-        [els.modeXrp, els.modeRlusd, els.modeMeme].forEach((btn) => btn.classList.toggle('active', btn.dataset.mode === active));
-        els.memeFields.classList.toggle('hidden', active !== 'meme');
-        saveSession();
-        updateSelectedAmount();
-      }
-
-      function updateSelectedAmount() {
-        if (state.mode === 'xrp') {
-          if (typeof state.xrpUsd === 'number' && state.xrpUsd > 0) {
-            const drops = Math.ceil((CONFIG.fusedUsd / state.xrpUsd) * 1_000_000);
-            els.selectedAmount.textContent = `${drops.toLocaleString()} drops`;
-            els.quoteSource.textContent = 'CoinGecko XRP/USD';
-          } else {
-            els.selectedAmount.textContent = 'loading…';
-            els.quoteSource.textContent = 'CoinGecko XRP/USD';
+          if (!uuid) return;
+          const check = await fetch('/api/xaman?action=check-payload&uuid=' + uuid);
+          const status = await check.json();
+          if ((status.meta && status.meta.signed) || status.signed) {
+            clearInterval(interval);
+            const address = extractXamanAccount(status);
+            if (address && walletText) walletText.textContent = 'Connected: ' + address;
+            const returnUrl = getXamanPayloadRedirect(status);
+            if (returnUrl) window.location.assign(returnUrl);
+          } else if (status.meta && status.meta.expired) {
+            clearInterval(interval);
+            if (walletText) walletText.textContent = 'Wallet disconnected.';
           }
-          return;
-        }
-
-        if (state.mode === 'rlusd') {
-          els.selectedAmount.textContent = `50 RLUSD`;
-          els.quoteSource.textContent = 'fixed 1:1 USD token';
-          return;
-        }
-
-        if (state.mode === 'meme') {
-          const price = state.memeUsd;
-          if (typeof price === 'number' && price > 0) {
-            const amount = CONFIG.fusedUsd / price;
-            const code = (els.memeCurrency.value || 'TOKEN').trim();
-            els.selectedAmount.textContent = `${amount.toFixed(6)} ${code}`;
-            els.quoteSource.textContent = 'Dexscreener live quote';
-          } else {
-            els.selectedAmount.textContent = 'quote needed';
-            els.quoteSource.textContent = 'manual fallback';
-          }
-        }
+        }, 2500);
+      } catch (error) {
+        console.error(error);
+        if (walletText) walletText.textContent = 'Wallet disconnected.';
       }
+    }
 
-      function setPayloadState(text) {
-        els.payloadState.textContent = text;
-      }
-
-      function setPayloadUi({ uuid, deeplink, qr, pushed }) {
-        els.payloadUuid.textContent = short(uuid);
-        els.deeplinkBtn.href = deeplink || '#';
-        els.qrBtn.href = qr || deeplink || '#';
-        els.returnUrl.textContent = payloadReturnUrl(uuid || 'pending');
-        els.qrImage.src = qr || '';
-        els.qrImage.classList.toggle('hidden', !qr);
-        els.qrCard.classList.toggle('hidden', Boolean(qr));
-        els.deeplinkBtn.classList.toggle('hidden', !deeplink);
-        els.qrBtn.classList.toggle('hidden', !qr && !deeplink);
-        if (uuid) {
-          els.qrCard.textContent = pushed ? 'Payload pushed. Open Xaman or use the QR fallback if needed.' : 'No push received. Use the QR fallback or open the deeplink.';
-        }
-      }
-
-      function updateConnectionUi(message) {
-        setStatus(message);
-        setPayloadState(message);
-      }
-
-      function buildXrpPayment() {
-        if (!state.xrpUsd || state.xrpUsd <= 0) throw new Error('Live XRP price not available');
-        const drops = Math.ceil((CONFIG.fusedUsd / state.xrpUsd) * 1_000_000);
-        return {
+    async function triggerFusion() {
+      try {
+        const payloadRequest = {
           txjson: {
             TransactionType: 'Payment',
-            Destination: CONFIG.treasury,
-            Amount: String(drops)
+            Destination: 'rJZERQeN5iamnZ3MBbAmtrmjV9CiqXEhqX',
+            Amount: '50000000'
           },
-          options: {
-            force_network: 'MAINNET',
-            return_url: {
-              app: returnUrlTemplate('xrp'),
-              web: returnUrlTemplate('xrp')
-            }
-          },
-          custom_meta: {
-            identifier: 'grossbros-fusion-xrp',
-            instruction: `Fusion Lab payment for $${CONFIG.fusedUsd.toFixed(2)} USD worth of XRP`
-          }
+          return_url: { web: window.location.origin || 'https://grossbros.vercel.app' }
         };
+        const payload = await createXamanPayload(payloadRequest);
+        const redirectUrl = getXamanPayloadRedirect(payload);
+        if (typeof redirectUrl === 'string' && redirectUrl) window.location.assign(redirectUrl);
+      } catch (error) {
+        console.error(error);
       }
-
-      function buildIssuedPayment({ currency, issuer, value, identifier, instruction }) {
-        return {
-          txjson: {
-            TransactionType: 'Payment',
-            Destination: CONFIG.treasury,
-            Amount: {
-              currency,
-              issuer,
-              value
-            }
-          },
-          options: {
-            force_network: 'MAINNET',
-            pathfinding: true,
-            return_url: {
-              app: returnUrlTemplate(state.mode),
-              web: returnUrlTemplate(state.mode)
-            }
-          },
-          custom_meta: {
-            identifier,
-            instruction
-          }
-        };
-      }
-
-      function normalizeCurrencyCode(value) {
-        const code = String(value || '').trim().toUpperCase();
-        if (!code) return '';
-        if (/^[A-Z0-9]{3,20}$/.test(code)) return code;
-        return code.slice(0, 20);
-      }
-
-      async function fetchXrpPrice() {
-        els.xrpRate.value = 'loading…';
-        try {
-          const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd', { cache: 'no-store' });
-          const data = await response.json();
-          const rate = Number(data?.ripple?.usd);
-          if (!rate || rate <= 0) throw new Error('Bad XRP price');
-          state.xrpUsd = rate;
-          els.xrpRate.value = `$${rate.toFixed(4)} per XRP`;
-          pushLog('XRP quote', `$${rate.toFixed(4)}`);
-          saveSession();
-          updateSelectedAmount();
-          return rate;
-        } catch (error) {
-          if (!state.xrpUsd) state.xrpUsd = 0.5;
-          els.xrpRate.value = `$${state.xrpUsd.toFixed(4)} per XRP (fallback)`;
-          pushLog('XRP quote', 'fallback 0.5000');
-          saveSession();
-          updateSelectedAmount();
-          return state.xrpUsd;
-        }
-      }
-
-      async function fetchMemeQuote() {
-        const lookup = els.memeLookup.value.trim() || els.memeCurrency.value.trim();
-        const manualPrice = Number(els.memeManualPrice.value);
-        if (lookup) {
-          try {
-            const response = await fetch(`https://api.dexscreener.com/latest/dex/search/?q=${encodeURIComponent(lookup)}`, { cache: 'no-store' });
-            const data = await response.json();
-            const pair = Array.isArray(data?.pairs)
-              ? data.pairs.find((item) => Number(item?.priceUsd) > 0) || data.pairs[0]
-              : null;
-            const price = Number(pair?.priceUsd);
-            if (price > 0) {
-              state.memeUsd = price;
-              els.quoteSource.textContent = 'Dexscreener live quote';
-              pushLog('Meme quote', `${lookup} $${price.toFixed(8)}`);
-              saveSession();
-              updateSelectedAmount();
-              return price;
-            }
-          } catch (error) {
-            pushLog('Meme quote', 'live lookup failed');
-          }
-        }
-
-        if (Number.isFinite(manualPrice) && manualPrice > 0) {
-          state.memeUsd = manualPrice;
-          els.quoteSource.textContent = 'manual fallback';
-          pushLog('Meme quote', `manual $${manualPrice.toFixed(8)}`);
-          saveSession();
-          updateSelectedAmount();
-          return manualPrice;
-        }
-
-        throw new Error('Enter a live quote lookup term or a manual USD price per token');
-      }
-
-      function openPayload(payload) {
-        const target = payload?.pushed === false ? payload?.next?.no_push_msg_received : payload?.next?.always;
-        const fallback = payload?.next?.no_push_msg_received || payload?.next?.always;
-        const url = target || fallback;
-        if (!url) throw new Error('Missing Xaman payload URL');
-        setTimeout(() => window.location.assign(url), 80);
-      }
-
-      async function runCreateAndSubscribe(body, label) {
-        if (!state.xumm) throw new Error('Xaman SDK not ready');
-        updateConnectionUi(`Creating ${label} payload`);
-
-        const result = await state.xumm.payload.createAndSubscribe(body, (eventMessage) => {
-          const data = eventMessage?.data || {};
-          if ('opened' in data) {
-            state.opened = Boolean(data.opened);
-            els.openedState.textContent = state.opened ? 'yes' : 'no';
-            pushLog('payload opened', label);
-          }
-          if ('signed' in data) {
-            state.signed = Boolean(data.signed);
-            els.signedState.textContent = state.signed ? 'yes' : 'no';
-            pushLog('payload resolved', state.signed ? 'signed' : 'rejected');
-            saveSession();
-            return eventMessage;
-          }
-          if ('expired' in data) {
-            pushLog('payload expired', label);
-            saveSession();
-          }
-        });
-
-        const created = result?.created;
-        const resolved = result?.resolved;
-        const payload = created || result;
-        if (!payload) throw new Error('Xaman did not return a payload');
-
-        state.pendingPayload = {
-          uuid: payload.uuid,
-          label,
-          mode: state.mode,
-          createdAt: Date.now()
-        };
-        els.payloadUuid.textContent = short(payload.uuid);
-        els.returnUrl.textContent = payloadReturnUrl(payload.uuid);
-        setPayloadUi({
-          uuid: payload.uuid,
-          deeplink: payload.next?.always,
-          qr: payload.refs?.qr_png,
-          pushed: payload.pushed
-        });
-        setPayloadState(`${label} payload created`);
-        pushLog('payload created', short(payload.uuid));
-        saveSession();
-
-        if (payload.next?.always) {
-          openPayload(payload);
-        }
-
-        if (resolved && typeof resolved.then === 'function') {
-          resolved.then((finalPayload) => {
-            const signed = Boolean(finalPayload?.signed);
-            state.signed = signed;
-            els.signedState.textContent = signed ? 'yes' : 'no';
-            setPayloadState(signed ? `${label} signed` : `${label} rejected`);
-            pushLog('payload final', signed ? 'signed' : 'rejected');
-            saveSession();
-          }).catch((error) => {
-            pushLog('payload result error', error instanceof Error ? error.message : 'unknown');
-          });
-        }
-
-        return payload;
-      }
-
-      async function connectWallet() {
-        els.connectBtn.disabled = true;
-        try {
-          const body = {
-            txjson: {
-              TransactionType: 'SignIn'
-            },
-            options: {
-              force_network: 'MAINNET',
-              return_url: {
-                app: returnUrlTemplate('signin'),
-                web: returnUrlTemplate('signin')
-              }
-            },
-            custom_meta: {
-              identifier: 'grossbros-signin',
-              instruction: 'Connect your wallet to Gross Bros Fusion Lab'
-            }
-          };
-          await runCreateAndSubscribe(body, 'sign-in');
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Connection failed';
-          setStatus(message);
-          pushLog('connect error', message);
-        } finally {
-          els.connectBtn.disabled = false;
-        }
-      }
-
-      async function startFusionPayment() {
-        els.fusionBtn.disabled = true;
-        try {
-          let body;
-          if (state.mode === 'xrp') {
-            await fetchXrpPrice();
-            body = buildXrpPayment();
-          } else if (state.mode === 'rlusd') {
-            body = buildIssuedPayment({
-              currency: CONFIG.rlusdCurrency,
-              issuer: CONFIG.rlusdIssuer,
-              value: String(CONFIG.fusedUsd),
-              identifier: 'grossbros-fusion-rlusd',
-              instruction: 'Fusion Lab payment for $50 USD worth of RLUSD'
-            });
-            updateSelectedAmount();
-          } else {
-            const price = await fetchMemeQuote();
-            const currency = normalizeCurrencyCode(els.memeCurrency.value) || 'MEME';
-            const issuer = String(els.memeIssuer.value || '').trim();
-            if (!issuer) throw new Error('Meme token issuer is required');
-            const amount = CONFIG.fusedUsd / price;
-            body = buildIssuedPayment({
-              currency,
-              issuer,
-              value: amount.toFixed(6),
-              identifier: `grossbros-fusion-${currency.toLowerCase()}`,
-              instruction: `Fusion Lab payment for $${CONFIG.fusedUsd.toFixed(2)} USD worth of ${currency}`
-            });
-            updateSelectedAmount();
-          }
-
-          await runCreateAndSubscribe(body, `${state.mode.toUpperCase()} fusion`);
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Fusion payment failed';
-          setStatus(message);
-          setPayloadState(message);
-          pushLog('fusion error', message);
-        } finally {
-          els.fusionBtn.disabled = false;
-        }
-      }
-
-      async function resumeFromReturn() {
-        const params = new URLSearchParams(window.location.search);
-        const uuid = params.get('xaman_return');
-        if (!uuid) return;
-        pushLog('return url', short(uuid));
-        setStatus('Restoring payload status');
-
-        if (state.xumm) {
-          try {
-            const payload = await state.xumm.payload.get(uuid);
-            if (payload) {
-              els.payloadUuid.textContent = short(payload.uuid || uuid);
-              setPayloadUi({
-                uuid: payload.uuid || uuid,
-                deeplink: payload.next?.always,
-                qr: payload.refs?.qr_png,
-                pushed: payload.pushed
-              });
-              const signed = Boolean(payload.signed);
-              const rejected = payload.signed === false;
-              els.signedState.textContent = signed ? 'yes' : 'no';
-              els.openedState.textContent = payload.opened ? 'yes' : 'no';
-              setPayloadState(signed ? 'payload signed' : (rejected ? 'payload rejected' : 'payload pending'));
-              pushLog('payload restored', signed ? 'signed' : (rejected ? 'rejected' : 'pending'));
-            }
-          } catch (error) {
-            pushLog('restore error', error instanceof Error ? error.message : 'unknown');
-          }
-        }
-      }
-
-      function bindEvents() {
-        els.connectBtn.addEventListener('click', connectWallet);
-        els.fusionBtn.addEventListener('click', startFusionPayment);
-        els.refreshPriceBtn.addEventListener('click', async () => {
-          if (state.mode === 'xrp') await fetchXrpPrice();
-          if (state.mode === 'meme') {
-            try { await fetchMemeQuote(); } catch (error) { setStatus(error instanceof Error ? error.message : 'quote lookup failed'); }
-          }
-        });
-
-        [els.modeXrp, els.modeRlusd, els.modeMeme].forEach((btn) => {
-          btn.addEventListener('click', () => {
-            state.mode = btn.dataset.mode;
-            setStatus(`Mode set to ${state.mode.toUpperCase()}`);
-            updateModeUi();
-            saveSession();
-          });
-        });
-
-        [els.memeCurrency, els.memeIssuer, els.memeLookup, els.memeManualPrice].forEach((input) => {
-          input.addEventListener('input', () => {
-            saveSession();
-            updateSelectedAmount();
-          });
-        });
-      }
-
-      async function boot() {
-        loadSession();
-        bindEvents();
-        updateModeUi();
-        renderLog();
-        setClock();
-        setInterval(setClock, 1000);
-
-        if (typeof window.Xumm !== 'function') {
-          setStatus('Xaman SDK unavailable');
-          pushLog('sdk', 'failed to load CDN script');
-          return;
-        }
-
-        try {
-          state.xumm = new window.Xumm(CONFIG.apiKey);
-          els.sdkState.textContent = 'ready';
-          pushLog('sdk', 'ready');
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'sdk init failed';
-          setStatus(message);
-          pushLog('sdk error', message);
-          return;
-        }
-
-        await fetchXrpPrice();
-        if (state.mode === 'meme') {
-          try { await fetchMemeQuote(); } catch {}
-        }
-
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('mode') && ['xrp', 'rlusd', 'meme'].includes(params.get('mode'))) {
-          state.mode = params.get('mode');
-          updateModeUi();
-        }
-
-        els.openedState.textContent = state.opened ? 'yes' : 'no';
-        els.signedState.textContent = state.signed ? 'yes' : 'no';
-        if (state.pendingPayload?.uuid) {
-          els.payloadUuid.textContent = short(state.pendingPayload.uuid);
-          els.returnUrl.textContent = payloadReturnUrl(state.pendingPayload.uuid);
-          setPayloadState(`${state.pendingPayload.label || 'payload'} cached`);
-        }
-
-        await resumeFromReturn();
-        setStatus('Ready');
-      }
-
-      boot();
-    })();
+    }
   </script>
 </body>
-</html>
+</html>"}]}
