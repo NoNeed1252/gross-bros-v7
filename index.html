@@ -276,7 +276,7 @@
             </div>
         </div>
 
-                <div id="content-1" class="tab-content">
+        <div id="content-1" class="tab-content">
             <div class="max-w-6xl mx-auto">
                 <div class="rounded-[2rem] bg-[#06110f] p-5 sm:p-8 lg:p-10">
                     <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Storyline archive</div>
@@ -306,6 +306,22 @@
         </div>
         <div id="content-2" class="tab-content">
             <div class="max-w-4xl mx-auto space-y-5">
+                <div id="chat-shell" class="inner-panel rounded-[2rem] p-5 sm:p-6 hidden-tab">
+                    <div class="flex items-center justify-between gap-4 portrait-stack">
+                        <div>
+                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">In-world comms terminal</div>
+                            <h4 class="header-font text-xl sm:text-3xl mt-2">CHAT TERMINAL</h4>
+                        </div>
+                        <div class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">Fused</div>
+                    </div>
+                    <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
+                    <div class="mt-4 flex gap-3">
+                        <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
+                        <button onclick="triggerFusion()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
+                        <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
+                    </div>
+                </div>
+                <div id="chat-face" class="inner-panel rounded-[2rem] p-5 sm:p-6"></div>
                 <div class="inner-panel rounded-[2rem] p-5 sm:p-6">
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
@@ -368,22 +384,6 @@
                             <button id="fusion-action" onclick="triggerFusion()" class="button-aura rounded-2xl px-5 py-3 text-xs uppercase tracking-[0.34em]">FUSE WITH SELECTED TOKEN</button>
                             <button type="button" onclick="refreshXrpUsdPrice()" class="button-aura rounded-2xl px-5 py-3 text-xs uppercase tracking-[0.34em]">REFRESH XRP QUOTE</button>
                         </div>
-                    </div>
-                </div>
-                <div id="chat-face" class="inner-panel rounded-[2rem] p-5 sm:p-6"></div>
-                <div id="chat-shell" class="inner-panel rounded-[2rem] p-5 sm:p-6 hidden-tab">
-                    <div class="flex items-center justify-between gap-4 portrait-stack">
-                        <div>
-                            <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">In-world comms terminal</div>
-                            <h4 class="header-font text-xl sm:text-3xl mt-2">CHAT TERMINAL</h4>
-                        </div>
-                        <div class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">Fused</div>
-                    </div>
-                    <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
-                    <div class="mt-4 flex gap-3">
-                        <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
-                        <button onclick="triggerFusion()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
-                        <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
                     </div>
                 </div>
             </div>
@@ -588,7 +588,7 @@
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
-            .replace(/\"/g, '&quot;')
+            .replace(/\\\"/g, '&quot;')
             .replace(/'/g, '&#39;');
     }
 
@@ -600,7 +600,7 @@
     function toFixedTrim(value, decimals = 6) {
         const num = Number(value);
         if (!Number.isFinite(num)) return '';
-        return num.toFixed(decimals).replace(/\.?0+$/, '');
+        return num.toFixed(decimals).replace(/\\.?0+$/, '');
     }
 
     function isValidXrplAccount(value) {
@@ -1840,4 +1840,4 @@
 })();
 </script>
 </body>
-</html>
+</html>"}]}}
