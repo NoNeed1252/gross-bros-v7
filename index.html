@@ -310,13 +310,14 @@
                             <div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">In-world comms terminal</div>
                             <h4 class="header-font text-xl sm:text-3xl mt-2">CHAT TERMINAL</h4>
                         </div>
-                        <div class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">Fused</div>
+                        <div id="trade-badge" class="alien-chip rounded-2xl px-3 py-2 text-[10px] uppercase tracking-[0.35em] soft-wrap">TRADE LOCKED</div>
                     </div>
                     <div id="chat-history" class="scrollbar-thin mt-4 h-[320px] sm:h-[420px] overflow-auto space-y-3 rounded-[22px] border border-[#00ffc8]/12 bg-black/30 p-3"></div>
                     <div class="mt-4 flex gap-3">
                         <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
                         <button onclick="triggerFusion()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
                         <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
+                        <button id="trade-command" onclick="triggerTrade()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em] hidden-tab">TRADE</button>
                     </div>
                 </div>
             </div>
@@ -406,6 +407,7 @@
     const SESSION_KEY = 'grossbros:xaman-session';
     const STATE_KEY = 'grossbros:state';
     const BOOT_KEY = 'grossbros:boot-seen';
+    const GUEST_COUNT_KEY = 'grossbros:guest-chat-count';
     const local = (key, fallback = null) => {
         try {
             const raw = localStorage.getItem(key);
@@ -435,6 +437,9 @@
         memeCurrency: DEFAULT_MEME_CURRENCY,
         memeIssuer: '',
         memeUsdPrice: '',
+        guestChatCount: 0,
+        guestChatLimit: 5,
+        tradeUnlocked: false,
     };
 
     const BACKSTORIES = Object.fromEntries(Array.from({ length: TOTAL_BROS }, (_, index) => {
@@ -829,7 +834,7 @@
     function currentEntry() {
         const fused = state.fusedTokenId ? state.nfts.find((item) => item.tokenId === state.fusedTokenId) : null;
         const selected = state.selectedTokenId ? state.nfts.find((item) => item.tokenId === state.selectedTokenId) : null;
-        return fused || selected || state.nfts[0] || null;
+        return fused || selected || state.nfts[0] || { tokenId: 'guest', name: 'Guest Operative', faction: 'Independent', traits: [], backstory: 'A default terminal identity for unconnected users.', image: '', raw: null, metadata: {} };
     }
 
     function operativeKey(tokenId) {
@@ -837,7 +842,22 @@
     }
 
     function chatKey(tokenId) {
-        return `${STATE_KEY}:chat:${state.wallet}:${tokenId}`;
+        const walletKey = state.wallet || 'guest';
+        return `${STATE_KEY}:chat:${walletKey}:${tokenId}`;
+    }
+    function setGuestPrompt(message) {
+        const tokenId = state.operative?.tokenId || 'guest';
+        state.chatHistory.push({ role: 'system', message, created_at: new Date().toISOString() });
+        store(chatKey(tokenId), state.chatHistory);
+        renderChatHistory();
+    }
+
+    function isGuestMode() {
+        return !state.wallet;
+    }
+
+    function remainingGuestMessages() {
+        return Math.max(0, state.guestChatLimit - state.guestChatCount);
     }
 
     function getXamanPayloadRedirect(payload) {
@@ -1110,14 +1130,13 @@
         const selectedEntry = state.selectedTokenId ? state.nfts.find((item) => item.tokenId === state.selectedTokenId) : null;
         const fusedEntry = state.fusedTokenId ? state.nfts.find((item) => item.tokenId === state.fusedTokenId) : null;
         const activeEntry = fusedEntry || selectedEntry || null;
-        state.operative = activeEntry ? buildOperativeFromMetadata(activeEntry.nft, activeEntry.metadata || {}) : null;
+        state.operative = activeEntry && activeEntry.nft
+            ? buildOperativeFromMetadata(activeEntry.nft, activeEntry.metadata || {})
+            : { tokenId: 'guest', name: 'Guest Operative', faction: 'Independent', traits: ['Guest Access'], backstory: 'A default terminal identity for unconnected users.', image: '', raw: null, metadata: {} };
         if (!chatShell) return;
-        if (!state.wallet || !activeEntry) {
-            chatShell.classList.add('hidden-tab');
-            return;
-        }
         chatShell.classList.remove('hidden-tab');
         renderChatFace();
+        updateTradeUI();
     }
 
     function renderNftGrid() {
@@ -1230,6 +1249,7 @@
             renderNftGrid();
             renderOperativePanel();
             renderChatFace();
+        updateTradeUI();
             renderChatHistory();
             loadFieldReport();
             bindChatInput();
@@ -1251,7 +1271,7 @@
         if (!body) return;
         try {
             let rows = [];
-            if (SUPABASE_URL && SUPABASE_KEY) {
+            if (SUPABASE_URL && SUPABASE_KEY && state.wallet) {
                 const data = await supabaseSelect(STATS_TABLE, 'select=holder,points,chat_time,win_loss&order=points.desc&limit=10').catch(() => null);
                 if (Array.isArray(data) && data.length) rows = data;
             }
@@ -1300,8 +1320,8 @@
         const face = document.getElementById('chat-face');
         if (!face) return;
         const operative = state.operative;
-        if (!state.wallet || !operative || !operative.image) {
-            face.innerHTML = '<div class="hero-frame rounded-[18px] border border-[#00ffc8]/12 bg-black/20"></div>';
+        if (!operative || !operative.image) {
+            face.innerHTML = '<div class="hero-frame rounded-[18px] border border-[#00ffc8]/12 bg-black/20 p-4 text-sm text-[#00ffc8]/60">Guest link active. Connect wallet for holder mode and fuse for trade access.</div>';
             return;
         }
         face.innerHTML = '<div class="hero-frame mx-auto w-full max-w-[28rem] overflow-hidden rounded-[24px] border border-[#00ffc8]/20 bg-black/60 shadow-[0_0_30px_rgba(0,255,200,0.12)]"><img src="' + escapeHtml(operative.image) + '" alt="operative link" class="hero-image" onerror="this.style.display=\'none\'" /></div>';
@@ -1344,7 +1364,7 @@
         panel.innerHTML = `<div class="space-y-3"><div class="text-[10px] uppercase tracking-[0.45em] text-[#00ffc8]/55">Briefing ${dayKey}</div><div>${escapeHtml(report).replace(/\n/g, '<br>')}</div></div>`;
         if (dayEl) dayEl.textContent = `Day ${dayKey} • Token ${active.tokenId}`;
         store(key, { report, day_key: dayKey, updated_at: new Date().toISOString() });
-        supabaseUpsert(REPORT_TABLE, {
+        if (SUPABASE_URL && SUPABASE_KEY && state.wallet) supabaseUpsert(REPORT_TABLE, {
             cache_key: key,
             wallet_address: state.wallet,
             token_id: active.tokenId,
@@ -1360,7 +1380,7 @@
         state.chatHistory.push(entry);
         const key = chatKey(state.operative.tokenId);
         store(key, state.chatHistory);
-        if (SUPABASE_URL && SUPABASE_KEY) {
+        if (SUPABASE_URL && SUPABASE_KEY && state.wallet) {
             await supabaseUpsert(CHAT_TABLE, {
                 cache_key: `${key}:${Date.now()}:${entry.role}`,
                 wallet_address: state.wallet,
@@ -1376,11 +1396,11 @@
 
     async function loadChatHistory() {
         const panel = document.getElementById('chat-history');
-        if (!panel || !state.wallet || !state.operative?.tokenId) return;
+        if (!panel || !state.operative?.tokenId) return;
         const key = chatKey(state.operative.tokenId);
         let history = local(key, []);
         if (!Array.isArray(history)) history = [];
-        if (SUPABASE_URL && SUPABASE_KEY) {
+        if (SUPABASE_URL && SUPABASE_KEY && state.wallet) {
             try {
                 const rows = await supabaseSelect(CHAT_TABLE, `select=role,message,created_at&wallet_address=eq.${encodeURIComponent(state.wallet)}&token_id=eq.${encodeURIComponent(state.operative.tokenId)}&order=created_at.asc&limit=100`);
                 if (Array.isArray(rows) && rows.length) {
@@ -1394,6 +1414,7 @@
 
     function renderChatTerminal() {
         renderChatFace();
+        updateTradeUI();
         renderChatHistory();
         loadFieldReport();
     }
@@ -1520,28 +1541,43 @@
 
     async function sendChatMessage() {
         const input = document.getElementById('chat-input');
-        if (!input || !state.operative?.tokenId) return;
+        if (!input) return;
         const text = input.value.trim();
         if (!text) return;
-        input.value = '';
         if (text.toLowerCase() === 'fuse') {
             await triggerFusion();
             return;
         }
-        const operative = state.operative;
+        if (isGuestMode() && remainingGuestMessages() <= 0) {
+            setGuestPrompt('Guest limit reached. CONNECT WALLET or FUSE to restore neural link access.');
+            store(GUEST_COUNT_KEY, state.guestChatCount);
+            return;
+        }
+        input.value = '';
+        const operative = state.operative || { name: 'Guest Operative', faction: 'Independent', backstory: 'Default neural link identity.', traits: [], tokenId: 'guest' };
         const messages = buildChatMessages(operative, text);
         await persistChat({ role: 'user', message: text, created_at: new Date().toISOString() });
+        if (isGuestMode()) {
+            state.guestChatCount += 1;
+            store(GUEST_COUNT_KEY, state.guestChatCount);
+        }
+
+        const liveReply = { role: 'system', message: '', created_at: new Date().toISOString() };
+        state.chatHistory.push(liveReply);
+        renderChatHistory();
+
         try {
             const response = await fetch('/api/chat', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream, text/plain, application/json' },
+                headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
                 body: JSON.stringify({
                     operative: {
                         name: operative.name,
                         faction: operative.faction,
                         backstory: operative.backstory || '',
                         traits: operative.traits || [],
-                        tokenId: operative.tokenId
+                        tokenId: operative.tokenId,
+                        walletAddress: state.wallet || ''
                     },
                     messages,
                     stream: true
@@ -1549,40 +1585,89 @@
             });
             if (!response.ok) throw new Error('Chat request failed: ' + response.status);
 
-            let reply = '';
-            if (response.body) {
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let streamed = '';
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) break;
-                    streamed += decoder.decode(value, { stream: true });
-                    reply = streamed;
-                }
-                reply += decoder.decode();
-            } else {
-                reply = await response.text().catch(() => '');
+            if (!response.body) {
+                const textBody = await response.text().catch(() => '');
+                liveReply.message = textBody.trim() || 'Static lost. Try again, bro.';
+                store(chatKey(operative.tokenId), state.chatHistory);
+                renderChatHistory();
+                return;
             }
 
-            let finalReply = reply.trim();
-            if (finalReply.startsWith('{')) {
-                try {
-                    const data = JSON.parse(finalReply);
-                    finalReply = String(data?.reply || data?.message || data?.content || data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || data?.output || data?.result || finalReply).trim();
-                } catch (_) {
-                    finalReply = finalReply;
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let finalReply = '';
+
+            const flushEvents = () => {
+                let splitIndex = buffer.indexOf('\n\n');
+                while (splitIndex >= 0) {
+                    const chunk = buffer.slice(0, splitIndex);
+                    buffer = buffer.slice(splitIndex + 2);
+                    const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        const trimmed = line.trim();
+                        if (!trimmed || !trimmed.startsWith('data:')) continue;
+                        const payloadText = trimmed.slice(5).trim();
+                        if (!payloadText || payloadText === '[DONE]') continue;
+                        let token = '';
+                        try {
+                            const payload = JSON.parse(payloadText);
+                            token = String(payload.token || payload.response || payload.message || payload.content || payload.text || '');
+                        } catch {
+                            token = payloadText;
+                        }
+                        if (token) {
+                            finalReply += token;
+                            liveReply.message = finalReply;
+                            renderChatHistory();
+                        }
+                    }
+                    splitIndex = buffer.indexOf('\n\n');
                 }
+            };
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                flushEvents();
             }
-            if (!finalReply) finalReply = 'Static lost. Try again, bro.';
-            await persistChat({ role: 'system', message: finalReply, created_at: new Date().toISOString() });
+            buffer += decoder.decode();
+            flushEvents();
+
+            if (!finalReply.trim()) finalReply = 'Static lost. Try again, bro.';
+            liveReply.message = finalReply.trim();
+            store(chatKey(operative.tokenId), state.chatHistory);
+            if (isGuestMode() && remainingGuestMessages() <= 0) {
+                setGuestPrompt('Guest limit reached. CONNECT WALLET or FUSE to restore neural link access.');
+            }
         } catch (error) {
             console.error(error);
-            await persistChat({ role: 'system', message: 'Signal collapsed mid-relay. Try again, bro.', created_at: new Date().toISOString() });
+            liveReply.message = 'Signal collapsed mid-relay. Try again, bro.';
+            store(chatKey(operative.tokenId), state.chatHistory);
+            renderChatHistory();
         }
         awardOperatorPoints('chat', OPERATOR_POINTS_BASE_CHAT).catch(() => null);
         renderChatHistory();
     }
+    window.sendChatMessage = sendChatMessage;
+    function updateTradeUI() {
+        const tradeCommand = document.getElementById('trade-command');
+        const tradeBadge = document.getElementById('trade-badge');
+        const unlocked = Boolean(state.wallet && state.fusedTokenId);
+        state.tradeUnlocked = unlocked;
+        if (tradeCommand) tradeCommand.classList.toggle('hidden-tab', !unlocked);
+        if (tradeBadge) tradeBadge.textContent = unlocked ? 'TRADE UNLOCKED' : (state.wallet ? 'HOLDER MODE' : 'GUEST MODE');
+    }
+
+    async function triggerTrade() {
+        if (!state.tradeUnlocked) {
+            setGuestPrompt('TRADE locked. Fuse a holder wallet to enable bot trading.');
+            return;
+        }
+        setGuestPrompt('TRADE channel unlocked.');
+    }
+
     window.sendChatMessage = sendChatMessage;
     function bindChatInput() {
         const input = document.getElementById('chat-input');
@@ -1606,7 +1691,8 @@
         if (n === 2) {
             renderFusionLab();
             updateFusionQuotePanel();
-            if (state.wallet && state.operative?.tokenId) {
+            updateTradeUI();
+            if (state.operative?.tokenId) {
                 loadChatHistory();
                 loadFieldReport();
                 bindChatInput();
@@ -1684,6 +1770,7 @@
         }
         if (savedState?.selectedTokenId) state.selectedTokenId = savedState.selectedTokenId;
         if (savedState?.fusedTokenId) state.fusedTokenId = savedState.fusedTokenId;
+        state.guestChatCount = Number(local(GUEST_COUNT_KEY, 0) || 0) || 0;
         renderWalletUI();
         updateFusionQuotePanel();
         if (shouldShowBoot()) showBootSequence(); else setBootSeen();
@@ -1701,10 +1788,12 @@
         }
         renderOperativePanel();
         renderChatFace();
+        updateTradeUI();
         renderChatHistory();
         loadFieldReport();
+        updateTradeUI();
         bindChatInput();
-        switchTab(0);
+        switchTab(2);
     }
 
     window.addEventListener('DOMContentLoaded', init);
