@@ -231,7 +231,7 @@
         <button type="button" onclick="return window.connectXaman ? window.connectXaman() : false" class="w-full lg:w-auto justify-center cursor-pointer px-5 py-3 border border-[#00ffc8]/50 hover:border-[#00ffc8] rounded-2xl flex items-center gap-3 text-sm sm:text-base hover:bg-[#00ffc8]/10 transition-all">
             <i class="fa-solid fa-wallet"></i>
             <span id="wallet-text">CONNECT XAMAN</span>
-        </div>
+        </button>
 
         <p id="xaman-status" class="text-[11px] sm:text-sm text-[#00ffc8]/60 text-center lg:text-right">Wallet disconnected.</p>
     </div>
@@ -301,7 +301,7 @@
                             <div class="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#00ffc8]/55">Neural Link demo access</div>
                             <h4 class="header-font text-xl sm:text-3xl mt-2">LAUNCH NEURAL LINK DEMO</h4>
                         </div>
-                        <button id="launch-neural-link-demo" type="button" onclick="launchNeuralLinkDemo()" class="button-aura rounded-2xl px-5 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em]">LAUNCH NEURAL LINK DEMO</button>
+                        <button id="launch-neural-link-demo" type="button" onclick="return window.launchNeuralLinkDemo ? window.launchNeuralLinkDemo() : false" class="button-aura rounded-2xl px-5 py-3 text-[10px] sm:text-xs uppercase tracking-[0.35em]">LAUNCH NEURAL LINK DEMO</button>
                     </div>
                     <p class="mt-4 text-sm sm:text-base leading-7 text-[#00ffc8]/75">Launch the Neural Link terminal without a wallet connection.</p>
                 </div>
@@ -318,7 +318,7 @@
                     <div class="mt-4 flex gap-3">
                         <input id="chat-input" class="cmd-input w-full rounded-2xl px-4 py-3 text-sm" placeholder="Send a directive to the operative…" maxlength="240" />
                         <button type="button" onclick="return window.triggerFusion ? window.triggerFusion() : false" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">FUSE</button>
-                        <button onclick="sendChatMessage()" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
+                        <button type="button" onclick="return window.sendChatMessage ? window.sendChatMessage() : false" class="button-aura rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.34em]">SEND</button>
                     </div>
                 </div>
             </div>
