@@ -300,8 +300,21 @@
         <div class='panel chat-shell'>
           <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>In-world comms terminal</div>
           <div id='chat-log' class='chat-log' aria-live='polite'></div>
-          <div class='row'>
+          <div class='row' style='align-items:stretch;'>
             <input id='chat-input' maxlength='240' placeholder='Send a directive to the operative…'>
+            <div style='display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;border-radius:18px;border:1px solid rgba(0,255,200,.16);background:rgba(0,255,200,.03);'>
+              <select id='fuse-token-select' style='min-width:96px;padding:10px 12px;border-radius:14px;border:1px solid rgba(0,255,200,.16);background:rgba(0,0,0,.45);color:#00ffc8;font:inherit;letter-spacing:.22em;text-transform:uppercase;outline:none;'>
+                <option value='XRP'>XRP</option>
+                <option value='RLUSD'>RLUSD</option>
+                <option value='DOGE'>DOGE</option>
+                <option value='PEPE'>PEPE</option>
+                <option value='BONK'>BONK</option>
+              </select>
+              <div>
+                <div class='muted' style='font-size:10px;letter-spacing:.35em;text-transform:uppercase;'>$50 USD quote</div>
+                <strong id='fuse-live-quote' style='display:block;color:#ddfff9;'>--</strong>
+              </div>
+            </div>
             <button class='btn' onclick='startChatStream()'>SEND</button>
             <button class='btn' onclick='fuseSelectedNft()'>FUSE</button>
           </div>
@@ -396,7 +409,16 @@
       chat: [],
       fuseUnlocked: false,
       selectedNftIndex: 0,
-      streaming: false
+      streaming: false,
+      fuseToken: 'XRP'
+    };
+
+    const fuseTokenConfig = {
+      XRP: { label: 'XRP', coinGeckoId: 'ripple', fallbackPrice: 0.50, decimals: 4 },
+      RLUSD: { label: 'RLUSD', fallbackPrice: 1.00, decimals: 2 },
+      DOGE: { label: 'DOGE', coinGeckoId: 'dogecoin', fallbackPrice: 0.10, decimals: 4 },
+      PEPE: { label: 'PEPE', coinGeckoId: 'pepe', fallbackPrice: 0.00001, decimals: 6 },
+      BONK: { label: 'BONK', coinGeckoId: 'bonk', fallbackPrice: 0.00002, decimals: 6 }
     };
 
     function switchTab(index) {
@@ -463,6 +485,200 @@
       card.appendChild(body);
       wrap.appendChild(card);
       return wrap;
+    }
+
+    function getFuseQuotePrice(token) {
+      const entry = fuseTokenConfig[token] || fuseTokenConfig.XRP;
+      const price = Number(entry.price || 0);
+      return Number.isFinite(price) && price > 0 ? price : Number(entry.fallbackPrice || 1);
+    }
+
+    function renderFuseQuote() {
+      const selectEl = document.getElementById('fuse-token-select');
+      const quoteEl = document.getElementById('fuse-live-quote');
+      if (!selectEl || !quoteEl) return;
+      const token = selectEl.value || state.fuseToken || 'XRP';
+      state.fuseToken = token;
+      const entry = fuseTokenConfig[token] || fuseTokenConfig.XRP;
+      const price = getFuseQuotePrice(token);
+      const amount = 50 / price;
+      const decimals = token === 'RLUSD' ? 2 : amount < 0.01 ? 6 : amount < 1 ? 4 : 2;
+      quoteEl.textContent = amount.toFixed(decimals) + ' ' + entry.label;
+      quoteEl.title = '1 ' + entry.label + ' = 
+      const log = document.getElementById('chat-log');
+      if (!log) return;
+      const notice = document.createElement('div');
+      notice.className = 'bubble system';
+      notice.textContent = 'NEURAL BOT\nSelected NFT received in the chat log.';
+      log.appendChild(notice);
+      log.appendChild(buildNftCard(nft));
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function fuseSelectedNft() {
+      const nft = nftLedger[state.selectedNftIndex % nftLedger.length];
+      renderFuseQuote();
+      state.selectedNftIndex = (state.selectedNftIndex + 1) % nftLedger.length;
+      appendNftToChat(nft);
+      appendBubble('assistant', 'NFT cargo accepted. Signal locked to ' + nft.name + '.');
+    }
+
+    async function connectXaman(event) {
+      if (event && event.preventDefault) event.preventDefault();
+      const btn = document.getElementById('wallet-btn');
+      btn.disabled = true;
+      btn.textContent = 'CONNECTING...';
+      try {
+        const res = await fetch('/api/xaman?action=create-payload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ txjson: { TransactionType: 'SignIn' } })
+        });
+        const payload = await res.json();
+        if (payload?.next?.always) window.open(payload.next.always, '_blank');
+        const uuid = payload?.uuid;
+        if (!uuid) throw new Error('No payload uuid returned');
+        let attempts = 0;
+        const timer = setInterval(async () => {
+          attempts += 1;
+          if (attempts > 35) {
+            clearInterval(timer);
+            btn.disabled = false;
+            btn.textContent = 'CONNECT XAMAN';
+            return;
+          }
+          const check = await fetch('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(uuid));
+          const status = await check.json();
+          if ((status.meta && status.meta.signed) || status.signed) {
+            clearInterval(timer);
+            const address = status?.response?.account || status?.account || status?.resolved?.account || '';
+            if (address) setWalletUI(true, address);
+          }
+          if (status.meta && status.meta.expired) {
+            clearInterval(timer);
+            btn.disabled = false;
+            btn.textContent = 'CONNECT XAMAN';
+          }
+        }, 2500);
+      } catch (error) {
+        console.error(error);
+        btn.disabled = false;
+        btn.textContent = 'CONNECT XAMAN';
+        alert('Xaman connection failed');
+      }
+    }
+
+    async function startChatStream() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text || state.streaming) return;
+      input.value = '';
+      appendBubble('user', text);
+      state.streaming = true;
+
+      const assistantBubble = appendBubble('assistant', '');
+      const assistantText = document.createTextNode('NEURAL BOT\n');
+      assistantBubble.replaceChildren(assistantText);
+
+      try {
+        const res = await fetch('/api/chat.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+          body: JSON.stringify({
+            stream: true,
+            operative: { name: 'Guest Operative', walletAddress: state.wallet || '' },
+            messages: [{ role: 'user', content: text }]
+          })
+        });
+        if (!res.ok) throw new Error('Chat request failed: ' + res.status);
+        if (!res.body) {
+          assistantText.data = 'NEURAL BOT\nRelay fallback active.';
+          return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        const log = document.getElementById('chat-log');
+
+        const consumeLine = (line) => {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) return;
+          const payloadText = trimmed.slice(5).trim();
+          if (!payloadText || payloadText === '[DONE]') return;
+          let token = '';
+          try {
+            const payload = JSON.parse(payloadText);
+            token = String(payload.token || payload.response || payload.message || payload.content || payload.text || '');
+          } catch {
+            token = payloadText;
+          }
+          if (token) {
+            assistantText.data += token;
+            log.scrollTop = log.scrollHeight;
+          }
+        };
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          let newlineIndex = buffer.indexOf('\n');
+          while (newlineIndex >= 0) {
+            const line = buffer.slice(0, newlineIndex);
+            buffer = buffer.slice(newlineIndex + 1);
+            consumeLine(line);
+            newlineIndex = buffer.indexOf('\n');
+          }
+        }
+
+        buffer += decoder.decode();
+        if (buffer.trim()) consumeLine(buffer);
+      } catch (error) {
+        console.error(error);
+        assistantText.data = 'NEURAL BOT\nRelay fallback active.';
+      } finally {
+        state.streaming = false;
+      }
+    }
+
+    window.connectXaman = connectXaman;
+    window.startChatStream = startChatStream;
+    window.switchTab = switchTab;
+    window.fuseSelectedNft = fuseSelectedNft;
+
+    document.getElementById('chat-input').addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') startChatStream();
+    });
+
+    loadWarningTicker();
+    renderFuseQuote();
+    document.getElementById('fuse-token-select')?.addEventListener('change', () => renderFuseQuote());
+    refreshFusePrices().catch((error) => console.warn(error));
+    window.setInterval(() => refreshFusePrices().catch((error) => console.warn(error)), 90000);
+    appendBubble('assistant', 'Stand by. The NEURAL BOT is listening through the static.');
+    switchTab(0);
+  </script>
+</body>
+</html>
+ + price.toFixed(entry.decimals ?? 4);
+    }
+
+    async function refreshFusePrices() {
+      const tokenIds = Object.values(fuseTokenConfig).map((entry) => entry.coinGeckoId).filter(Boolean);
+      try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + tokenIds.join(',') + '&vs_currencies=usd', { cache: 'no-store' });
+        if (!res.ok) throw new Error('CoinGecko ' + res.status);
+        const data = await res.json();
+        for (const entry of Object.values(fuseTokenConfig)) {
+          if (!entry.coinGeckoId) continue;
+          const livePrice = Number(data?.[entry.coinGeckoId]?.usd || 0);
+          if (Number.isFinite(livePrice) && livePrice > 0) entry.price = livePrice;
+        }
+      } catch (error) {
+        console.warn('Fuse price lookup unavailable, using fallback quotes.', error);
+      }
+      renderFuseQuote();
     }
 
     function appendNftToChat(nft) {
