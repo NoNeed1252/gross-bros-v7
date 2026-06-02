@@ -4,8 +4,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const openRouterKey = process.env.OPENROUTER_API_KEY;
-  if (!openRouterKey) {
+  const openRouterApiKey = process.env.OPENROUTER_API_KEY;
+  if (!openRouterApiKey) {
     return res.status(500).json({ error: 'Missing OPENROUTER_API_KEY' });
   }
 
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     headers: {
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
-      Authorization: `Bearer ${openRouterKey}`,
+      Authorization: `Bearer ${openRouterApiKey}`,
       'HTTP-Referer': 'https://grossbros.vercel.app',
       'X-Title': 'Gross Bros Chat'
     },
