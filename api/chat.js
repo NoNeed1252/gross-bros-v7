@@ -50,7 +50,9 @@ export default async function handler(req, res) {
           });
           if (!upstream.ok) {
             const errText = await upstream.text().catch(() => '');
-            throw new Error(`${providerName} response failed: ${upstream.status} ${errText}`.trim());
+            const error = new Error(`${providerName} response failed: ${upstream.status} ${errText}`.trim());
+            error.status = upstream.status;
+            throw error;
           }
           const text = String(await upstream.text().catch(() => '')).trim();
           if (text) {
@@ -71,13 +73,16 @@ export default async function handler(req, res) {
             return res.end();
           }
         } catch (err) {
+          if (err?.status === 429) throw err;
           if (attempt === 2) throw err;
         }
       }
       throw new Error(`${providerName} produced no content.`);
     } catch (error) {
       clearTimeout(timeout);
-      throw new Error(`${providerName} fetch failed: ${error?.message || String(error)}`);
+      const wrappedError = new Error(`${providerName} fetch failed: ${error?.message || String(error)}`);
+      wrappedError.status = error?.status;
+      throw wrappedError;
     }
   };
 
@@ -197,17 +202,49 @@ export default async function handler(req, res) {
       `User: ${lastUserText || ''}`
     ].join(' ');
 
+    let openRouterAttempted = false;
+    const openRouterProvider = openRouterKey
+      ? {
+          providerName: 'OpenRouter',
+          endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+          headers: {
+            Authorization: `Bearer ${openRouterKey}`,
+            'HTTP-Referer': 'https://grossbros.vercel.app',
+            'X-Title': 'Gross Bros Chat'
+          },
+          payload: {
+            model: 'huggingfaceh4/zephyr-7b-beta:free',
+            messages: openAiMessages,
+            temperature: 0.45,
+            stream: true
+          }
+        }
+      : null;
+
     try {
       return await streamPlainText({
         prompt: plainPrompt,
         providerName: 'Pollinations plain text'
       });
     } catch (error) {
-      console.error('Pollinations plain text relay failed:', error?.message || error);
+      if (error?.status === 429 && openRouterProvider) {
+        openRouterAttempted = true;
+        try {
+          return await streamOpenAICompatible({
+            ...openRouterProvider,
+            operativeName,
+            lastUserText
+          });
+        } catch (openRouterError) {
+          console.error('OpenRouter chat relay failed:', openRouterError?.message || openRouterError);
+        }
+      } else {
+        console.error('Pollinations plain text relay failed:', error?.message || error);
+      }
     }
 
     const providers = [];
-    if (openRouterKey) {
+    if (openRouterKey && !openRouterAttempted) {
       providers.push({
         providerName: 'OpenRouter',
         endpoint: 'https://openrouter.ai/api/v1/chat/completions',
