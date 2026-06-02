@@ -54,35 +54,46 @@ export default async function handler(req, res) {
             error.status = upstream.status;
             throw error;
           }
+
+          if (upstream.body) {
+            const reader = upstream.body.getReader();
+            const decoder = new TextDecoder();
+            let started = false;
+
+            while (true) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              const chunk = decoder.decode(value, { stream: true });
+              if (!chunk) continue;
+              started = true;
+              sendSse('token', { token: chunk });
+            }
+
+            const tail = decoder.decode();
+            if (tail) {
+              started = true;
+              sendSse('token', { token: tail });
+            }
+
+            if (!started) throw new Error(`${providerName} produced no content.`);
+            sendSse('done', '[DONE]');
+            return res.end();
+          }
+
           const text = String(await upstream.text().catch(() => '')).trim();
           if (text) {
-            res.status(200);
-            res.setHeader('Content-Type', 'text/event-stream');
-            res.setHeader('Cache-Control', 'no-cache');
-            res.setHeader('Connection', 'keep-alive');
-            res.setHeader('Content-Encoding', 'none');
-            res.setHeader('X-Accel-Buffering', 'no');
-            res.flushHeaders?.();
-            res.write(':ok\n\n');
-            for (const token of text.match(/\S+|\s+/g) || [text]) {
-              if (!token) continue;
-              sendSse('token', { token });
-              await sleep(12);
-            }
+            sendSse('token', { token: text });
             sendSse('done', '[DONE]');
             return res.end();
           }
         } catch (err) {
-          if (err?.status === 429) throw err; // short-circuit Pollinations 429 to OpenRouter
-          if (attempt === 2) throw err;
+          if (err?.status === 429 || attempt === 2) throw err;
         }
       }
       throw new Error(`${providerName} produced no content.`);
     } catch (error) {
       clearTimeout(timeout);
-      const wrappedError = new Error(`${providerName} fetch failed: ${error?.message || String(error)}`);
-      wrappedError.status = error?.status;
-      throw wrappedError;
+      throw new Error(`${providerName} fetch failed: ${error?.message || String(error)}`);
     }
   };
 
@@ -202,9 +213,18 @@ export default async function handler(req, res) {
       `User: ${lastUserText || ''}`
     ].join(' ');
 
-    let openRouterAttempted = false;
-    const openRouterProvider = openRouterKey
-      ? {
+    try {
+      return await streamPlainText({
+        prompt: plainPrompt,
+        providerName: 'Pollinations plain text'
+      });
+    } catch (error) {
+      console.error('Pollinations plain text relay failed:', error?.message || error);
+    }
+
+    if (openRouterKey) {
+      try {
+        return await streamOpenAICompatible({
           providerName: 'OpenRouter',
           endpoint: 'https://openrouter.ai/api/v1/chat/completions',
           headers: {
@@ -217,77 +237,18 @@ export default async function handler(req, res) {
             messages: openAiMessages,
             temperature: 0.45,
             stream: true
-          }
-        }
-      : null;
-
-    try {
-      return await streamPlainText({
-        prompt: plainPrompt,
-        providerName: 'Pollinations plain text'
-      });
-    } catch (error) {
-      if (error?.status === 429 && openRouterProvider) {
-        openRouterAttempted = true;
-        try {
-          return await streamOpenAICompatible({
-            ...openRouterProvider,
-            operativeName,
-            lastUserText
-          });
-        } catch (openRouterError) {
-          console.error('OpenRouter chat relay failed:', openRouterError?.message || openRouterError);
-        }
-      } else {
-        console.error('Pollinations plain text relay failed:', error?.message || error);
-      }
-    }
-
-    const providers = [];
-    if (openRouterKey && !openRouterAttempted) {
-      providers.push({
-        providerName: 'OpenRouter',
-        endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-        headers: {
-          Authorization: `Bearer ${openRouterKey}`,
-          'HTTP-Referer': 'https://grossbros.vercel.app',
-          'X-Title': 'Gross Bros Chat'
-        },
-        payload: {
-          model: 'huggingfaceh4/zephyr-7b-beta:free',
-          messages: openAiMessages,
-          temperature: 0.45,
-          stream: true
-        }
-      });
-    }
-
-    providers.push({
-      providerName: 'Pollinations OpenAI',
-      endpoint: 'https://text.pollinations.ai/openai',
-      headers: {},
-      payload: {
-        model: 'gpt-oss-20b',
-        messages: openAiMessages,
-        temperature: 0.45,
-        stream: true
-      }
-    });
-
-    let lastError = null;
-    for (const provider of providers) {
-      try {
-        return await streamOpenAICompatible({
-          ...provider,
+          },
           operativeName,
           lastUserText
         });
       } catch (error) {
-        lastError = error;
-        console.error(`${provider.providerName} chat relay failed:`, error?.message || error);
+        console.error('OpenRouter chat relay failed:', error?.message || error);
       }
+    } else {
+      console.error('OpenRouter chat relay failed: OPENROUTER_API_KEY is missing');
     }
-    throw lastError || new Error('No provider succeeded.');
+
+    return await streamFallback();
   };
 
   try {
@@ -309,10 +270,9 @@ export default async function handler(req, res) {
       || '';
 
     res.status(200);
-    res.setHeader('Content-Type', 'text/event-stream');
-            res.setHeader('Cache-Control', 'no-cache');
-            res.setHeader('Connection', 'keep-alive');
-            res.setHeader('Content-Encoding', 'none');
+    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders?.();
     res.write(':ok\n\n');
@@ -324,10 +284,10 @@ export default async function handler(req, res) {
     try {
       if (!res.headersSent) {
         res.status(500);
-        res.setHeader('Content-Type', 'text/event-stream');
-            res.setHeader('Cache-Control', 'no-cache');
-            res.setHeader('Connection', 'keep-alive');
-            res.setHeader('Content-Encoding', 'none');
+        res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-cache, no-transform');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
       }
       res.write(`event: error\ndata: ${JSON.stringify({ error: 'Chat relay failed', details: error?.message || String(error) })}\n\n`);
       res.end();
