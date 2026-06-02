@@ -3,7 +3,7 @@
 <head>
   <meta charset='UTF-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-  <title>GROSS BROS • GUARDIAN BROADCAST OS v8.7 BETA</title>
+  <title>GUARDIAN BROADCAST OS v8.7 BETA</title>
   <link rel='preconnect' href='https://fonts.googleapis.com'>
   <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
   <link href='https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Share+Tech+Mono&display=swap' rel='stylesheet'>
@@ -91,28 +91,19 @@
       background: linear-gradient(115deg, transparent 0 46%, rgba(0,255,200,.08) 50%, transparent 54% 100%);
       pointer-events: none;
     }
-    .bro-of-day-header {
-      display: grid;
-      gap: 8px;
-      margin-bottom: 16px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid rgba(0,255,200,.14);
-    }
-    .bro-of-day-header .muted {
-      color: rgba(0,255,200,.58);
-    }
     .nft-display {
       position: relative;
       display: grid;
-      grid-template-columns: 1fr;
       gap: 18px;
       justify-items: center;
-      align-items: start;
+      max-width: 760px;
+      margin: 0 auto;
+      text-align: center;
     }
     .nft-art {
       position: relative;
-      width: min(100%, 520px);
-      min-height: 300px;
+      width: min(100%, 560px);
+      aspect-ratio: 3 / 4;
       border-radius: 22px;
       border: 1px solid rgba(0,255,200,.22);
       background: radial-gradient(circle at 30% 20%, rgba(0,255,200,.22), rgba(0,0,0,.88) 55%), rgba(0,0,0,.65);
@@ -123,11 +114,14 @@
       justify-content: center;
     }
     .nft-art img {
-      width: 100%;
+      width: auto;
+      max-width: 100%;
       height: auto;
-      max-height: 620px;
+      max-height: 100%;
       object-fit: contain;
+      object-position: center;
       display: block;
+      margin: 0 auto;
       filter: contrast(1.08) saturate(1.05);
       mix-blend-mode: screen;
       opacity: .95;
@@ -149,11 +143,11 @@
       text-align: center;
     }
     .nft-meta {
-      width: min(100%, 980px);
       display: grid;
-      gap: 14px;
+      gap: 12px;
+      max-width: 62ch;
       align-content: start;
-      justify-self: stretch;
+      justify-items: center;
     }
     .nft-title {
       font-family: 'Orbitron', sans-serif;
@@ -166,52 +160,12 @@
       margin: 0;
       color: #ddfff9;
       opacity: .82;
-      line-height: 1.8;
-    }
-    .nft-stats {
-      display: grid;
-      gap: 10px;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    }
-    .nft-stat {
-      padding: 12px 14px;
-      border-radius: 18px;
-      border: 1px solid rgba(0,255,200,.12);
-      background: rgba(0,0,0,.38);
-    }
-    .nft-stat span {
-      display: block;
-      font-size: 10px;
-      letter-spacing: .28em;
-      text-transform: uppercase;
-      color: rgba(0,255,200,.55);
-      margin-bottom: 6px;
-    }
-    .nft-stat strong {
-      display: block;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 14px;
-      letter-spacing: .08em;
-      color: #f1fffd;
-    }
-    .trait-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .trait-pill {
-      padding: 10px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(0,255,200,.18);
-      background: rgba(0,255,200,.05);
-      color: rgba(0,255,200,.9);
-      font-size: 12px;
-      letter-spacing: .08em;
-      white-space: nowrap;
+      line-height: 1.9;
+      text-align: center;
     }
     .chat-log {
       height: 360px; overflow: auto; border: 1px solid rgba(0,255,200,.12); border-radius: 22px;
-      background: rgba(0,0,0,.3); padding: 12px; display: grid; gap: 10px;
+      background: rgba(0,0,0,.3); padding: 12px; display: flex; flex-direction: column; gap: 10px;
     }
     .chat-terminal {
       display: grid;
@@ -345,11 +299,7 @@
       font-size: 11px;
       line-height: 1.5;
     }
-    .bubble {
-      padding: 12px 14px; border-radius: 18px; background: rgba(0,255,200,.06); border: 1px solid rgba(0,255,200,.08);
-      color: #ddfff9; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere;
-    }
-    .bubble.user { background: rgba(0,255,200,.12); }
+    .bubble.user { background: rgba(0,255,200,.12); }    .bubble.user { background: rgba(0,255,200,.12); }
     .bubble.system { background: rgba(124,58,237,.12); }
     .row { display: flex; gap: 10px; flex-wrap: wrap; }
     input, select {
@@ -487,33 +437,22 @@
       <section id='section-0' class='section active'>
         <div class='grid grid-2'>
           <div class='panel'>
-            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Alien lore // transmission open</div>
-            <h1 style='font-family:Orbitron,sans-serif;font-size:clamp(28px,5vw,62px);margin:10px 0 0;'>COLLECTIVE LORE</h1>
-            <p style='line-height:1.8;color:#ddfff9;opacity:.86;max-width:58ch'>Before the collapse, the Gross Bros chased a fracture of light across the ledger. When the BTC miners breached the perimeter, the survivors fused into machine-linked guardians.</p>
+            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>BRO OF THE DAY</div>
+            <h1 style='font-family:Orbitron,sans-serif;font-size:clamp(28px,5vw,62px);margin:10px 0 0;'>BRO OF THE DAY</h1>
+            <p style='line-height:1.8;color:#ddfff9;opacity:.86;max-width:58ch'>Daily rotation pulled from the full issuer collection, with one NFT selected every 24 hours.</p>
             <div class='row'>
               <button class='btn' onclick='switchTab(1)'>READ TRANSMISSIONS</button>
               <button class='btn' onclick='switchTab(2)'>OPEN FUSION LAB</button>
             </div>
           </div>
           <div class='panel nft-panel'>
-            <div class='bro-of-day-header'>
-              <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>BRO OF THE DAY</div>
-              <h2 style='font-family:Orbitron,sans-serif;font-size:clamp(24px,4vw,48px);margin:0;'>Daily signal</h2>
-            </div>
-            <div class='nft-display'>
+            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Daily signal</div>
+            <div class='nft-display' style='margin-top:14px;'>
               <div class='nft-art'>
                 <img id='bro-of-day-image' alt='Bro of the Day' src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 760"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%2300ffc8" stop-opacity=".2"/><stop offset="100%" stop-color="%23000000" stop-opacity=".92"/></linearGradient></defs><rect width="600" height="760" fill="%23030607"/><rect x="24" y="24" width="552" height="712" rx="36" fill="url(%23g)" stroke="%2300ffc8" stroke-opacity=".26" stroke-width="4"/><text x="300" y="340" fill="%2300ffc8" fill-opacity=".9" font-family="monospace" font-size="30" text-anchor="middle">SCANNING XRPL...</text></svg>'>
               </div>
               <div class='nft-meta'>
-                <h2 id='bro-of-day-name' class='nft-title'>Scanning the ledger</h2>
-                <p id='bro-of-day-description' class='nft-subtitle'>Live NFT data is loading from the GROSS BROS collection.</p>
-                <div class='nft-stats'>
-                  <div class='nft-stat'><span>Collection</span><strong id='bro-of-day-collection'>GROSS BROS</strong></div>
-                  <div class='nft-stat'><span>Serial</span><strong id='bro-of-day-serial'>--</strong></div>
-                  <div class='nft-stat'><span>Token ID</span><strong id='bro-of-day-tokenid'>--</strong></div>
-                  <div class='nft-stat'><span>Daily rotation</span><strong id='bro-of-day-rotation'>--</strong></div>
-                </div>
-                <div id='bro-of-day-traits' class='trait-pills'></div>
+                <p id='bro-of-day-description' class='nft-subtitle'>Live NFT lore is loading from the full BRO collection.</p>
               </div>
             </div>
           </div>
@@ -523,11 +462,11 @@
       <section id='section-1' class='section'>
         <div class='panel'>
           <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Storyline archive</div>
-          <h2 style='font-family:Orbitron,sans-serif;font-size:clamp(24px,4vw,48px);margin:10px 0 16px;'>TRANSMISSION LOGS</h2>
+          <h2 style='font-family:Orbitron,sans-serif;font-size:clamp(24px,4vw,48px);margin:10px 0 16px;'>BACKSTORY LOGS</h2>
           <div style='display:grid;gap:14px;color:#ddfff9;line-height:1.8;'>
-            <p>Before the collapse, the Gross Bros chased a fracture of light across the ledger.</p>
-            <p>When the BTC miners breached the perimeter, the survivors fused into machine-linked guardians.</p>
-            <p>Each tab carries a fragment of the broadcast. The fuse is the only path through the static.</p>
+            <p>The Gross Bros were forged when a fracture opened in the ledger and turned the city into signal.</p>
+            <p>When the miners breached the perimeter, the brothers fused their last human memory with machine-linked armor.</p>
+            <p>The archive below preserves the origin story only: no market noise, no side transmissions, just the backstory that started the broadcast.</p>
           </div>
         </div>
       </section>
@@ -588,7 +527,7 @@
         </div>
       </section>
 
-      <section id='section-3' class='section'>
+      <section id='section-3' class='section'>      <section id='section-3' class='section'>
         <div class='panel'>
           <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Neural standings</div>
           <h2 style='font-family:Orbitron,sans-serif;font-size:clamp(24px,4vw,48px);margin:10px 0 16px;'>LEADERBOARD</h2>
@@ -690,6 +629,7 @@
     const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
     const state = { connected: false, wallet: '', chat: [], fuseUnlocked: false, fuseToken: 'XRP', selectedNft: nftCollection[0], fuseTargetUsd: 50 };
 
+
     function hexToUtf8(hexValue) {
       const hex = String(hexValue || '').trim();
       if (!hex || hex.length % 2 !== 0 || !/^[0-9a-fA-F]+$/.test(hex)) return hex;
@@ -714,97 +654,60 @@
     }
 
     function dailyRotationSeed() {
-      return Math.floor(Date.now() / 86400000);
+      const now = new Date();
+      return Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 86400000);
     }
 
-    function getAttributePairs(metadata) {
-      const attrs = Array.isArray(metadata?.attributes) ? metadata.attributes : [];
-      return attrs
-        .map((attr) => {
-          const key = String(attr?.trait_type || attr?.trait || attr?.name || '').trim();
-          const value = String(attr?.value ?? attr?.display_value ?? attr?.rarity ?? '').trim();
-          return key && value ? `${key}: ${value}` : '';
-        })
-        .filter(Boolean);
+    function normalizeTaxon(value) {
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : null;
+    }
+
+    function cleanLoreText(metadata) {
+      const candidates = [metadata?.lore, metadata?.backstory, metadata?.story, metadata?.description];
+      const raw = candidates.find((value) => typeof value === 'string' && value.trim()) || '';
+      const lines = String(raw)
+        .replace(/\r\n/g, '\n')
+        .split(/\n+/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .filter((line) => !/^(traits?|attributes?|serial(?: number)?|background(?: type)?|token(?: id)?|issuer|taxon|edition|rarity|owner|contract)\b[:\-]*/i.test(line))
+        .filter((line) => !/^#\s*\d+/.test(line));
+      const text = lines.join(' ').replace(/\s{2,}/g, ' ').trim();
+      return text || 'Live NFT lore is loading from the full BRO collection.';
     }
 
     function renderBroOfDayLoading(message) {
-      const nameEl = document.getElementById('bro-of-day-name');
       const descEl = document.getElementById('bro-of-day-description');
-      const collectionEl = document.getElementById('bro-of-day-collection');
-      const serialEl = document.getElementById('bro-of-day-serial');
-      const tokenIdEl = document.getElementById('bro-of-day-tokenid');
-      const rotationEl = document.getElementById('bro-of-day-rotation');
-      const traitsEl = document.getElementById('bro-of-day-traits');
-      if (nameEl) nameEl.textContent = 'Scanning the ledger';
-      if (descEl) descEl.textContent = message || 'Live NFT data is loading from the GROSS BROS collection.';
-      if (collectionEl) collectionEl.textContent = 'GROSS BROS';
-      if (serialEl) serialEl.textContent = '--';
-      if (tokenIdEl) tokenIdEl.textContent = '--';
-      if (rotationEl) rotationEl.textContent = String(dailyRotationSeed());
-      if (traitsEl) traitsEl.innerHTML = '<span class="trait-pill">Live XRPL fetch</span><span class="trait-pill">Rotation pending</span>';
+      if (descEl) descEl.textContent = message || 'Live NFT lore is loading from the full BRO collection.';
     }
 
-    async function fetchCollectionNfts(issuer, taxon) {
-      // Collection-wide XRPL fetch: use the Gross Bros issuer account directly,
-      // page through the full account_nfts response, and filter on the collection taxon.
-      const collection = [];
+    async function fetchCollectionNfts(issuer) {
+      const items = [];
       let marker = null;
-      for (let page = 0; page < 20; page += 1) {
-        const params = [{ account: issuer, limit: 400 }];
-        if (marker) params[0].marker = marker;
+      for (let page = 0; page < 10; page += 1) {
+        const body = { method: 'account_nfts', params: [{ account: issuer, limit: 400 }] };
+        if (marker) body.params[0].marker = marker;
         const response = await fetch(XRPL_RPC_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ method: 'account_nfts', params })
+          body: JSON.stringify(body)
         });
         if (!response.ok) throw new Error('XRPL request failed: ' + response.status);
         const data = await response.json();
         const pageItems = Array.isArray(data?.result?.account_nfts) ? data.result.account_nfts : [];
-        collection.push(...pageItems.filter((nft) => nft?.Issuer === issuer && Number(nft?.NFTokenTaxon) === Number(taxon)));
+        items.push(...pageItems.filter((nft) => String(nft?.Issuer || '') === issuer));
         marker = data?.result?.marker || null;
         if (!marker) break;
       }
-      return collection;
-    }
-
-    function applyBroMetadata(metadata, selected, seed) {
-      const imageUrl = xrplUriToHttp(metadata?.image || metadata?.animation || selected?.URI || '');
-      const name = String(metadata?.name || `GROSS BROS #${selected?.nft_serial || selected?.NFTokenTaxon || 'unknown'}`);
-      const description = String(metadata?.description || metadata?.collection?.name || 'Live NFT from the GROSS BROS collection.');
-      const traits = getAttributePairs(metadata);
-      const traitSummary = traits.slice(0, 2);
-      const nameEl = document.getElementById('bro-of-day-name');
-      const descEl = document.getElementById('bro-of-day-description');
-      const imgEl = document.getElementById('bro-of-day-image');
-      const collectionEl = document.getElementById('bro-of-day-collection');
-      const serialEl = document.getElementById('bro-of-day-serial');
-      const tokenIdEl = document.getElementById('bro-of-day-tokenid');
-      const rotationEl = document.getElementById('bro-of-day-rotation');
-      const traitsEl = document.getElementById('bro-of-day-traits');
-      if (nameEl) nameEl.textContent = name;
-      if (descEl) descEl.textContent = description;
-      if (imgEl && imageUrl) imgEl.src = imageUrl;
-      if (collectionEl) collectionEl.textContent = 'GROSS BROS';
-      if (serialEl) serialEl.textContent = selected?.nft_serial ? '#' + selected.nft_serial : (selected?.NFTokenTaxon != null ? 'Taxon ' + selected.NFTokenTaxon : '--');
-      if (tokenIdEl) tokenIdEl.textContent = selected?.NFTokenID ? String(selected.NFTokenID).slice(0, 10) + '…' + String(selected.NFTokenID).slice(-8) : '--';
-      if (rotationEl) rotationEl.textContent = 'Seed ' + seed;
-      if (traitsEl) {
-        const rendered = [];
-        rendered.push('<span class="trait-pill">' + sanitizeMarkup('Issuer: ' + BRO_COLLECTION_ISSUER) + '</span>');
-        rendered.push('<span class="trait-pill">' + sanitizeMarkup('NFTokenTaxon: 1') + '</span>');
-        rendered.push('<span class="trait-pill">' + sanitizeMarkup(metadata?.nftType || 'art.v0') + '</span>');
-        if (selected?.TransferFee != null) rendered.push('<span class="trait-pill">Transfer fee code: ' + sanitizeMarkup(String(selected.TransferFee)) + '</span>');
-        traitSummary.forEach((trait) => rendered.push('<span class="trait-pill">' + sanitizeMarkup(trait) + '</span>'));
-        traitsEl.innerHTML = rendered.join('');
-      }
+      return items;
     }
 
     async function loadBroOfDay() {
       renderBroOfDayLoading();
       try {
-        const nfts = await fetchCollectionNfts(BRO_COLLECTION_ISSUER, 1);
-        if (!nfts.length) throw new Error('No GROSS BROS NFTs found for issuer/taxon filter');
+        const nfts = await fetchCollectionNfts(BRO_COLLECTION_ISSUER);
+        if (!nfts.length) throw new Error('No collection NFTs found');
         const seed = dailyRotationSeed();
         const selected = nfts[seed % nfts.length];
         const metadataUri = xrplUriToHttp(selected?.URI || '');
@@ -812,14 +715,19 @@
         const metadataResponse = await fetch(metadataUri);
         if (!metadataResponse.ok) throw new Error('Metadata fetch failed: ' + metadataResponse.status);
         const metadata = await metadataResponse.json();
-        applyBroMetadata(metadata, selected, seed);
+        const imageUrl = xrplUriToHttp(metadata?.image || metadata?.animation || '');
+        const loreText = cleanLoreText(metadata);
+        const descEl = document.getElementById('bro-of-day-description');
+        const imgEl = document.getElementById('bro-of-day-image');
+        if (descEl) descEl.textContent = loreText;
+        if (imgEl && imageUrl) imgEl.src = imageUrl;
       } catch (error) {
         console.error(error);
         renderBroOfDayLoading('Live XRPL fetch failed. The terminal is keeping the layout intact while the signal retries.');
       }
     }
 
-    function switchTab(index) {
+    function switchTab(index) {    function switchTab(index) {
       document.querySelectorAll('.tab').forEach((tab, i) => tab.classList.toggle('active', i === index));
       document.querySelectorAll('.section').forEach((section, i) => section.classList.toggle('active', i === index));
     }
@@ -832,12 +740,7 @@
     }
 
     function sanitizeMarkup(value) {
-      return String(value || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/\"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+      return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     function getSelectedNft() {
@@ -847,17 +750,16 @@
     function renderNftSelection() {
       const track = document.getElementById('nft-selection-track');
       if (!track) return;
-      track.innerHTML = nftCollection
-        .map((nft, index) => {
-          const active = getSelectedNft()?.name === nft.name;
-          return `
-          <button type="button" class="nft-select-card${active ? ' active' : ''}" onclick="selectNft(${index})">
-            <img alt="${sanitizeMarkup(nft.name)}" src="${nft.image}">
-            <span class="label">${sanitizeMarkup(nft.name)}</span>
-            <span class="meta">${sanitizeMarkup(nft.tokenId)} • ${sanitizeMarkup(nft.network)}<br>${sanitizeMarkup((nft.traits || []).join(' • '))}</span>
-          </button>`;
-        })
-        .join('');
+      track.innerHTML = nftCollection.map((nft, index) => {
+        const active = getSelectedNft()?.name === nft.name;
+        return [
+          '<button type="button" class="nft-select-card' + (active ? ' active' : '') + '" onclick="selectNft(' + index + ')">',
+          '  <img alt="' + sanitizeMarkup(nft.name) + '" src="' + nft.image + '">',
+          '  <span class="label">' + sanitizeMarkup(nft.name) + '</span>',
+          '  <span class="meta">' + sanitizeMarkup(nft.tokenId) + ' • ' + sanitizeMarkup(nft.network) + '<br>' + sanitizeMarkup((nft.traits || []).join(' • ')) + '</span>',
+          '</button>'
+        ].join('');
+      }).join('');
     }
 
     function appendChat(role, text) {
@@ -885,10 +787,12 @@
       if (!log) return;
       const content = state.chat.map((entry) => {
         if (entry.role === 'nft') {
-          return `<div class="bubble selected-nft-bubble"><img alt="Selected NFT" src="${entry.image}"></div>`;
+          return '<div class="bubble selected-nft-bubble"><img alt="Selected NFT" src="' + entry.image + '"></div>';
         }
         const role = entry.role === 'user' ? 'user' : 'system';
-        return `<div class="bubble ${role}">${role === 'user' ? 'YOU: ' : 'SYSTEM: '}${sanitizeMarkup(entry.text || entry.content || '')}</div>`;
+        return '<div class="bubble ' + role + '">' + (role === 'user' ? 'YOU
+' : 'SYSTEM
+') + sanitizeMarkup(entry.text || entry.content || '') + '</div>';
       });
       log.innerHTML = content.join('');
       log.scrollTop = log.scrollHeight;
@@ -936,6 +840,37 @@
 
     async function refreshFusePrices() {
       const ids = ['ripple', 'dogecoin', 'pepe', 'bonk'];
+    function getFuseRate(token) {
+      const entry = fuseTokenConfig[token];
+      return entry && typeof entry.price === 'number' ? entry.price : null;
+    }
+
+    function renderFuseQuote() {
+      const token = state.fuseToken;
+      const price = getFuseRate(token);
+      const amountEl = document.getElementById('fuse-token-amount');
+      const rateEl = document.getElementById('fuse-token-rate');
+      const gateEl = document.getElementById('fuse-gate-state');
+      const badgeEl = document.getElementById('fuse-lock-badge');
+      const buttonEl = document.getElementById('fuse-button');
+      if (!amountEl || !rateEl || !gateEl || !badgeEl || !buttonEl) return;
+      const unlocked = state.fuseUnlocked;
+      buttonEl.textContent = unlocked ? 'FUSE ARMED' : 'FUSE';
+      badgeEl.textContent = unlocked ? 'UNLOCKED' : 'LOCKED';
+      gateEl.textContent = unlocked ? 'OPEN' : 'SEALED';
+      const label = fuseTokenConfig[token]?.label || token;
+      if (!price || price <= 0) {
+        amountEl.textContent = unlocked ? 'RATE PENDING' : '--';
+        rateEl.textContent = `${label} price pending`;
+        return;
+      }
+      const tokenAmount = 50 / price;
+      amountEl.textContent = `${tokenAmount.toFixed(token === 'RLUSD' ? 2 : tokenAmount < 0.01 ? 6 : 4)} ${label}`;
+      rateEl.textContent = `1 ${label} = $${price.toFixed(token === 'RLUSD' ? 2 : 4)}`;
+    }
+
+    async function refreshFusePrices() {
+      const ids = ['ripple', 'dogecoin', 'pepe', 'bonk'];
       try {
         const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids.join(',') + '&vs_currencies=usd');
         if (!res.ok) throw new Error('price lookup failed');
@@ -968,9 +903,13 @@
       const track = document.getElementById('warning-ticker-track');
       if (!track) return;
       const feed = enemyFeed.concat(enemyFeed);
-      track.innerHTML = feed
-        .map((item, index) => `<span class=\'ticker-item\'>${item}</span>${index < feed.length - 1 ? '<span class=\'ticker-item\'>•</span>' : ''}`)
-        .join('');
+      track.innerHTML = feed.map((item, index) => '<span class=\'ticker-item\'>' + item + '</span>' + (index < feed.length - 1 ? '<span class=\'ticker-item\'>•</span>' : '')).join('');
+    }
+
+    function appendChat(role, text) {
+      state.chat.push({ role, text });
+      renderChatLog();
+      return state.chat[state.chat.length - 1];
     }
 
     async function connectXaman(event) {
@@ -1086,6 +1025,7 @@
         renderChatLog();
       }
     }
+
 
     window.connectXaman = connectXaman;
     window.startChatStream = startChatStream;
