@@ -652,6 +652,8 @@
       input.value = '';
       appendChat('user', text);
       const assistantBubble = appendChat('assistant', '');
+      const assistantText = document.createTextNode('SYSTEM\n');
+      assistantBubble.replaceChildren(assistantText);
       try {
         const res = await fetch('/api/chat', {
           method: 'POST',
@@ -664,48 +666,53 @@
         });
         if (!res.ok) throw new Error('Chat request failed: ' + res.status);
         if (!res.body) {
-          assistantBubble.textContent = 'SYSTEM\nRelay fallback active.';
+          assistantText.data = 'SYSTEM\nRelay fallback active.';
           return;
         }
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
-        let reply = '';
+        const log = document.getElementById('chat-log');
+
+        const consumeLine = (line) => {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) return;
+          const payloadText = trimmed.slice(5).trim();
+          if (!payloadText || payloadText === '[DONE]') return;
+          let token = '';
+          try {
+            const payload = JSON.parse(payloadText);
+            token = String(payload.token || payload.response || payload.message || payload.content || payload.text || '');
+          } catch {
+            token = payloadText;
+          }
+          if (token) {
+            assistantText.data += token;
+            log.scrollTop = log.scrollHeight;
+          }
+        };
+
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
-          let split = buffer.indexOf('\n\n');
-          while (split >= 0) {
-            const chunk = buffer.slice(0, split);
-            buffer = buffer.slice(split + 2);
-            for (const line of chunk.split('\n')) {
-              const trimmed = line.trim();
-              if (!trimmed.startsWith('data:')) continue;
-              const payloadText = trimmed.slice(5).trim();
-              if (!payloadText || payloadText === '[DONE]') continue;
-              let token = '';
-              try {
-                const payload = JSON.parse(payloadText);
-                token = String(payload.token || payload.response || payload.message || payload.content || payload.text || '');
-              } catch {
-                token = payloadText;
-              }
-              if (token) {
-                reply += token;
-                assistantBubble.textContent = 'SYSTEM\n' + reply;
-                const log = document.getElementById('chat-log');
-                log.scrollTop = log.scrollHeight;
-              }
-            }
-            split = buffer.indexOf('\n\n');
+          let newlineIndex = buffer.indexOf('\n');
+          while (newlineIndex >= 0) {
+            const line = buffer.slice(0, newlineIndex);
+            buffer = buffer.slice(newlineIndex + 1);
+            consumeLine(line);
+            newlineIndex = buffer.indexOf('\n');
           }
         }
+
+        buffer += decoder.decode();
+        if (buffer.trim()) consumeLine(buffer);
       } catch (error) {
         console.error(error);
-        assistantBubble.textContent = 'SYSTEM\nRelay fallback active.';
+        assistantText.data = 'SYSTEM\nRelay fallback active.';
       }
     }
+
 
     window.connectXaman = connectXaman;
     window.startChatStream = startChatStream;
