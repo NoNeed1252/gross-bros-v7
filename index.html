@@ -205,12 +205,96 @@
     .bubble.user { background: rgba(0,255,200,.12); }
     .bubble.system { background: rgba(124,58,237,.12); }
     .row { display: flex; gap: 10px; flex-wrap: wrap; }
-    input {
+    input, select {
       flex: 1; min-width: 200px; padding: 14px 16px; border-radius: 18px; border: 1px solid rgba(0,255,200,.22);
       background: rgba(0,0,0,.5); color: #f1fffd; font: inherit; outline: none;
     }
-    input:focus { border-color: var(--cyan); box-shadow: 0 0 0 2px rgba(0,255,200,.12); }
+    select { appearance: none; -webkit-appearance: none; -moz-appearance: none; }
+    input:focus, select:focus { border-color: var(--cyan); box-shadow: 0 0 0 2px rgba(0,255,200,.12); }
     .cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .fuse-panel {
+      display: grid;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top right, rgba(0,255,200,.12), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(124,58,237,.10), transparent 38%),
+        linear-gradient(180deg, rgba(7,18,17,.98), rgba(2,8,8,.98));
+    }
+    .fuse-panel::before {
+      content: '';
+      position: absolute;
+      inset: 1px;
+      border-radius: 23px;
+      pointer-events: none;
+      border: 1px solid rgba(0,255,200,.08);
+    }
+    .fuse-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .fuse-badge {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,255,200,.18);
+      background: rgba(0,255,200,.05);
+      color: rgba(0,255,200,.88);
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      font-size: 10px;
+    }
+    .fuse-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .fuse-readout {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(0,255,200,.12);
+      background: rgba(0,0,0,.35);
+      display: grid;
+      gap: 8px;
+    }
+    .fuse-readout span {
+      color: rgba(0,255,200,.55);
+      font-size: 10px;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+    }
+    .fuse-readout strong {
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: .12em;
+      font-size: 18px;
+      color: #f1fffd;
+    }
+    .fuse-note {
+      color: #ddfff9;
+      opacity: .82;
+      line-height: 1.75;
+      font-size: 13px;
+    }
+    .fuse-terminal {
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(0,255,200,.12);
+      background: rgba(0,0,0,.35);
+      display: grid;
+      gap: 8px;
+    }
+    .fuse-terminal-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: rgba(0,255,200,.85);
+      font-size: 12px;
+    }
+    .fuse-terminal-line span:last-child { color: #f1fffd; }
     .card { border: 1px solid rgba(0,255,200,.15); border-radius: 24px; padding: 18px; background: rgba(0,255,200,.03); }
     .leaderboard { display: grid; gap: 10px; }
     .leader-row {
@@ -290,6 +374,49 @@
             <div>
               FUSION CORE ONLINE
               <small>Terminal stabilized • ready for comms</small>
+            </div>
+          </div>
+          <div class='panel fuse-panel'>
+            <div class='fuse-head'>
+              <div>
+                <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>FUSE unlock sequence</div>
+                <h3 style='font-family:Orbitron,sans-serif;font-size:clamp(20px,3vw,34px);margin:8px 0 0;letter-spacing:.18em;'>PAYMENT BAY</h3>
+              </div>
+              <div id='fuse-lock-badge' class='fuse-badge'>LOCKED</div>
+            </div>
+            <div class='fuse-note'>Select a token, arm the FUSE gate, and the terminal will calculate the token amount needed to settle the $50 USD charge in real time.</div>
+            <div class='fuse-grid'>
+              <div class='fuse-readout'>
+                <span>Token selection</span>
+                <select id='fuse-token-select'>
+                  <option value='XRP'>XRP</option>
+                  <option value='RLUSD'>RLUSD</option>
+                  <option value='DOGE'>DOGE</option>
+                  <option value='PEPE'>PEPE</option>
+                  <option value='BONK'>BONK</option>
+                </select>
+              </div>
+              <div class='fuse-readout'>
+                <span>$50 USD quote</span>
+                <strong id='fuse-token-amount'>--</strong>
+              </div>
+              <div class='fuse-readout'>
+                <span>Live rate</span>
+                <strong id='fuse-token-rate'>--</strong>
+              </div>
+              <div class='fuse-readout'>
+                <span>Payment status</span>
+                <strong id='fuse-payment-status'>Awaiting unlock</strong>
+              </div>
+            </div>
+            <div class='row'>
+              <button id='fuse-button' class='btn' onclick='toggleFuseUnlock()'>FUSE</button>
+              <button class='btn' onclick='refreshFusePrices()'>REFRESH RATES</button>
+            </div>
+            <div class='fuse-terminal'>
+              <div class='fuse-terminal-line'><span>Protocol</span><span>SCI-FI TERMINAL ACTIVE</span></div>
+              <div class='fuse-terminal-line'><span>Charge</span><span>$50.00 USD</span></div>
+              <div class='fuse-terminal-line'><span>Gate</span><span id='fuse-gate-state'>SEALED</span></div>
             </div>
           </div>
           <div class='panel nft-panel'>
@@ -378,7 +505,14 @@
       'ENEMY // Broadcast relay secured',
       'ENEMY // Shadow drones approaching'
     ];
-    const state = { connected: false, wallet: '', chat: [] };
+    const fuseTokenConfig = {
+      XRP: { label: 'XRP', coinGeckoId: 'ripple', price: null },
+      RLUSD: { label: 'RLUSD', price: 1 },
+      DOGE: { label: 'DOGE', coinGeckoId: 'dogecoin', price: null },
+      PEPE: { label: 'PEPE', coinGeckoId: 'pepe', price: null },
+      BONK: { label: 'BONK', coinGeckoId: 'bonk', price: null }
+    };
+    const state = { connected: false, wallet: '', chat: [], fuseUnlocked: false, fuseToken: 'XRP' };
 
     function switchTab(index) {
       document.querySelectorAll('.tab').forEach((tab, i) => tab.classList.toggle('active', i === index));
@@ -390,6 +524,62 @@
       state.wallet = address || '';
       document.getElementById('wallet-btn').textContent = connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
       document.getElementById('xaman-status').textContent = connected ? 'Connected: ' + address.slice(0, 6) + '…' + address.slice(-6) : 'Wallet disconnected.';
+    }
+
+    function getFuseRate(token) {
+      const entry = fuseTokenConfig[token];
+      return entry && typeof entry.price === 'number' ? entry.price : null;
+    }
+
+    function renderFuseQuote() {
+      const token = state.fuseToken;
+      const price = getFuseRate(token);
+      const amountEl = document.getElementById('fuse-token-amount');
+      const rateEl = document.getElementById('fuse-token-rate');
+      const statusEl = document.getElementById('fuse-payment-status');
+      const gateEl = document.getElementById('fuse-gate-state');
+      const badgeEl = document.getElementById('fuse-lock-badge');
+      const buttonEl = document.getElementById('fuse-button');
+      if (!amountEl || !rateEl || !statusEl || !gateEl || !badgeEl || !buttonEl) return;
+      const unlocked = state.fuseUnlocked;
+      buttonEl.textContent = unlocked ? 'FUSE ARMED' : 'FUSE';
+      badgeEl.textContent = unlocked ? 'UNLOCKED' : 'LOCKED';
+      gateEl.textContent = unlocked ? 'OPEN' : 'SEALED';
+      statusEl.textContent = unlocked ? 'Gate active' : 'Awaiting unlock';
+      const label = fuseTokenConfig[token]?.label || token;
+      if (!price || price <= 0) {
+        amountEl.textContent = unlocked ? 'RATE PENDING' : '--';
+        rateEl.textContent = `${label} price pending`;
+        return;
+      }
+      const tokenAmount = 50 / price;
+      amountEl.textContent = `${tokenAmount.toFixed(token === 'RLUSD' ? 2 : tokenAmount < 0.01 ? 6 : 4)} ${label}`;
+      rateEl.textContent = `1 ${label} = $${price.toFixed(token === 'RLUSD' ? 2 : 4)}`;
+    }
+
+    async function refreshFusePrices() {
+      const ids = ['ripple', 'dogecoin', 'pepe', 'bonk'];
+      try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids.join(',') + '&vs_currencies=usd');
+        if (!res.ok) throw new Error('price lookup failed');
+        const prices = await res.json();
+        fuseTokenConfig.XRP.price = Number(prices?.ripple?.usd || 0);
+        fuseTokenConfig.DOGE.price = Number(prices?.dogecoin?.usd || 0);
+        fuseTokenConfig.PEPE.price = Number(prices?.pepe?.usd || 0);
+        fuseTokenConfig.BONK.price = Number(prices?.bonk?.usd || 0);
+      } catch (error) {
+        console.error(error);
+        if (!fuseTokenConfig.XRP.price) fuseTokenConfig.XRP.price = 0.5;
+        if (!fuseTokenConfig.DOGE.price) fuseTokenConfig.DOGE.price = 0.1;
+        if (!fuseTokenConfig.PEPE.price) fuseTokenConfig.PEPE.price = 0.00001;
+        if (!fuseTokenConfig.BONK.price) fuseTokenConfig.BONK.price = 0.00002;
+      }
+      renderFuseQuote();
+    }
+
+    function toggleFuseUnlock() {
+      state.fuseUnlocked = !state.fuseUnlocked;
+      renderFuseQuote();
     }
 
     function loadWarningTicker() {
@@ -519,12 +709,21 @@
 
     window.connectXaman = connectXaman;
     window.startChatStream = startChatStream;
+    window.toggleFuseUnlock = toggleFuseUnlock;
+    window.refreshFusePrices = refreshFusePrices;
 
     document.getElementById('chat-input').addEventListener('keydown', (event) => {
       if (event.key === 'Enter') startChatStream();
     });
 
+    document.getElementById('fuse-token-select').addEventListener('change', (event) => {
+      state.fuseToken = event.target.value;
+      renderFuseQuote();
+    });
+
     loadWarningTicker();
+    refreshFusePrices();
+    setInterval(refreshFusePrices, 90000);
     switchTab(0);
   </script>
 </body>
