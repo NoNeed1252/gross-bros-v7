@@ -55,9 +55,10 @@ export default async function handler(req, res) {
           const text = String(await upstream.text().catch(() => '')).trim();
           if (text) {
             res.status(200);
-            res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-            res.setHeader('Cache-Control', 'no-cache, no-transform');
+            res.setHeader('Content-Type', 'text/event-stream');
+            res.setHeader('Cache-Control', 'no-cache');
             res.setHeader('Connection', 'keep-alive');
+            res.setHeader('Content-Encoding', 'none');
             res.setHeader('X-Accel-Buffering', 'no');
             res.flushHeaders?.();
             res.write(':ok\n\n');
@@ -271,9 +272,10 @@ export default async function handler(req, res) {
       || '';
 
     res.status(200);
-    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Content-Type', 'text/event-stream');
+            res.setHeader('Cache-Control', 'no-cache');
+            res.setHeader('Connection', 'keep-alive');
+            res.setHeader('Content-Encoding', 'none');
     res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders?.();
     res.write(':ok\n\n');
@@ -285,9 +287,10 @@ export default async function handler(req, res) {
     try {
       if (!res.headersSent) {
         res.status(500);
-        res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-        res.setHeader('Cache-Control', 'no-cache, no-transform');
-        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('Content-Type', 'text/event-stream');
+            res.setHeader('Cache-Control', 'no-cache');
+            res.setHeader('Connection', 'keep-alive');
+            res.setHeader('Content-Encoding', 'none');
       }
       res.write(`event: error\ndata: ${JSON.stringify({ error: 'Chat relay failed', details: error?.message || String(error) })}\n\n`);
       res.end();
