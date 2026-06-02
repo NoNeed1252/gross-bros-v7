@@ -91,29 +91,42 @@
       background: linear-gradient(115deg, transparent 0 46%, rgba(0,255,200,.08) 50%, transparent 54% 100%);
       pointer-events: none;
     }
+    .bro-of-day-header {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(0,255,200,.14);
+    }
+    .bro-of-day-header .muted {
+      color: rgba(0,255,200,.58);
+    }
     .nft-display {
       position: relative;
       display: grid;
-      grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+      grid-template-columns: 1fr;
       gap: 18px;
-      align-items: stretch;
-    }
-    @media (max-width: 720px) {
-      .nft-display { grid-template-columns: 1fr; }
+      justify-items: center;
+      align-items: start;
     }
     .nft-art {
       position: relative;
+      width: min(100%, 520px);
       min-height: 300px;
       border-radius: 22px;
       border: 1px solid rgba(0,255,200,.22);
       background: radial-gradient(circle at 30% 20%, rgba(0,255,200,.22), rgba(0,0,0,.88) 55%), rgba(0,0,0,.65);
       overflow: hidden;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.03), 0 0 42px rgba(0,255,200,.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .nft-art img {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      height: auto;
+      max-height: 620px;
+      object-fit: contain;
       display: block;
       filter: contrast(1.08) saturate(1.05);
       mix-blend-mode: screen;
@@ -136,9 +149,11 @@
       text-align: center;
     }
     .nft-meta {
+      width: min(100%, 980px);
       display: grid;
       gap: 14px;
       align-content: start;
+      justify-self: stretch;
     }
     .nft-title {
       font-family: 'Orbitron', sans-serif;
@@ -481,8 +496,11 @@
             </div>
           </div>
           <div class='panel nft-panel'>
-            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Daily signal</div>
-            <div class='nft-display' style='margin-top:14px;'>
+            <div class='bro-of-day-header'>
+              <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>BRO OF THE DAY</div>
+              <h2 style='font-family:Orbitron,sans-serif;font-size:clamp(24px,4vw,48px);margin:0;'>Daily signal</h2>
+            </div>
+            <div class='nft-display'>
               <div class='nft-art'>
                 <img id='bro-of-day-image' alt='Bro of the Day' src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 760"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%2300ffc8" stop-opacity=".2"/><stop offset="100%" stop-color="%23000000" stop-opacity=".92"/></linearGradient></defs><rect width="600" height="760" fill="%23030607"/><rect x="24" y="24" width="552" height="712" rx="36" fill="url(%23g)" stroke="%2300ffc8" stroke-opacity=".26" stroke-width="4"/><text x="300" y="340" fill="%2300ffc8" fill-opacity=".9" font-family="monospace" font-size="30" text-anchor="middle">SCANNING XRPL...</text></svg>'>
               </div>
@@ -728,15 +746,17 @@
     }
 
     async function fetchCollectionNfts(issuer, taxon) {
+      // Collection-wide XRPL fetch: use the Gross Bros issuer account directly,
+      // page through the full account_nfts response, and filter on the collection taxon.
       const collection = [];
       let marker = null;
-      for (let page = 0; page < 4; page += 1) {
-        const body = { method: 'account_nfts', params: [{ account: issuer, limit: 100 }] };
-        if (marker) body.params[0].marker = marker;
+      for (let page = 0; page < 20; page += 1) {
+        const params = [{ account: issuer, limit: 400 }];
+        if (marker) params[0].marker = marker;
         const response = await fetch(XRPL_RPC_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
+          body: JSON.stringify({ method: 'account_nfts', params })
         });
         if (!response.ok) throw new Error('XRPL request failed: ' + response.status);
         const data = await response.json();
