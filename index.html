@@ -328,6 +328,15 @@
       <div id='warning-ticker-track' class='ticker-track'></div>
     </div>
 
+    <div class='panel'>
+      <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>In-world comms terminal</div>
+      <div id='chat-log' class='chat-log' aria-live='polite'></div>
+      <div class='row' style='margin-top:12px;'>
+        <input id='chat-input' maxlength='240' placeholder='Send a directive to the operative…'>
+        <button class='btn' onclick='startChatStream()'>SEND</button>
+      </div>
+    </div>
+
     <nav class='tabs'>
       <div class='tab active' data-tab='0' onclick='switchTab(0)'>CONSOLE</div>
       <div class='tab' data-tab='1' onclick='switchTab(1)'>STORYLINE</div>
@@ -441,14 +450,6 @@
                   <div class='trait-pill'>Signal Locked</div>
                 </div>
               </div>
-            </div>
-          </div>
-          <div class='panel'>
-            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>In-world comms terminal</div>
-            <div id='chat-log' class='chat-log' aria-live='polite'></div>
-            <div class='row' style='margin-top:12px;'>
-              <input id='chat-input' maxlength='240' placeholder='Send a directive to the operative…'>
-              <button class='btn' onclick='startChatStream()'>SEND</button>
             </div>
           </div>
         </div>
