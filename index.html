@@ -480,10 +480,24 @@
               <button class='btn' onclick='switchTab(2)'>OPEN FUSION LAB</button>
             </div>
           </div>
-          <div class='panel'>
+          <div class='panel nft-panel'>
             <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Daily signal</div>
-            <div style='font-family:Orbitron,sans-serif;font-size:clamp(22px,4vw,40px);margin-top:10px;'>BRO OF THE DAY</div>
-            <p style='line-height:1.8;color:#ddfff9;opacity:.86'>The current relay state favors the selected operative. Use the Fusion Lab to initiate communication and monitor the latest signal warnings.</p>
+            <div class='nft-display' style='margin-top:14px;'>
+              <div class='nft-art'>
+                <img id='bro-of-day-image' alt='Bro of the Day' src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 760"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%2300ffc8" stop-opacity=".2"/><stop offset="100%" stop-color="%23000000" stop-opacity=".92"/></linearGradient></defs><rect width="600" height="760" fill="%23030607"/><rect x="24" y="24" width="552" height="712" rx="36" fill="url(%23g)" stroke="%2300ffc8" stroke-opacity=".26" stroke-width="4"/><text x="300" y="340" fill="%2300ffc8" fill-opacity=".9" font-family="monospace" font-size="30" text-anchor="middle">SCANNING XRPL...</text></svg>'>
+              </div>
+              <div class='nft-meta'>
+                <h2 id='bro-of-day-name' class='nft-title'>Scanning the ledger</h2>
+                <p id='bro-of-day-description' class='nft-subtitle'>Live NFT data is loading from the GROSS BROS collection.</p>
+                <div class='nft-stats'>
+                  <div class='nft-stat'><span>Collection</span><strong id='bro-of-day-collection'>GROSS BROS</strong></div>
+                  <div class='nft-stat'><span>Serial</span><strong id='bro-of-day-serial'>--</strong></div>
+                  <div class='nft-stat'><span>Token ID</span><strong id='bro-of-day-tokenid'>--</strong></div>
+                  <div class='nft-stat'><span>Daily rotation</span><strong id='bro-of-day-rotation'>--</strong></div>
+                </div>
+                <div id='bro-of-day-traits' class='trait-pills'></div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -652,7 +666,132 @@
         traits: ['Airwave', 'Oracle', 'Terminal Frame']
       }
     ];
+
+    const BRO_COLLECTION_ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
+    const XRPL_RPC_ENDPOINT = 'https://xrplcluster.com/';
+    const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
     const state = { connected: false, wallet: '', chat: [], fuseUnlocked: false, fuseToken: 'XRP', selectedNft: nftCollection[0], fuseTargetUsd: 50 };
+
+    function hexToUtf8(hexValue) {
+      const hex = String(hexValue || '').trim();
+      if (!hex || hex.length % 2 !== 0 || !/^[0-9a-fA-F]+$/.test(hex)) return hex;
+      const bytes = new Uint8Array(hex.length / 2);
+      for (let i = 0; i < hex.length; i += 2) bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16);
+      return new TextDecoder().decode(bytes);
+    }
+
+    function xrplUriToHttp(uri) {
+      const value = String(uri || '').trim();
+      if (!value) return '';
+      if (/^[0-9a-fA-F]+$/.test(value)) {
+        return xrplUriToHttp(hexToUtf8(value));
+      }
+      if (value.startsWith('ipfs://')) {
+        return IPFS_GATEWAY + value.slice('ipfs://'.length).replace(/^\/+/, '');
+      }
+      if (value.startsWith('ar://')) {
+        return 'https://arweave.net/' + value.slice('ar://'.length).replace(/^\/+/, '');
+      }
+      return value;
+    }
+
+    function dailyRotationSeed() {
+      return Math.floor(Date.now() / 86400000);
+    }
+
+    function getAttributePairs(metadata) {
+      const attrs = Array.isArray(metadata?.attributes) ? metadata.attributes : [];
+      return attrs
+        .map((attr) => {
+          const key = String(attr?.trait_type || attr?.trait || attr?.name || '').trim();
+          const value = String(attr?.value ?? attr?.display_value ?? attr?.rarity ?? '').trim();
+          return key && value ? `${key}: ${value}` : '';
+        })
+        .filter(Boolean);
+    }
+
+    function renderBroOfDayLoading(message) {
+      const nameEl = document.getElementById('bro-of-day-name');
+      const descEl = document.getElementById('bro-of-day-description');
+      const collectionEl = document.getElementById('bro-of-day-collection');
+      const serialEl = document.getElementById('bro-of-day-serial');
+      const tokenIdEl = document.getElementById('bro-of-day-tokenid');
+      const rotationEl = document.getElementById('bro-of-day-rotation');
+      const traitsEl = document.getElementById('bro-of-day-traits');
+      if (nameEl) nameEl.textContent = 'Scanning the ledger';
+      if (descEl) descEl.textContent = message || 'Live NFT data is loading from the GROSS BROS collection.';
+      if (collectionEl) collectionEl.textContent = 'GROSS BROS';
+      if (serialEl) serialEl.textContent = '--';
+      if (tokenIdEl) tokenIdEl.textContent = '--';
+      if (rotationEl) rotationEl.textContent = String(dailyRotationSeed());
+      if (traitsEl) traitsEl.innerHTML = '<span class="trait-pill">Live XRPL fetch</span><span class="trait-pill">Rotation pending</span>';
+    }
+
+    async function fetchCollectionNfts(issuer) {
+      const items = [];
+      let marker = null;
+      for (let page = 0; page < 4; page += 1) {
+        const body = { method: 'account_nfts', params: [{ account: issuer, limit: 100 }] };
+        if (marker) body.params[0].marker = marker;
+        const response = await fetch(XRPL_RPC_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!response.ok) throw new Error('XRPL request failed: ' + response.status);
+        const data = await response.json();
+        const pageItems = Array.isArray(data?.result?.account_nfts) ? data.result.account_nfts : [];
+        items.push(...pageItems.filter((nft) => nft?.Issuer === issuer));
+        marker = data?.result?.marker || null;
+        if (!marker) break;
+      }
+      return items;
+    }
+
+    async function loadBroOfDay() {
+      renderBroOfDayLoading();
+      try {
+        const nfts = await fetchCollectionNfts(BRO_COLLECTION_ISSUER);
+        if (!nfts.length) throw new Error('No collection NFTs found');
+        const seed = dailyRotationSeed();
+        const selected = nfts[seed % nfts.length];
+        const metadataUri = xrplUriToHttp(selected?.URI || '');
+        if (!metadataUri) throw new Error('Missing metadata URI');
+        const metadataResponse = await fetch(metadataUri);
+        if (!metadataResponse.ok) throw new Error('Metadata fetch failed: ' + metadataResponse.status);
+        const metadata = await metadataResponse.json();
+        const imageUrl = xrplUriToHttp(metadata?.image || metadata?.animation || '');
+        const name = String(metadata?.name || `GROSS BROS #${selected?.nft_serial || selected?.NFTokenTaxon || 'unknown'}`);
+        const description = String(metadata?.description || metadata?.collection?.name || 'Live NFT from the GROSS BROS collection.');
+        const traits = getAttributePairs(metadata);
+        const traitSummary = traits.slice(0, 2);
+        const nameEl = document.getElementById('bro-of-day-name');
+        const descEl = document.getElementById('bro-of-day-description');
+        const imgEl = document.getElementById('bro-of-day-image');
+        const collectionEl = document.getElementById('bro-of-day-collection');
+        const serialEl = document.getElementById('bro-of-day-serial');
+        const tokenIdEl = document.getElementById('bro-of-day-tokenid');
+        const rotationEl = document.getElementById('bro-of-day-rotation');
+        const traitsEl = document.getElementById('bro-of-day-traits');
+        if (nameEl) nameEl.textContent = name;
+        if (descEl) descEl.textContent = description;
+        if (imgEl && imageUrl) imgEl.src = imageUrl;
+        if (collectionEl) collectionEl.textContent = String(metadata?.collection?.name || 'GROSS BROS');
+        if (serialEl) serialEl.textContent = selected?.nft_serial ? '#' + selected.nft_serial : (selected?.NFTokenTaxon != null ? 'Taxon ' + selected.NFTokenTaxon : '--');
+        if (tokenIdEl) tokenIdEl.textContent = selected?.NFTokenID ? String(selected.NFTokenID).slice(0, 10) + '…' + String(selected.NFTokenID).slice(-8) : '--';
+        if (rotationEl) rotationEl.textContent = 'Seed ' + seed;
+        if (traitsEl) {
+          const rendered = [];
+          rendered.push('<span class="trait-pill">' + sanitizeMarkup(metadata?.nftType || 'art.v0') + '</span>');
+          if (selected?.TransferFee != null) rendered.push('<span class="trait-pill">Transfer fee code: ' + sanitizeMarkup(String(selected.TransferFee)) + '</span>');
+          traitSummary.forEach((trait) => rendered.push('<span class="trait-pill">' + sanitizeMarkup(trait) + '</span>'));
+          traitsEl.innerHTML = rendered.join('');
+        }
+      } catch (error) {
+        console.error(error);
+        renderBroOfDayLoading('Live XRPL fetch failed. The terminal is keeping the layout intact while the signal retries.');
+      }
+    }
 
     function switchTab(index) {
       document.querySelectorAll('.tab').forEach((tab, i) => tab.classList.toggle('active', i === index));
@@ -667,7 +806,12 @@
     }
 
     function sanitizeMarkup(value) {
-      return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
 
     function getSelectedNft() {
@@ -677,16 +821,17 @@
     function renderNftSelection() {
       const track = document.getElementById('nft-selection-track');
       if (!track) return;
-      track.innerHTML = nftCollection.map((nft, index) => {
-        const active = getSelectedNft()?.name === nft.name;
-        return [
-          '<button type="button" class="nft-select-card' + (active ? ' active' : '') + '" onclick="selectNft(' + index + ')">',
-          '  <img alt="' + sanitizeMarkup(nft.name) + '" src="' + nft.image + '">',
-          '  <span class="label">' + sanitizeMarkup(nft.name) + '</span>',
-          '  <span class="meta">' + sanitizeMarkup(nft.tokenId) + ' • ' + sanitizeMarkup(nft.network) + '<br>' + sanitizeMarkup((nft.traits || []).join(' • ')) + '</span>',
-          '</button>'
-        ].join('');
-      }).join('');
+      track.innerHTML = nftCollection
+        .map((nft, index) => {
+          const active = getSelectedNft()?.name === nft.name;
+          return `
+          <button type="button" class="nft-select-card${active ? ' active' : ''}" onclick="selectNft(${index})">
+            <img alt="${sanitizeMarkup(nft.name)}" src="${nft.image}">
+            <span class="label">${sanitizeMarkup(nft.name)}</span>
+            <span class="meta">${sanitizeMarkup(nft.tokenId)} • ${sanitizeMarkup(nft.network)}<br>${sanitizeMarkup((nft.traits || []).join(' • '))}</span>
+          </button>`;
+        })
+        .join('');
     }
 
     function appendChat(role, text) {
@@ -714,10 +859,10 @@
       if (!log) return;
       const content = state.chat.map((entry) => {
         if (entry.role === 'nft') {
-          return '<div class="bubble selected-nft-bubble"><img alt="Selected NFT" src="' + entry.image + '"></div>';
+          return `<div class="bubble selected-nft-bubble"><img alt="Selected NFT" src="${entry.image}"></div>`;
         }
         const role = entry.role === 'user' ? 'user' : 'system';
-        return '<div class="bubble ' + role + '">' + (role === 'user' ? 'YOU\n' : 'SYSTEM\n') + sanitizeMarkup(entry.text || entry.content || '') + '</div>';
+        return `<div class="bubble ${role}">${role === 'user' ? 'YOU: ' : 'SYSTEM: '}${sanitizeMarkup(entry.text || entry.content || '')}</div>`;
       });
       log.innerHTML = content.join('');
       log.scrollTop = log.scrollHeight;
@@ -797,13 +942,9 @@
       const track = document.getElementById('warning-ticker-track');
       if (!track) return;
       const feed = enemyFeed.concat(enemyFeed);
-      track.innerHTML = feed.map((item, index) => '<span class=\'ticker-item\'>' + item + '</span>' + (index < feed.length - 1 ? '<span class=\'ticker-item\'>•</span>' : '')).join('');
-    }
-
-    function appendChat(role, text) {
-      state.chat.push({ role, text });
-      renderChatLog();
-      return state.chat[state.chat.length - 1];
+      track.innerHTML = feed
+        .map((item, index) => `<span class=\'ticker-item\'>${item}</span>${index < feed.length - 1 ? '<span class=\'ticker-item\'>•</span>' : ''}`)
+        .join('');
     }
 
     async function connectXaman(event) {
@@ -920,7 +1061,6 @@
       }
     }
 
-
     window.connectXaman = connectXaman;
     window.startChatStream = startChatStream;
     window.toggleFuseUnlock = toggleFuseUnlock;
@@ -938,7 +1078,9 @@
     renderChatLog();
     refreshFusePrices();
     renderFuseQuote();
+    loadBroOfDay();
     setInterval(refreshFusePrices, 90000);
+    setInterval(loadBroOfDay, 3600000);
     switchTab(0);
   </script>
 </body>
