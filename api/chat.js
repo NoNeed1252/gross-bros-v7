@@ -73,7 +73,7 @@ export default async function handler(req, res) {
             return res.end();
           }
         } catch (err) {
-          if (err?.status === 429) throw err;
+          if (err?.status === 429) throw err; // short-circuit Pollinations 429 to OpenRouter
           if (attempt === 2) throw err;
         }
       }
