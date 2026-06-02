@@ -727,8 +727,8 @@
       if (traitsEl) traitsEl.innerHTML = '<span class="trait-pill">Live XRPL fetch</span><span class="trait-pill">Rotation pending</span>';
     }
 
-    async function fetchCollectionNfts(issuer) {
-      const items = [];
+    async function fetchCollectionNfts(issuer, taxon) {
+      const collection = [];
       let marker = null;
       for (let page = 0; page < 4; page += 1) {
         const body = { method: 'account_nfts', params: [{ account: issuer, limit: 100 }] };
@@ -741,18 +741,50 @@
         if (!response.ok) throw new Error('XRPL request failed: ' + response.status);
         const data = await response.json();
         const pageItems = Array.isArray(data?.result?.account_nfts) ? data.result.account_nfts : [];
-        items.push(...pageItems.filter((nft) => nft?.Issuer === issuer));
+        collection.push(...pageItems.filter((nft) => nft?.Issuer === issuer && Number(nft?.NFTokenTaxon) === Number(taxon)));
         marker = data?.result?.marker || null;
         if (!marker) break;
       }
-      return items;
+      return collection;
+    }
+
+    function applyBroMetadata(metadata, selected, seed) {
+      const imageUrl = xrplUriToHttp(metadata?.image || metadata?.animation || selected?.URI || '');
+      const name = String(metadata?.name || `GROSS BROS #${selected?.nft_serial || selected?.NFTokenTaxon || 'unknown'}`);
+      const description = String(metadata?.description || metadata?.collection?.name || 'Live NFT from the GROSS BROS collection.');
+      const traits = getAttributePairs(metadata);
+      const traitSummary = traits.slice(0, 2);
+      const nameEl = document.getElementById('bro-of-day-name');
+      const descEl = document.getElementById('bro-of-day-description');
+      const imgEl = document.getElementById('bro-of-day-image');
+      const collectionEl = document.getElementById('bro-of-day-collection');
+      const serialEl = document.getElementById('bro-of-day-serial');
+      const tokenIdEl = document.getElementById('bro-of-day-tokenid');
+      const rotationEl = document.getElementById('bro-of-day-rotation');
+      const traitsEl = document.getElementById('bro-of-day-traits');
+      if (nameEl) nameEl.textContent = name;
+      if (descEl) descEl.textContent = description;
+      if (imgEl && imageUrl) imgEl.src = imageUrl;
+      if (collectionEl) collectionEl.textContent = 'GROSS BROS';
+      if (serialEl) serialEl.textContent = selected?.nft_serial ? '#' + selected.nft_serial : (selected?.NFTokenTaxon != null ? 'Taxon ' + selected.NFTokenTaxon : '--');
+      if (tokenIdEl) tokenIdEl.textContent = selected?.NFTokenID ? String(selected.NFTokenID).slice(0, 10) + '…' + String(selected.NFTokenID).slice(-8) : '--';
+      if (rotationEl) rotationEl.textContent = 'Seed ' + seed;
+      if (traitsEl) {
+        const rendered = [];
+        rendered.push('<span class="trait-pill">' + sanitizeMarkup('Issuer: ' + BRO_COLLECTION_ISSUER) + '</span>');
+        rendered.push('<span class="trait-pill">' + sanitizeMarkup('NFTokenTaxon: 1') + '</span>');
+        rendered.push('<span class="trait-pill">' + sanitizeMarkup(metadata?.nftType || 'art.v0') + '</span>');
+        if (selected?.TransferFee != null) rendered.push('<span class="trait-pill">Transfer fee code: ' + sanitizeMarkup(String(selected.TransferFee)) + '</span>');
+        traitSummary.forEach((trait) => rendered.push('<span class="trait-pill">' + sanitizeMarkup(trait) + '</span>'));
+        traitsEl.innerHTML = rendered.join('');
+      }
     }
 
     async function loadBroOfDay() {
       renderBroOfDayLoading();
       try {
-        const nfts = await fetchCollectionNfts(BRO_COLLECTION_ISSUER);
-        if (!nfts.length) throw new Error('No collection NFTs found');
+        const nfts = await fetchCollectionNfts(BRO_COLLECTION_ISSUER, 1);
+        if (!nfts.length) throw new Error('No GROSS BROS NFTs found for issuer/taxon filter');
         const seed = dailyRotationSeed();
         const selected = nfts[seed % nfts.length];
         const metadataUri = xrplUriToHttp(selected?.URI || '');
@@ -760,33 +792,7 @@
         const metadataResponse = await fetch(metadataUri);
         if (!metadataResponse.ok) throw new Error('Metadata fetch failed: ' + metadataResponse.status);
         const metadata = await metadataResponse.json();
-        const imageUrl = xrplUriToHttp(metadata?.image || metadata?.animation || '');
-        const name = String(metadata?.name || `GROSS BROS #${selected?.nft_serial || selected?.NFTokenTaxon || 'unknown'}`);
-        const description = String(metadata?.description || metadata?.collection?.name || 'Live NFT from the GROSS BROS collection.');
-        const traits = getAttributePairs(metadata);
-        const traitSummary = traits.slice(0, 2);
-        const nameEl = document.getElementById('bro-of-day-name');
-        const descEl = document.getElementById('bro-of-day-description');
-        const imgEl = document.getElementById('bro-of-day-image');
-        const collectionEl = document.getElementById('bro-of-day-collection');
-        const serialEl = document.getElementById('bro-of-day-serial');
-        const tokenIdEl = document.getElementById('bro-of-day-tokenid');
-        const rotationEl = document.getElementById('bro-of-day-rotation');
-        const traitsEl = document.getElementById('bro-of-day-traits');
-        if (nameEl) nameEl.textContent = name;
-        if (descEl) descEl.textContent = description;
-        if (imgEl && imageUrl) imgEl.src = imageUrl;
-        if (collectionEl) collectionEl.textContent = String(metadata?.collection?.name || 'GROSS BROS');
-        if (serialEl) serialEl.textContent = selected?.nft_serial ? '#' + selected.nft_serial : (selected?.NFTokenTaxon != null ? 'Taxon ' + selected.NFTokenTaxon : '--');
-        if (tokenIdEl) tokenIdEl.textContent = selected?.NFTokenID ? String(selected.NFTokenID).slice(0, 10) + '…' + String(selected.NFTokenID).slice(-8) : '--';
-        if (rotationEl) rotationEl.textContent = 'Seed ' + seed;
-        if (traitsEl) {
-          const rendered = [];
-          rendered.push('<span class="trait-pill">' + sanitizeMarkup(metadata?.nftType || 'art.v0') + '</span>');
-          if (selected?.TransferFee != null) rendered.push('<span class="trait-pill">Transfer fee code: ' + sanitizeMarkup(String(selected.TransferFee)) + '</span>');
-          traitSummary.forEach((trait) => rendered.push('<span class="trait-pill">' + sanitizeMarkup(trait) + '</span>'));
-          traitsEl.innerHTML = rendered.join('');
-        }
+        applyBroMetadata(metadata, selected, seed);
       } catch (error) {
         console.error(error);
         renderBroOfDayLoading('Live XRPL fetch failed. The terminal is keeping the layout intact while the signal retries.');
