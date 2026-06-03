@@ -105,14 +105,7 @@ export default async function handler(req, res) {
     }
   };
 
-  const resolveOpenRouterKey = () =>
-    String(
-      process.env.OPENROUTERAPIKEY ||
-      process.env.OPENROUTER_API_KEY ||
-      process.env.OPENROUTER_KEY ||
-      process.env.OPEN_ROUTER_API_KEY ||
-      ''
-    ).trim();
+  const resolveOpenRouterKey = () => String(process.env.OPENROUTER_API_KEY || '').trim();
 
   const streamOpenRouter = async ({ messages, model }) => {
     const openRouterKey = resolveOpenRouterKey();
@@ -352,7 +345,7 @@ export default async function handler(req, res) {
     let secondaryOpenRouterFailure = 'unknown error';
 
     try {
-      await streamOpenRouter({ messages: openAiMessages, model: 'meta-llama/llama-3.1-8b-instruct:free' });
+      await streamOpenRouter({ messages: openAiMessages, model: 'meta-llama/llama-3.2-3b-instruct:free' });
       return;
     } catch (error) {
       openRouterFailure = error?.message || String(error);
@@ -360,7 +353,7 @@ export default async function handler(req, res) {
     }
 
     try {
-      await streamOpenRouter({ messages: openAiMessages, model: 'google/gemma-2-9b-it:free' });
+      await streamOpenRouter({ messages: openAiMessages, model: 'google/gemma-4-26b-a4b-it:free' });
       return;
     } catch (error) {
       secondaryOpenRouterFailure = error?.message || String(error);
