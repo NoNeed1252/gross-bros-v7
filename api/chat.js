@@ -19,12 +19,11 @@ export default async function handler(req, res) {
       })()
     : (req.body && typeof req.body === 'object' ? req.body : {});
 
+  const incomingMessages = Array.isArray(body?.messages) ? body.messages : [];
+  const systemPrompt = 'You are the Neural Bot for Galactic Gross Bros. Speak like a grimy alien terminal intelligence, stay fully in character, and keep replies short.';
   const messages = [
-    {
-      role: 'system',
-      content: 'You are the NEURAL BOT for Galactic Gross Bros. Speak like a grimy alien terminal intelligence, stay fully in character, and keep replies short.'
-    },
-    ...[].concat(Array.isArray(body.messages) ? body.messages : []).map((message) => ({
+    { role: 'system', content: systemPrompt },
+    ...incomingMessages.map((message) => ({
       role: String(message?.role || 'user').toLowerCase() === 'assistant' ? 'assistant' : 'user',
       content: String(message?.content || message?.message || '').trim()
     })).filter((message) => message.content)
@@ -35,7 +34,7 @@ export default async function handler(req, res) {
     headers: {
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
-      Authorization: `Bearer ${openRouterApiKey}`,
+      Authorization: 'Bearer ' + openRouterApiKey,
       'HTTP-Referer': 'https://grossbros.vercel.app',
       'X-Title': 'Gross Bros Chat'
     },
@@ -50,7 +49,7 @@ export default async function handler(req, res) {
   if (!upstream.ok || !upstream.body) {
     const details = await upstream.text().catch(() => '');
     return res.status(502).json({
-      error: `OpenRouter response failed: ${upstream.status} ${details}`.trim()
+      error: ('OpenRouter response failed: ' + upstream.status + ' ' + details).trim()
     });
   }
 
@@ -69,8 +68,8 @@ export default async function handler(req, res) {
   let emitted = false;
 
   const sendSse = (event, data) => {
-    if (event) res.write(`event: ${event}\n`);
-    res.write(`data: ${typeof data === 'string' ? data : JSON.stringify(data)}\n\n`);
+    if (event) res.write('event: ' + event + '\n');
+    res.write('data: ' + (typeof data === 'string' ? data : JSON.stringify(data)) + '\n\n');
   };
 
   const emitToken = (token) => {
