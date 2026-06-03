@@ -157,8 +157,14 @@ export default async function handler(req, res) {
     body: JSON.stringify(options.body)
   });
 
+  let openRouterFailure = 'unknown error';
+  let pollinationsFailure = 'unknown error';
+
   const tryOpenRouter = async () => {
-    if (!openRouterHeaders) return false;
+    if (!openRouterHeaders) {
+      openRouterFailure = 'Missing OPENROUTER_API_KEY';
+      return false;
+    }
 
     for (const model of openRouterModels) {
       const response = await buildOpenAiLikeRequest('https://openrouter.ai/api/v1/chat/completions', {
@@ -172,12 +178,14 @@ export default async function handler(req, res) {
       });
 
       if (!response.ok) {
-        await response.text().catch(() => '');
+        const details = await response.text().catch(() => '');
+        openRouterFailure = 'OpenRouter response failed: ' + response.status + (details ? ' ' + details : '');
         continue;
       }
 
       const result = await consumeEventStream(response, 60000);
       if (result.emitted) return true;
+      openRouterFailure = 'OpenRouter stream produced no tokens.';
     }
 
     return false;
@@ -198,12 +206,17 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
-      await response.text().catch(() => '');
+      const details = await response.text().catch(() => '');
+      pollinationsFailure = 'Pollinations OpenAI response failed: ' + response.status + (details ? ' ' + details : '');
       return false;
     }
 
     const result = await consumeEventStream(response, 60000);
-    return result.emitted;
+    if (!result.emitted) {
+      pollinationsFailure = 'Pollinations OpenAI stream produced no tokens.';
+      return false;
+    }
+    return true;
   };
 
   const tryPollinationsPlainText = async () => {
@@ -219,21 +232,30 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
-      await response.text().catch(() => '');
+      const details = await response.text().catch(() => '');
+      pollinationsFailure = 'Pollinations plain text response failed: ' + response.status + (details ? ' ' + details : '');
       return false;
     }
 
     const text = String(await response.text().catch(() => '')).trim();
-    if (!text) return false;
+    if (!text) {
+      pollinationsFailure = 'Pollinations plain text produced no content.';
+      return false;
+    }
 
     ensureSseStarted();
     sendSse('token', { token: text });
     return true;
   };
 
+  const formatFailureStatus = (label, failure) => {
+    const status = String(failure || '').trim();
+    return label + ': ' + (status || 'unknown error');
+  };
+
   const tryCannedFallback = async () => {
     ensureSseStarted();
-    sendSse('token', { token: 'The comms line is scrambled. Try again in a moment.' });
+    sendSse('token', { token: 'SYSTEM: Comms scrambled. ' + formatFailureStatus('OpenRouter', openRouterFailure) + '. ' + formatFailureStatus('Pollinations', pollinationsFailure) + '.' });
     return true;
   };
 
