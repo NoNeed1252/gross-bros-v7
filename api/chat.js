@@ -150,7 +150,7 @@ export default async function handler(req, res) {
         },
         signal: controller.signal,
         body: JSON.stringify({
-          model: 'meta-llama/llama-3.1-8b-instruct:free',
+          model: 'meta-llama/llama-3.1-8b-instruct',
           messages,
           temperature: 0.45,
           stream: true
@@ -213,12 +213,13 @@ export default async function handler(req, res) {
 
   const openRouterAttempt = await tryOpenRouter();
   let success = openRouterAttempt.ok;
+  const allowCannedFallback = openRouterAttempt.status === 429;
 
-  if (!success && openRouterAttempt.status === 429) {
+  if (!success && allowCannedFallback) {
     success = await tryPollinationsDirect();
   }
 
-  if (!success) {
+  if (!success && allowCannedFallback) {
     success = await tryCannedFallback();
   }
 
