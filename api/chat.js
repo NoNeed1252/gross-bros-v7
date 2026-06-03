@@ -11,7 +11,9 @@ export default async function handler(req, res) {
     'Content-Encoding': 'none',
   };
 
-  const writeHeaders = () => {
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const writeSseHeaders = () => {
     res.status(200);
     for (const [key, value] of Object.entries(SSE_HEADERS)) {
       res.setHeader(key, value);
@@ -25,8 +27,6 @@ export default async function handler(req, res) {
     if (event) res.write(`event: ${event}\n`);
     res.write(`data: ${typeof data === 'string' ? data : JSON.stringify(data)}\n\n`);
   };
-
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const parseBody = () => {
     if (typeof req.body === 'string') {
@@ -63,7 +63,7 @@ export default async function handler(req, res) {
   };
 
   const streamText = async (text) => {
-    writeHeaders();
+    writeSseHeaders();
     for (const token of String(text || '').match(/\S+|\s+/g) || [String(text || '')]) {
       if (!token) continue;
       sendSse('token', { token });
@@ -78,7 +78,40 @@ export default async function handler(req, res) {
     return `${label}: ${status || 'unknown error'}`;
   };
 
-  const resolveOpenRouterKey = () => String(process.env.OPENROUTER_API_KEY || '').trim();
+  const streamPlainPollinations = async ({ prompt }) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45000);
+    try {
+      const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?t=${Date.now()}`, {
+        method: 'GET',
+        headers: {
+          Accept: 'text/plain',
+          'Cache-Control': 'no-cache',
+        },
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const details = await response.text().catch(() => '');
+        throw new Error(`Pollinations plain text response failed: ${response.status} ${details}`.trim());
+      }
+
+      const text = String(await response.text().catch(() => '')).trim();
+      if (!text) throw new Error('Pollinations plain text produced no content.');
+      await streamText(text);
+      return true;
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
+
+  const resolveOpenRouterKey = () =>
+    String(
+      process.env.OPENROUTER_API_KEY ||
+      process.env.OPENROUTER_KEY ||
+      process.env.OPEN_ROUTER_API_KEY ||
+      ''
+    ).trim();
 
   const streamOpenRouter = async ({ messages, model }) => {
     const openRouterKey = resolveOpenRouterKey();
@@ -87,7 +120,6 @@ export default async function handler(req, res) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 45000);
     let response;
-
     try {
       response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -115,7 +147,7 @@ export default async function handler(req, res) {
       throw new Error(`OpenRouter response failed: ${response.status} ${details}`.trim());
     }
 
-    writeHeaders();
+    writeSseHeaders();
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
@@ -187,6 +219,106 @@ export default async function handler(req, res) {
     }
   };
 
+  const streamPollinationsOpenAI = async ({ messages }) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45000);
+    let response;
+    try {
+      response = await fetch('https://text.pollinations.ai/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'text/event-stream',
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: 'gpt-oss-20b',
+          messages,
+          temperature: 0.45,
+          stream: true,
+        }),
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    if (!response.ok || !response.body) {
+      const details = await response.text().catch(() => '');
+      throw new Error(`Pollinations OpenAI response failed: ${response.status} ${details}`.trim());
+    }
+
+    writeSseHeaders();
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let emitted = false;
+    let inactivityTimer;
+
+    const resetTimer = () => {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => controller.abort(), 60000);
+    };
+
+    const emitToken = (token) => {
+      if (!token) return;
+      emitted = true;
+      sendSse('token', { token });
+    };
+
+    const processBlock = (block) => {
+      const text = String(block || '').trim();
+      if (!text) return false;
+      const payloadText = text
+        .split(/\r?\n/)
+        .filter((line) => line.startsWith('data:'))
+        .map((line) => line.slice(5).trim())
+        .join('')
+        .trim();
+      if (!payloadText || payloadText === '[DONE]') return false;
+      try {
+        const payload = JSON.parse(payloadText);
+        const token = String(
+          payload?.choices?.[0]?.delta?.content ||
+          payload?.choices?.[0]?.delta?.reasoning ||
+          payload?.choices?.[0]?.message?.content ||
+          payload?.content ||
+          payload?.text ||
+          ''
+        );
+        if (token) emitToken(token);
+        return Boolean(payload?.choices?.[0]?.finish_reason);
+      } catch {
+        emitToken(payloadText);
+        return false;
+      }
+    };
+
+    try {
+      resetTimer();
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        resetTimer();
+        buffer += decoder.decode(value, { stream: true });
+        let separatorIndex = buffer.indexOf('\n\n');
+        while (separatorIndex >= 0) {
+          const block = buffer.slice(0, separatorIndex);
+          buffer = buffer.slice(separatorIndex + 2);
+          if (processBlock(block)) break;
+          separatorIndex = buffer.indexOf('\n\n');
+        }
+      }
+      buffer += decoder.decode();
+      processBlock(buffer);
+      if (!emitted) throw new Error('Pollinations OpenAI produced no stream tokens.');
+      sendSse('done', '[DONE]');
+      res.end();
+    } finally {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+    }
+  };
+
   try {
     const body = parseBody();
     const operative = body.operative || {};
@@ -207,11 +339,19 @@ export default async function handler(req, res) {
       ...messages,
     ];
 
+    const prompt = [
+      'NEURAL BOT.',
+      `Operative: ${selectedName}`,
+      `Traits: ${traits.length ? traits.join(', ') : 'none surfaced'}`,
+      `Wallet: ${walletAddress || 'unavailable'}`,
+      `User: ${lastUserText || ''}`,
+    ].join(' ');
+
     let openRouterFailure = 'unknown error';
     let secondaryOpenRouterFailure = 'unknown error';
 
     try {
-      await streamOpenRouter({ messages: openAiMessages, model: 'meta-llama/llama-3.1-8b-instruct' });
+      await streamOpenRouter({ messages: openAiMessages, model: 'deepseek/deepseek-r1:free' });
       return;
     } catch (error) {
       openRouterFailure = error?.message || String(error);
@@ -219,7 +359,7 @@ export default async function handler(req, res) {
     }
 
     try {
-      await streamOpenRouter({ messages: openAiMessages, model: 'google/gemini-pro-1.5' });
+      await streamOpenRouter({ messages: openAiMessages, model: 'mistralai/mistral-7b-instruct:free' });
       return;
     } catch (error) {
       secondaryOpenRouterFailure = error?.message || String(error);
@@ -229,7 +369,7 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('[chat] Chat relay failed', error);
     try {
-      if (!res.headersSent) writeHeaders();
+      if (!res.headersSent) writeSseHeaders();
       res.write(`event: error\ndata: ${JSON.stringify({ error: 'Chat relay failed', details: error?.message || String(error) })}\n\n`);
       res.end();
     } catch {}
