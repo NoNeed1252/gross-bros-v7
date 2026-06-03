@@ -230,7 +230,7 @@ export default async function handler(req, res) {
         },
         signal: controller.signal,
         body: JSON.stringify({
-          model: 'gpt-oss-20b',
+          model: 'meta-llama/llama-3.1-8b-instruct:free',
           messages,
           temperature: 0.45,
           stream: true,
