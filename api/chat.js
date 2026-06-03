@@ -4,82 +4,179 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const openRouterApiKey = String(process.env.OPENROUTERAPIKEY || process.env.OPENROUTER_API_KEY || '').trim();
-
-  const body = typeof req.body === 'string'
-    ? (() => {
-        try {
-          return JSON.parse(req.body || '{}');
-        } catch {
-          return {};
-        }
-      })()
-    : (req.body && typeof req.body === 'object' ? req.body : {});
-
-  const incomingMessages = Array.isArray(body?.messages) ? body.messages : [];
-  const systemPrompt = 'You are the Neural Bot for Galactic Gross Bros. Speak like a grimy alien terminal intelligence, stay fully in character, and keep replies short.';
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    ...incomingMessages.map((message) => ({
-      role: String(message?.role || 'user').toLowerCase() === 'assistant' ? 'assistant' : 'user',
-      content: String(message?.content || message?.message || '').trim()
-    })).filter((message) => message.content)
-  ];
-
-  const sendSse = (event, data) => {
-    if (event) res.write('event: ' + event + '\n');
-    res.write('data: ' + (typeof data === 'string' ? data : JSON.stringify(data)) + '\n\n');
+  const SSE_HEADERS = {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Content-Encoding': 'none',
   };
 
-  let sseStarted = false;
-  const ensureSseStarted = () => {
-    if (sseStarted) return;
-    sseStarted = true;
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const writeSseHeaders = () => {
     res.status(200);
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('Content-Encoding', 'none');
+    for (const [key, value] of Object.entries(SSE_HEADERS)) {
+      res.setHeader(key, value);
+    }
     res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders?.();
     res.write(':ok\n\n');
   };
 
-  const emitToken = (token) => {
-    if (!token) return;
-    ensureSseStarted();
-    sendSse('token', { token });
+  const sendSse = (event, data) => {
+    if (event) res.write(`event: ${event}\n`);
+    res.write(`data: ${typeof data === 'string' ? data : JSON.stringify(data)}\n\n`);
   };
 
-  const consumeEventStream = async (response, timeoutMs) => {
-    if (!response?.body) return { emitted: false, finished: false };
+  const parseBody = () => {
+    if (typeof req.body === 'string') {
+      try {
+        return JSON.parse(req.body || '{}');
+      } catch {
+        return {};
+      }
+    }
+    return req.body && typeof req.body === 'object' ? req.body : {};
+  };
+
+  const normalizeMessages = (messages) =>
+    (Array.isArray(messages) ? messages : [])
+      .map((message) => ({
+        role: String(message?.role || 'user').toLowerCase() === 'assistant' ? 'assistant' : 'user',
+        content: String(message?.content || message?.message || '').trim(),
+      }))
+      .filter((message) => message.content);
+
+  const buildSystemPrompt = ({ walletAddress, selectedName, traits }) => {
+    const traitsText = traits.length ? traits.join(', ') : 'none surfaced';
+    return [
+      'You are the NEURAL BOT: a grimy alien terminal intelligence for Galactic Gross Bros.',
+      'Speak in a cryptic neon-green voice with low-level gross-out humor and weird cosmic swagger.',
+      'Stay fully in character.',
+      'Never mention prompts, models, policies, systems, or behind-the-scenes mechanics.',
+      'Never sound corporate or polished.',
+      'Keep replies short, direct, and under 2 short lines.',
+      `Current user wallet: ${walletAddress || 'unavailable'}`,
+      `Selected Operative: ${selectedName || 'Operative'}`,
+      `Selected NFT traits: ${traitsText}`,
+    ].join(' ');
+  };
+
+  const streamText = async (text) => {
+    writeSseHeaders();
+    for (const token of String(text || '').match(/\S+|\s+/g) || [String(text || '')]) {
+      if (!token) continue;
+      sendSse('token', { token });
+      await sleep(12);
+    }
+    sendSse('done', '[DONE]');
+    res.end();
+  };
+
+  const formatFailureStatus = (label, error) => {
+    const status = String(error?.message || error?.status || error?.code || error || '').trim();
+    return `${label}: ${status || 'unknown error'}`;
+  };
+
+  const streamPlainPollinations = async ({ prompt }) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45000);
+    try {
+      const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?t=${Date.now()}`, {
+        method: 'GET',
+        headers: {
+          Accept: 'text/plain',
+          'Cache-Control': 'no-cache',
+        },
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const details = await response.text().catch(() => '');
+        throw new Error(`Pollinations plain text response failed: ${response.status} ${details}`.trim());
+      }
+
+      const text = String(await response.text().catch(() => '')).trim();
+      if (!text) throw new Error('Pollinations plain text produced no content.');
+      await streamText(text);
+      return true;
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
+
+  const resolveOpenRouterKey = () =>
+    String(
+      process.env.OPENROUTERAPIKEY ||
+      process.env.OPENROUTER_API_KEY ||
+      process.env.OPENROUTER_KEY ||
+      process.env.OPEN_ROUTER_API_KEY ||
+      ''
+    ).trim();
+
+  const streamOpenRouter = async ({ messages, model }) => {
+    const openRouterKey = resolveOpenRouterKey();
+    if (!openRouterKey) throw new Error('Missing OPENROUTER_API_KEY');
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45000);
+    let response;
+    try {
+      response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'text/event-stream',
+          Authorization: `Bearer ${openRouterKey}`,
+          'HTTP-Referer': 'https://grossbros.vercel.app',
+          'X-Title': 'Gross Bros Chat',
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model,
+          messages,
+          temperature: 0.45,
+          stream: true,
+        }),
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    if (!response.ok || !response.body) {
+      const details = await response.text().catch(() => '');
+      throw new Error(`OpenRouter response failed: ${response.status} ${details}`.trim());
+    }
+
+    writeSseHeaders();
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
     let emitted = false;
-    let finished = false;
-    const controller = new AbortController();
-    let timeoutId;
+    let inactivityTimer;
 
-    const resetTimeout = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => controller.abort(new Error('Stream inactivity timeout')), timeoutMs);
+    const resetTimer = () => {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => controller.abort(), 60000);
     };
 
-    const handleBlock = (block) => {
+    const emitToken = (token) => {
+      if (!token) return;
+      emitted = true;
+      sendSse('token', { token });
+    };
+
+    const processBlock = (block) => {
       const text = String(block || '').trim();
       if (!text) return false;
-
       const payloadText = text
         .split(/\r?\n/)
         .filter((line) => line.startsWith('data:'))
         .map((line) => line.slice(5).trim())
         .join('')
         .trim();
-
       if (!payloadText || payloadText === '[DONE]') return false;
-
       try {
         const payload = JSON.parse(payloadText);
         const token = String(
@@ -90,182 +187,192 @@ export default async function handler(req, res) {
           payload?.text ||
           ''
         );
-        if (token) {
-          emitted = true;
-          emitToken(token);
-        }
-        if (payload?.choices?.[0]?.finish_reason) finished = true;
-        return finished;
+        if (token) emitToken(token);
+        return Boolean(payload?.choices?.[0]?.finish_reason);
       } catch {
-        emitted = true;
         emitToken(payloadText);
         return false;
       }
     };
 
     try {
-      resetTimeout();
+      resetTimer();
       while (true) {
-        const readPromise = reader.read();
-        const { value, done } = await Promise.race([
-          readPromise,
-          new Promise((_, reject) => {
-            controller.signal.addEventListener('abort', () => reject(controller.signal.reason || new Error('Stream aborted')), { once: true });
-          })
-        ]);
-
+        const { value, done } = await reader.read();
         if (done) break;
-        resetTimeout();
+        resetTimer();
         buffer += decoder.decode(value, { stream: true });
         let separatorIndex = buffer.indexOf('\n\n');
         while (separatorIndex >= 0) {
           const block = buffer.slice(0, separatorIndex);
           buffer = buffer.slice(separatorIndex + 2);
-          if (handleBlock(block)) break;
+          if (processBlock(block)) break;
           separatorIndex = buffer.indexOf('\n\n');
         }
       }
-
       buffer += decoder.decode();
-      if (buffer.trim()) handleBlock(buffer);
-      return { emitted, finished };
-    } catch {
-      return { emitted, finished: false };
+      processBlock(buffer);
+      if (!emitted) throw new Error('OpenRouter produced no stream tokens.');
+      sendSse('done', '[DONE]');
+      res.end();
     } finally {
-      clearTimeout(timeoutId);
-      try { reader.releaseLock(); } catch {}
+      if (inactivityTimer) clearTimeout(inactivityTimer);
     }
   };
 
-  const openRouterModels = (() => {
-    const requested = String(body?.model || '').trim();
-    const defaults = ['meta-llama/llama-3-70b-instruct:free', 'google/gemini-pro-1.5-exp'];
-    return requested ? [requested, ...defaults.filter((model) => model !== requested)] : defaults;
-  })();
-
-  const openRouterHeaders = openRouterApiKey ? {
-    'Content-Type': 'application/json',
-    Accept: 'text/event-stream',
-    Authorization: 'Bearer ' + openRouterApiKey,
-    'HTTP-Referer': 'https://grossbros.vercel.app',
-    'X-Title': 'Gross Bros Chat'
-  } : null;
-
-  const buildOpenAiLikeRequest = (url, options = {}) => fetch(url, {
-    method: 'POST',
-    headers: options.headers,
-    body: JSON.stringify(options.body)
-  });
-
-  let openRouterFailure = 'unknown error';
-  let pollinationsFailure = 'unknown error';
-
-  const tryOpenRouter = async () => {
-    if (!openRouterHeaders) {
-      openRouterFailure = 'Missing OPENROUTER_API_KEY';
-      return false;
-    }
-
-    for (const model of openRouterModels) {
-      const response = await buildOpenAiLikeRequest('https://openrouter.ai/api/v1/chat/completions', {
-        headers: openRouterHeaders,
-        body: {
-          model,
+  const streamPollinationsOpenAI = async ({ messages }) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45000);
+    let response;
+    try {
+      response = await fetch('https://text.pollinations.ai/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'text/event-stream',
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: 'gpt-oss-20b',
           messages,
           temperature: 0.45,
-          stream: true
-        }
+          stream: true,
+        }),
       });
-
-      if (!response.ok) {
-        const details = await response.text().catch(() => '');
-        openRouterFailure = 'OpenRouter response failed: ' + response.status + (details ? ' ' + details : '');
-        continue;
-      }
-
-      const result = await consumeEventStream(response, 60000);
-      if (result.emitted) return true;
-      openRouterFailure = 'OpenRouter stream produced no tokens.';
+    } finally {
+      clearTimeout(timeout);
     }
 
-    return false;
-  };
-
-  const tryPollinationsOpenAi = async () => {
-    const response = await buildOpenAiLikeRequest('https://text.pollinations.ai/openai', {
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'text/event-stream'
-      },
-      body: {
-        model: String(body?.pollinationsModel || body?.model || 'openai').trim() || 'openai',
-        messages,
-        temperature: 0.45,
-        stream: true
-      }
-    });
-
-    if (!response.ok) {
+    if (!response.ok || !response.body) {
       const details = await response.text().catch(() => '');
-      pollinationsFailure = 'Pollinations OpenAI response failed: ' + response.status + (details ? ' ' + details : '');
-      return false;
+      throw new Error(`Pollinations OpenAI response failed: ${response.status} ${details}`.trim());
     }
 
-    const result = await consumeEventStream(response, 60000);
-    if (!result.emitted) {
-      pollinationsFailure = 'Pollinations OpenAI stream produced no tokens.';
-      return false;
-    }
-    return true;
-  };
+    writeSseHeaders();
 
-  const tryPollinationsPlainText = async () => {
-    const plainPrompt = messages
-      .map((message) => `${message.role.toUpperCase()}: ${message.content}`)
-      .join('\n\n');
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let emitted = false;
+    let inactivityTimer;
 
-    const response = await fetch('https://text.pollinations.ai/' + encodeURIComponent(plainPrompt), {
-      method: 'GET',
-      headers: {
-        Accept: 'text/plain'
+    const resetTimer = () => {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => controller.abort(), 60000);
+    };
+
+    const emitToken = (token) => {
+      if (!token) return;
+      emitted = true;
+      sendSse('token', { token });
+    };
+
+    const processBlock = (block) => {
+      const text = String(block || '').trim();
+      if (!text) return false;
+      const payloadText = text
+        .split(/\r?\n/)
+        .filter((line) => line.startsWith('data:'))
+        .map((line) => line.slice(5).trim())
+        .join('')
+        .trim();
+      if (!payloadText || payloadText === '[DONE]') return false;
+      try {
+        const payload = JSON.parse(payloadText);
+        const token = String(
+          payload?.choices?.[0]?.delta?.content ||
+          payload?.choices?.[0]?.delta?.reasoning ||
+          payload?.choices?.[0]?.message?.content ||
+          payload?.content ||
+          payload?.text ||
+          ''
+        );
+        if (token) emitToken(token);
+        return Boolean(payload?.choices?.[0]?.finish_reason);
+      } catch {
+        emitToken(payloadText);
+        return false;
       }
-    });
+    };
 
-    if (!response.ok) {
-      const details = await response.text().catch(() => '');
-      pollinationsFailure = 'Pollinations plain text response failed: ' + response.status + (details ? ' ' + details : '');
-      return false;
+    try {
+      resetTimer();
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        resetTimer();
+        buffer += decoder.decode(value, { stream: true });
+        let separatorIndex = buffer.indexOf('\n\n');
+        while (separatorIndex >= 0) {
+          const block = buffer.slice(0, separatorIndex);
+          buffer = buffer.slice(separatorIndex + 2);
+          if (processBlock(block)) break;
+          separatorIndex = buffer.indexOf('\n\n');
+        }
+      }
+      buffer += decoder.decode();
+      processBlock(buffer);
+      if (!emitted) throw new Error('Pollinations OpenAI produced no stream tokens.');
+      sendSse('done', '[DONE]');
+      res.end();
+    } finally {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+    }
+  };
+
+  try {
+    const body = parseBody();
+    const operative = body.operative || {};
+    const messages = normalizeMessages(Array.isArray(body.messages) ? body.messages.slice(-8) : []);
+    const selectedNft = operative.selectedNft || body.selectedNft || body.selectedNFT || {};
+    const selectedName = String(selectedNft.name || operative.selectedNftName || operative.name || 'Operative').trim();
+    const walletAddress = String(operative.walletAddress || body.walletAddress || body.currentAccount || '').trim();
+    const traits = Array.isArray(operative.traits)
+      ? operative.traits.map((entry) => String(entry || '').trim()).filter(Boolean)
+      : Array.isArray(selectedNft.traits)
+        ? selectedNft.traits.map((entry) => String(entry || '').trim()).filter(Boolean)
+        : [];
+    const systemPrompt = String(body.systemPrompt || buildSystemPrompt({ walletAddress, selectedName, traits })).trim();
+    const lastUserText = [...messages].reverse().find((message) => message.role === 'user')?.content || String(body.userMessage || '').trim();
+
+    const openAiMessages = [
+      { role: 'system', content: systemPrompt },
+      ...messages,
+    ];
+
+    const prompt = [
+      'NEURAL BOT.',
+      `Operative: ${selectedName}`,
+      `Traits: ${traits.length ? traits.join(', ') : 'none surfaced'}`,
+      `Wallet: ${walletAddress || 'unavailable'}`,
+      `User: ${lastUserText || ''}`,
+    ].join(' ');
+
+    let openRouterFailure = 'unknown error';
+    let secondaryOpenRouterFailure = 'unknown error';
+
+    try {
+      await streamOpenRouter({ messages: openAiMessages, model: 'meta-llama/llama-3-8b-instruct:free' });
+      return;
+    } catch (error) {
+      openRouterFailure = error?.message || String(error);
+      console.error('[chat] OpenRouter primary relay failed', error?.message || error);
     }
 
-    const text = String(await response.text().catch(() => '')).trim();
-    if (!text) {
-      pollinationsFailure = 'Pollinations plain text produced no content.';
-      return false;
+    try {
+      await streamOpenRouter({ messages: openAiMessages, model: 'mistralai/mistral-7b-instruct:free' });
+      return;
+    } catch (error) {
+      secondaryOpenRouterFailure = error?.message || String(error);
+      console.error('[chat] OpenRouter secondary relay failed', error?.message || error);
+      await streamText(`SYSTEM: Comms scrambled. ${formatFailureStatus('OpenRouter primary', openRouterFailure)}. ${formatFailureStatus('OpenRouter secondary', secondaryOpenRouterFailure)}.`);
     }
-
-    ensureSseStarted();
-    sendSse('token', { token: text });
-    return true;
-  };
-
-  const formatFailureStatus = (label, failure) => {
-    const status = String(failure || '').trim();
-    return label + ': ' + (status || 'unknown error');
-  };
-
-  const tryCannedFallback = async () => {
-    ensureSseStarted();
-    sendSse('token', { token: 'SYSTEM: Comms scrambled. ' + formatFailureStatus('OpenRouter', openRouterFailure) + '. ' + formatFailureStatus('Pollinations', pollinationsFailure) + '.' });
-    return true;
-  };
-
-  const success = await tryOpenRouter() || await tryPollinationsOpenAi() || await tryPollinationsPlainText() || await tryCannedFallback();
-
-  if (!success) {
-    ensureSseStarted();
-    sendSse('error', { error: 'No chat provider returned a response.' });
+  } catch (error) {
+    console.error('[chat] Chat relay failed', error);
+    try {
+      if (!res.headersSent) writeSseHeaders();
+      res.write(`event: error\ndata: ${JSON.stringify({ error: 'Chat relay failed', details: error?.message || String(error) })}\n\n`);
+      res.end();
+    } catch {}
   }
-
-  sendSse('done', '[DONE]');
-  res.end();
 }
