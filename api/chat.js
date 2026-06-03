@@ -39,7 +39,7 @@ export default async function handler(req, res) {
       'X-Title': 'Gross Bros Chat'
     },
     body: JSON.stringify({
-      model: 'huggingfaceh4/zephyr-7b-beta:free',
+      model: 'meta-llama/llama-3-8b-instruct:free',
       messages,
       temperature: 0.45,
       stream: true
