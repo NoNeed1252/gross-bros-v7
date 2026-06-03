@@ -352,7 +352,7 @@ export default async function handler(req, res) {
     let secondaryOpenRouterFailure = 'unknown error';
 
     try {
-      await streamOpenRouter({ messages: openAiMessages, model: 'meta-llama/llama-3-8b-instruct:free' });
+      await streamOpenRouter({ messages: openAiMessages, model: 'meta-llama/llama-3.1-8b-instruct:free' });
       return;
     } catch (error) {
       openRouterFailure = error?.message || String(error);
@@ -360,7 +360,7 @@ export default async function handler(req, res) {
     }
 
     try {
-      await streamOpenRouter({ messages: openAiMessages, model: 'mistralai/mistral-7b-instruct:free' });
+      await streamOpenRouter({ messages: openAiMessages, model: 'google/gemma-2-9b-it:free' });
       return;
     } catch (error) {
       secondaryOpenRouterFailure = error?.message || String(error);
