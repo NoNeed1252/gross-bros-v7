@@ -108,8 +108,6 @@ export default async function handler(req, res) {
   const resolveOpenRouterKey = () =>
     String(
       process.env.OPENROUTER_API_KEY ||
-      process.env.OPENROUTER_KEY ||
-      process.env.OPEN_ROUTER_API_KEY ||
       ''
     ).trim();
 
