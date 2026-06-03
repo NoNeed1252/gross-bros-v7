@@ -625,7 +625,7 @@
     ];
 
     const BRO_COLLECTION_ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
-    const XRPL_RPC_ENDPOINTS = ['https://xrplcluster.com/', 'https://s2.ripple.com:51234/'];
+    const XRPL_RPC_ENDPOINT = 'https://xrplcluster.com';
     const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
     const state = { connected: false, wallet: '', chat: [], fuseUnlocked: false, fuseToken: 'XRP', selectedNft: nftCollection[0], fuseTargetUsd: 50 };
 
@@ -695,51 +695,56 @@
     async function fetchCollectionNfts(issuer, taxon = 1) {
       const targetTaxon = normalizeTaxon(taxon) ?? 1;
       let lastError = null;
-      for (const rpcUrl of XRPL_RPC_ENDPOINTS) {
-        try {
-          const items = [];
-          const seen = new Set();
-          let marker = null;
-          for (let page = 0; page < 20; page += 1) {
-            const params = {
-              issuer,
-              taxon: targetTaxon,
-              ledger_index: 'validated',
-              limit: 400
-            };
-            if (marker) params.marker = marker;
-            const body = { method: 'nfts_by_issuer', params: [params] };
-            const response = await fetch(rpcUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-              body: JSON.stringify(body),
-              cache: 'no-store'
-            });
-            if (!response.ok) throw new Error('XRPL request failed: ' + response.status);
-            const data = await response.json().catch(() => null);
-            const result = data?.result || data || null;
-            const pageItems = Array.isArray(result?.nfts)
-              ? result.nfts
-              : Array.isArray(result?.account_nfts)
-                ? result.account_nfts
-                : Array.isArray(result?.issuer_nfts)
-                  ? result.issuer_nfts
-                  : [];
-            for (const nft of pageItems) {
-              if (String(nft?.Issuer || nft?.issuer || '').trim() !== issuer) continue;
-              if (extractTaxon(nft) !== targetTaxon) continue;
-              const id = extractNftId(nft);
-              if (id && seen.has(id)) continue;
-              if (id) seen.add(id);
-              items.push(nft);
-            }
-            marker = result?.marker || null;
-            if (!marker) break;
+      try {
+        const items = [];
+        const seen = new Set();
+        let marker = null;
+        for (let page = 0; page < 20; page += 1) {
+          const params = {
+            issuer,
+            taxon: targetTaxon,
+            ledger_index: 'validated',
+            limit: 400
+          };
+          if (marker) params.marker = marker;
+          const body = {
+            jsonrpc: '2.0',
+            id: 'gross-bros-bro-of-day',
+            method: 'nfts_by_issuer',
+            params: [params]
+          };
+          const response = await fetch(XRPL_RPC_ENDPOINT, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(body),
+            cache: 'no-store'
+          });
+          if (!response.ok) throw new Error('XRPL request failed: ' + response.status);
+          const data = await response.json().catch(() => null);
+          const result = data?.result || data || null;
+          const pageItems = Array.isArray(result?.nfts)
+            ? result.nfts
+            : Array.isArray(result?.account_nfts)
+              ? result.account_nfts
+              : Array.isArray(result?.issuer_nfts)
+                ? result.issuer_nfts
+                : [];
+          for (const nft of pageItems) {
+            if (String(nft?.Issuer || nft?.issuer || '').trim() !== issuer) continue;
+            if (extractTaxon(nft) !== targetTaxon) continue;
+            const id = extractNftId(nft);
+            if (id && seen.has(id)) continue;
+            if (id) seen.add(id);
+            items.push(nft);
           }
-          if (items.length) return items.sort((a, b) => extractNftId(a).localeCompare(extractNftId(b)));
-        } catch (error) {
-          lastError = error;
+          marker = result?.marker || null;
+          if (!marker) break;
         }
+        if (items.length) return items.sort((a, b) => extractNftId(a).localeCompare(extractNftId(b)));
+      } catch (error) {
+        lastError = error;
+        console.error('fetchCollectionNfts failed', { rpcUrl: XRPL_RPC_ENDPOINT, issuer, taxon: targetTaxon, error });
       }
       throw lastError || new Error('Unable to load XRPL NFTs.');
     }
