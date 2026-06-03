@@ -778,6 +778,145 @@
       setBroOfDayStatus(status || "RPC: waiting to load.");
     }
 
+    async function fetchCollectionNfts(issuer, taxon = 1) {
+      const targetTaxon = normalizeTaxon(taxon) ?? 1;
+      const items = [];
+      const seen = new Set();
+      let marker = null;
+
+      for (let page = 0; page < 50; page += 1) {
+        const params = {
+          account: issuer,
+          ledger_index_min: -1,
+          ledger_index_max: -1,
+          binary: false,
+          forward: false,
+          limit: 400
+        };
+        if (marker) params.marker = marker;
+
+        const result = await fetchJsonRpc("account_tx", params, "Issuer collection crawl");
+        const txs = Array.isArray(result?.transactions) ? result.transactions : [];
+        for (const row of txs) {
+          const tx = row?.tx || row?.transaction || {};
+          if (String(tx?.TransactionType || "") !== "NFTokenMint") continue;
+          if (String(tx?.Account || "") !== issuer) continue;
+          if (normalizeTaxon(tx?.NFTokenTaxon ?? tx?.nftoken_taxon ?? tx?.Taxon) !== targetTaxon) continue;
+          const record = buildMintRecord(row, issuer, targetTaxon);
+          const id = record.NFTokenID || record.txHash;
+          if (!id || seen.has(id)) continue;
+          seen.add(id);
+          items.push(record);
+        }
+
+        marker = result?.marker || null;
+        if (!marker) break;
+      }
+
+      if (!items.length) {
+        const fallback = await fetchJsonRpc("account_nfts", {
+          account: issuer,
+          ledger_index: "validated",
+          limit: 400
+        }, "Issuer account_nfts fallback");
+        const fallbackItems = Array.isArray(fallback?.account_nfts) ? fallback.account_nfts : [];
+        for (const nft of fallbackItems) {
+          if (String(nft?.Issuer || nft?.issuer || "") !== issuer) continue;
+          if (normalizeTaxon(nft?.NFTokenTaxon ?? nft?.nftoken_taxon ?? nft?.taxon ?? nft?.Taxon) !== targetTaxon) continue;
+          const id = String(nft?.NFTokenID || nft?.nftoken_id || nft?.NFTID || nft?.nft_id || "").trim();
+          if (!id || seen.has(id)) continue;
+          seen.add(id);
+          items.push({
+            Issuer: issuer,
+            NFTokenID: id,
+            NFTokenTaxon: targetTaxon,
+            URI: String(nft?.URI || nft?.uri || ""),
+            txHash: "",
+            owner: String(nft?.Owner || nft?.owner || issuer),
+            _ledger: null
+          });
+        }
+      }
+
+      if (!items.length) {
+        throw createRpcError("empty", "No Taxon " + targetTaxon + " NFT records returned for issuer " + issuer, {
+          issuer,
+          taxon: targetTaxon
+        });
+      }
+
+      return items.sort((a, b) => String(a.NFTokenID).localeCompare(String(b.NFTokenID)));
+    }
+
+    async function loadBroOfDay() {
+      renderBroOfDayLoading("Live NFT lore is loading from the full BRO collection.", "RPC: fetching validated issuer history…");
+      try {
+        const nfts = await fetchCollectionNfts(BRO_COLLECTION_ISSUER, 1);
+        const seed = dailyRotationSeed();
+        const attempts = Math.min(nfts.length, 10);
+        let metadata = null;
+        let imageUrl = "";
+        let loreText = "";
+        let lastError = null;
+
+        for (let attempt = 0; attempt < attempts; attempt += 1) {
+          const selected = nfts[(seed + attempt) % nfts.length];
+          const metadataUri = xrplUriToHttp(selected?.URI || selected?.uri || selected?.nft_uri || "");
+          if (!metadataUri) {
+            lastError = createRpcError("empty", "Selected NFT is missing a metadata URI.", { nftId: selected?.NFTokenID || "" });
+            continue;
+          }
+
+          const trimmedUri = metadataUri.length > 96 ? metadataUri.slice(0, 95) + "…" : metadataUri;
+          setBroOfDayStatus("Metadata fetch attempt " + (attempt + 1) + "/" + attempts + ": " + trimmedUri);
+
+          let metadataResponse;
+          try {
+            metadataResponse = await fetch(metadataUri, { cache: "no-store" });
+          } catch (error) {
+            lastError = createRpcError("network", "Metadata network failure", { cause: error, url: metadataUri });
+            continue;
+          }
+
+          if (!metadataResponse.ok) {
+            lastError = createRpcError("http", "Metadata HTTP " + metadataResponse.status, {
+              status: metadataResponse.status,
+              statusText: metadataResponse.statusText,
+              url: metadataUri
+            });
+            continue;
+          }
+
+          metadata = await metadataResponse.json().catch(() => null);
+          if (!metadata || typeof metadata !== "object") {
+            lastError = createRpcError("empty", "Metadata response was empty or invalid JSON.", { url: metadataUri });
+            continue;
+          }
+
+          imageUrl = xrplUriToHttp(metadata?.image || metadata?.animation || metadata?.image_url || "");
+          loreText = cleanLoreText(metadata);
+          break;
+        }
+
+        if (!metadata) {
+          throw lastError || createRpcError("empty", "No metadata could be loaded for the current selection.", {});
+        }
+
+        const descEl = document.getElementById("bro-of-day-description");
+        const imgEl = document.getElementById("bro-of-day-image");
+        if (descEl) descEl.textContent = loreText;
+        if (imgEl && imageUrl) imgEl.src = imageUrl;
+        setBroOfDayStatus("Loaded " + nfts.length + " Taxon 1 NFTs from issuer history.");
+      } catch (error) {
+        console.error(error);
+        const reason = describeRpcFailure(error);
+        renderBroOfDayLoading(
+          error?.kind === "empty" ? (error.message || "No Taxon 1 NFTs were returned for this issuer.") : "Live XRPL fetch failed. The terminal is keeping the layout intact while the signal retries.",
+          "Debug: " + reason
+        );
+      }
+    }
+
     function switchTab(index) {
       document.querySelectorAll('.tab').forEach((tab, i) => tab.classList.toggle('active', i === index));
       document.querySelectorAll('.section').forEach((section, i) => section.classList.toggle('active', i === index));
