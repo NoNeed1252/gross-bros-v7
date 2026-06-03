@@ -105,11 +105,10 @@ export default async function handler(req, res) {
     }
   };
 
-  const resolveOpenRouterKey = () =>
-    String(
-      process.env.OPENROUTER_API_KEY ||
-      ''
-    ).trim();
+  const resolveOpenRouterKey = () => {
+    return process.env.OPENROUTER_API_KEY ||
+      '';
+  };
 
   const streamOpenRouter = async ({ messages, model }) => {
     const openRouterKey = resolveOpenRouterKey();
