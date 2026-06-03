@@ -4,10 +4,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const openRouterApiKey = String(process.env.OPENROUTER_API_KEY || '').trim();
-  if (!openRouterApiKey) {
-    return res.status(500).json({ error: 'Missing OPENROUTER_API_KEY' });
-  }
+  const openRouterApiKey = String(process.env.OPENROUTERAPIKEY || process.env.OPENROUTER_API_KEY || '').trim();
 
   const body = typeof req.body === 'string'
     ? (() => {
@@ -29,124 +26,222 @@ export default async function handler(req, res) {
     })).filter((message) => message.content)
   ];
 
-  const models = [
-    'meta-llama/llama-3-70b-instruct:free',
-    'google/gemini-pro-1.5-exp'
-  ];
-
-  const buildRequest = (model) => fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'text/event-stream',
-      Authorization: 'Bearer ' + openRouterApiKey,
-      'HTTP-Referer': 'https://grossbros.vercel.app',
-      'X-Title': 'Gross Bros Chat'
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature: 0.45,
-      stream: true
-    })
-  });
-
-  let upstream;
-  let upstreamModel = models[0];
-  let upstreamError = '';
-
-  for (const model of models) {
-    upstreamModel = model;
-    const response = await buildRequest(model);
-    if (response.ok && response.body) {
-      upstream = response;
-      break;
-    }
-
-    const details = await response.text().catch(() => '');
-    upstreamError = (`OpenRouter response failed for ${model}: ${response.status} ${details}`).trim();
-  }
-
-  if (!upstream || !upstream.body) {
-    return res.status(502).json({
-      error: upstreamError || `OpenRouter response failed for ${upstreamModel}`
-    });
-  }
-
-  res.status(200);
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('Content-Encoding', 'none');
-  res.setHeader('X-Accel-Buffering', 'no');
-  res.flushHeaders?.();
-  res.write(':ok\n\n');
-
-  const reader = upstream.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let emitted = false;
-
   const sendSse = (event, data) => {
     if (event) res.write('event: ' + event + '\n');
     res.write('data: ' + (typeof data === 'string' ? data : JSON.stringify(data)) + '\n\n');
   };
 
+  let sseStarted = false;
+  const ensureSseStarted = () => {
+    if (sseStarted) return;
+    sseStarted = true;
+    res.status(200);
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Content-Encoding', 'none');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders?.();
+    res.write(':ok\n\n');
+  };
+
   const emitToken = (token) => {
     if (!token) return;
-    emitted = true;
+    ensureSseStarted();
     sendSse('token', { token });
   };
 
-  const handleBlock = (block) => {
-    const text = String(block || '').trim();
-    if (!text) return false;
+  const consumeEventStream = async (response, timeoutMs) => {
+    if (!response?.body) return { emitted: false, finished: false };
 
-    const payloadText = text
-      .split(/\r?\n/)
-      .filter((line) => line.startsWith('data:'))
-      .map((line) => line.slice(5).trim())
-      .join('')
-      .trim();
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let emitted = false;
+    let finished = false;
+    const controller = new AbortController();
+    let timeoutId;
 
-    if (!payloadText || payloadText === '[DONE]') return false;
+    const resetTimeout = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => controller.abort(new Error('Stream inactivity timeout')), timeoutMs);
+    };
+
+    const handleBlock = (block) => {
+      const text = String(block || '').trim();
+      if (!text) return false;
+
+      const payloadText = text
+        .split(/\r?\n/)
+        .filter((line) => line.startsWith('data:'))
+        .map((line) => line.slice(5).trim())
+        .join('')
+        .trim();
+
+      if (!payloadText || payloadText === '[DONE]') return false;
+
+      try {
+        const payload = JSON.parse(payloadText);
+        const token = String(
+          payload?.choices?.[0]?.delta?.content ||
+          payload?.choices?.[0]?.delta?.reasoning ||
+          payload?.choices?.[0]?.message?.content ||
+          payload?.content ||
+          payload?.text ||
+          ''
+        );
+        if (token) {
+          emitted = true;
+          emitToken(token);
+        }
+        if (payload?.choices?.[0]?.finish_reason) finished = true;
+        return finished;
+      } catch {
+        emitted = true;
+        emitToken(payloadText);
+        return false;
+      }
+    };
 
     try {
-      const payload = JSON.parse(payloadText);
-      const token = String(
-        payload?.choices?.[0]?.delta?.content ||
-        payload?.choices?.[0]?.delta?.reasoning ||
-        payload?.choices?.[0]?.message?.content ||
-        payload?.content ||
-        payload?.text ||
-        ''
-      );
-      if (token) emitToken(token);
-      return Boolean(payload?.choices?.[0]?.finish_reason);
+      resetTimeout();
+      while (true) {
+        const readPromise = reader.read();
+        const { value, done } = await Promise.race([
+          readPromise,
+          new Promise((_, reject) => {
+            controller.signal.addEventListener('abort', () => reject(controller.signal.reason || new Error('Stream aborted')), { once: true });
+          })
+        ]);
+
+        if (done) break;
+        resetTimeout();
+        buffer += decoder.decode(value, { stream: true });
+        let separatorIndex = buffer.indexOf('\n\n');
+        while (separatorIndex >= 0) {
+          const block = buffer.slice(0, separatorIndex);
+          buffer = buffer.slice(separatorIndex + 2);
+          if (handleBlock(block)) break;
+          separatorIndex = buffer.indexOf('\n\n');
+        }
+      }
+
+      buffer += decoder.decode();
+      if (buffer.trim()) handleBlock(buffer);
+      return { emitted, finished };
     } catch {
-      emitToken(payloadText);
-      return false;
+      return { emitted, finished: false };
+    } finally {
+      clearTimeout(timeoutId);
+      try { reader.releaseLock(); } catch {}
     }
   };
 
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    let separatorIndex = buffer.indexOf('\n\n');
-    while (separatorIndex >= 0) {
-      const block = buffer.slice(0, separatorIndex);
-      buffer = buffer.slice(separatorIndex + 2);
-      if (handleBlock(block)) break;
-      separatorIndex = buffer.indexOf('\n\n');
+  const openRouterModels = (() => {
+    const requested = String(body?.model || '').trim();
+    const defaults = ['meta-llama/llama-3-70b-instruct:free', 'google/gemini-pro-1.5-exp'];
+    return requested ? [requested, ...defaults.filter((model) => model !== requested)] : defaults;
+  })();
+
+  const openRouterHeaders = openRouterApiKey ? {
+    'Content-Type': 'application/json',
+    Accept: 'text/event-stream',
+    Authorization: 'Bearer ' + openRouterApiKey,
+    'HTTP-Referer': 'https://grossbros.vercel.app',
+    'X-Title': 'Gross Bros Chat'
+  } : null;
+
+  const buildOpenAiLikeRequest = (url, options = {}) => fetch(url, {
+    method: 'POST',
+    headers: options.headers,
+    body: JSON.stringify(options.body)
+  });
+
+  const tryOpenRouter = async () => {
+    if (!openRouterHeaders) return false;
+
+    for (const model of openRouterModels) {
+      const response = await buildOpenAiLikeRequest('https://openrouter.ai/api/v1/chat/completions', {
+        headers: openRouterHeaders,
+        body: {
+          model,
+          messages,
+          temperature: 0.45,
+          stream: true
+        }
+      });
+
+      if (!response.ok) {
+        await response.text().catch(() => '');
+        continue;
+      }
+
+      const result = await consumeEventStream(response, 60000);
+      if (result.emitted) return true;
     }
-  }
 
-  buffer += decoder.decode();
-  handleBlock(buffer);
+    return false;
+  };
 
-  if (!emitted) {
-    sendSse('error', { error: 'OpenRouter produced no stream tokens.' });
+  const tryPollinationsOpenAi = async () => {
+    const response = await buildOpenAiLikeRequest('https://text.pollinations.ai/openai', {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'text/event-stream'
+      },
+      body: {
+        model: String(body?.pollinationsModel || body?.model || 'openai').trim() || 'openai',
+        messages,
+        temperature: 0.45,
+        stream: true
+      }
+    });
+
+    if (!response.ok) {
+      await response.text().catch(() => '');
+      return false;
+    }
+
+    const result = await consumeEventStream(response, 60000);
+    return result.emitted;
+  };
+
+  const tryPollinationsPlainText = async () => {
+    const plainPrompt = messages
+      .map((message) => `${message.role.toUpperCase()}: ${message.content}`)
+      .join('\n\n');
+
+    const response = await fetch('https://text.pollinations.ai/' + encodeURIComponent(plainPrompt), {
+      method: 'GET',
+      headers: {
+        Accept: 'text/plain'
+      }
+    });
+
+    if (!response.ok) {
+      await response.text().catch(() => '');
+      return false;
+    }
+
+    const text = String(await response.text().catch(() => '')).trim();
+    if (!text) return false;
+
+    ensureSseStarted();
+    sendSse('token', { token: text });
+    return true;
+  };
+
+  const tryCannedFallback = async () => {
+    ensureSseStarted();
+    sendSse('token', { token: 'The comms line is scrambled. Try again in a moment.' });
+    return true;
+  };
+
+  const success = await tryOpenRouter() || await tryPollinationsOpenAi() || await tryPollinationsPlainText() || await tryCannedFallback();
+
+  if (!success) {
+    ensureSseStarted();
+    sendSse('error', { error: 'No chat provider returned a response.' });
   }
 
   sendSse('done', '[DONE]');
