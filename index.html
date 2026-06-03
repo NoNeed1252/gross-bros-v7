@@ -462,7 +462,7 @@
       <section id='section-1' class='section'>
         <div class='panel'>
           <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Storyline archive</div>
-          <h2 style='font-family:Orbitron,sans-serif;font-size:clamp(24px,4vw,48px);margin:10px 0 16px;'>BACKSTORY LOGS</h2>
+          <h2 style='font-family:Orbitron,sans-serif;font-size:clamp(24px,4vw,48px);margin:10px 0 16px;'>LORE</h2>
           <div style='display:grid;gap:14px;color:#ddfff9;line-height:1.8;'>
             <p>The Gross Bros were forged when a fracture opened in the ledger and turned the city into signal.</p>
             <p>When the miners breached the perimeter, the brothers fused their last human memory with machine-linked armor.</p>
@@ -682,12 +682,26 @@
       if (descEl) descEl.textContent = message || 'Live NFT lore is loading from the full BRO collection.';
     }
 
-    async function fetchCollectionNfts(issuer) {
+    function extractTaxon(nft) {
+      const raw = nft?.NFTokenTaxon ?? nft?.nftoken_taxon ?? nft?.taxon ?? nft?.Taxon ?? nft?.NFTokenTaxonID;
+      const numeric = Number(raw);
+      return Number.isFinite(numeric) ? numeric : null;
+    }
+
+    function extractNftId(nft) {
+      return String(nft?.NFTokenID || nft?.nftoken_id || nft?.NFTID || nft?.nft_id || nft?.index || '').trim();
+    }
+
+    async function fetchCollectionNfts(issuer, taxon = 1) {
       const items = [];
       let marker = null;
-      for (let page = 0; page < 10; page += 1) {
-        const body = { method: 'account_nfts', params: [{ account: issuer, limit: 400 }] };
-        if (marker) body.params[0].marker = marker;
+      for (let page = 0; page < 20; page += 1) {
+        const params = {
+          issuer,
+          limit: 400
+        };
+        if (marker) params.marker = marker;
+        const body = { method: 'nfts_by_issuer', params: [params] };
         const response = await fetch(XRPL_RPC_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -695,27 +709,33 @@
         });
         if (!response.ok) throw new Error('XRPL request failed: ' + response.status);
         const data = await response.json();
-        const pageItems = Array.isArray(data?.result?.account_nfts) ? data.result.account_nfts : [];
-        items.push(...pageItems.filter((nft) => String(nft?.Issuer || '') === issuer));
+        const pageItems = Array.isArray(data?.result?.account_nfts)
+          ? data.result.account_nfts
+          : Array.isArray(data?.result?.nfts)
+            ? data.result.nfts
+            : Array.isArray(data?.result?.issuer_nfts)
+              ? data.result.issuer_nfts
+              : [];
+        items.push(...pageItems.filter((nft) => String(nft?.Issuer || nft?.issuer || '') === issuer && extractTaxon(nft) === taxon));
         marker = data?.result?.marker || null;
         if (!marker) break;
       }
-      return items;
+      return items.sort((a, b) => extractNftId(a).localeCompare(extractNftId(b)));
     }
 
     async function loadBroOfDay() {
       renderBroOfDayLoading();
       try {
-        const nfts = await fetchCollectionNfts(BRO_COLLECTION_ISSUER);
+        const nfts = await fetchCollectionNfts(BRO_COLLECTION_ISSUER, 1);
         if (!nfts.length) throw new Error('No collection NFTs found');
         const seed = dailyRotationSeed();
         const selected = nfts[seed % nfts.length];
-        const metadataUri = xrplUriToHttp(selected?.URI || '');
+        const metadataUri = xrplUriToHttp(selected?.URI || selected?.uri || selected?.nft_uri || '');
         if (!metadataUri) throw new Error('Missing metadata URI');
         const metadataResponse = await fetch(metadataUri);
         if (!metadataResponse.ok) throw new Error('Metadata fetch failed: ' + metadataResponse.status);
         const metadata = await metadataResponse.json();
-        const imageUrl = xrplUriToHttp(metadata?.image || metadata?.animation || '');
+        const imageUrl = xrplUriToHttp(metadata?.image || metadata?.animation || metadata?.image_url || '');
         const loreText = cleanLoreText(metadata);
         const descEl = document.getElementById('bro-of-day-description');
         const imgEl = document.getElementById('bro-of-day-image');
