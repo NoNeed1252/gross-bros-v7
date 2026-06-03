@@ -4,7 +4,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const openRouterApiKey = process.env.OPENROUTER_API_KEY;
+  const openRouterApiKey = String(process.env.OPENROUTER_API_KEY || '').trim();
   if (!openRouterApiKey) {
     return res.status(500).json({ error: 'Missing OPENROUTER_API_KEY' });
   }
@@ -29,7 +29,12 @@ export default async function handler(req, res) {
     })).filter((message) => message.content)
   ];
 
-  const upstream = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const models = [
+    'meta-llama/llama-3-70b-instruct:free',
+    'google/gemini-pro-1.5-exp'
+  ];
+
+  const buildRequest = (model) => fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -39,17 +44,32 @@ export default async function handler(req, res) {
       'X-Title': 'Gross Bros Chat'
     },
     body: JSON.stringify({
-      model: 'meta-llama/llama-3-8b-instruct:free',
+      model,
       messages,
       temperature: 0.45,
       stream: true
     })
   });
 
-  if (!upstream.ok || !upstream.body) {
-    const details = await upstream.text().catch(() => '');
+  let upstream;
+  let upstreamModel = models[0];
+  let upstreamError = '';
+
+  for (const model of models) {
+    upstreamModel = model;
+    const response = await buildRequest(model);
+    if (response.ok && response.body) {
+      upstream = response;
+      break;
+    }
+
+    const details = await response.text().catch(() => '');
+    upstreamError = (`OpenRouter response failed for ${model}: ${response.status} ${details}`).trim();
+  }
+
+  if (!upstream || !upstream.body) {
     return res.status(502).json({
-      error: ('OpenRouter response failed: ' + upstream.status + ' ' + details).trim()
+      error: upstreamError || `OpenRouter response failed for ${upstreamModel}`
     });
   }
 
