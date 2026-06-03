@@ -435,13 +435,25 @@
 
     <main class='content'>
       <section id='section-0' class='section active'>
-        <div class='panel nft-panel'>
-          <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>BRO OF THE DAY</div>
-          <h1 style='font-family:Orbitron,sans-serif;font-size:clamp(28px,5vw,62px);margin:10px 0 0;'>BRO OF THE DAY</h1>
-          <p id='bro-of-day-description' class='nft-subtitle' style='max-width:58ch;'>Live NFT lore is loading from the full BRO collection.</p>
-          <div class='nft-display' style='margin-top:14px;'>
-            <div class='nft-art'>
-              <img id='bro-of-day-image' alt='Bro of the Day' src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 760"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%2300ffc8" stop-opacity=".2"/><stop offset="100%" stop-color="%23000000" stop-opacity=".92"/></linearGradient></defs><rect width="600" height="760" fill="%23030607"/><rect x="24" y="24" width="552" height="712" rx="36" fill="url(%23g)" stroke="%2300ffc8" stroke-opacity=".26" stroke-width="4"/><text x="300" y="340" fill="%2300ffc8" fill-opacity=".9" font-family="monospace" font-size="30" text-anchor="middle">SCANNING XRPL...</text></svg>'>
+        <div class='grid grid-2'>
+          <div class='panel'>
+            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>BRO OF THE DAY</div>
+            <h1 style='font-family:Orbitron,sans-serif;font-size:clamp(28px,5vw,62px);margin:10px 0 0;'>BRO OF THE DAY</h1>
+            <p style='line-height:1.8;color:#ddfff9;opacity:.86;max-width:58ch'>Daily rotation pulled from the full issuer collection, with one NFT selected every 24 hours.</p>
+            <div class='row'>
+              <button class='btn' onclick='switchTab(1)'>READ TRANSMISSIONS</button>
+              <button class='btn' onclick='switchTab(2)'>OPEN FUSION LAB</button>
+            </div>
+          </div>
+          <div class='panel nft-panel'>
+            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Daily signal</div>
+            <div class='nft-display' style='margin-top:14px;'>
+              <div class='nft-art'>
+                <img id='bro-of-day-image' alt='Bro of the Day' src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 760"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%2300ffc8" stop-opacity=".2"/><stop offset="100%" stop-color="%23000000" stop-opacity=".92"/></linearGradient></defs><rect width="600" height="760" fill="%23030607"/><rect x="24" y="24" width="552" height="712" rx="36" fill="url(%23g)" stroke="%2300ffc8" stroke-opacity=".26" stroke-width="4"/><text x="300" y="340" fill="%2300ffc8" fill-opacity=".9" font-family="monospace" font-size="30" text-anchor="middle">SCANNING XRPL...</text></svg>'>
+              </div>
+              <div class='nft-meta'>
+                <p id='bro-of-day-description' class='nft-subtitle'>Live NFT lore is loading from the full BRO collection.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -1220,4 +1232,4 @@
     }
   </script>
 </body>
-</html>"}]}
+</html>
