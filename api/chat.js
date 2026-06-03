@@ -106,7 +106,6 @@ export default async function handler(req, res) {
   };
 
   const resolveOpenRouterKey = () =>
-
     process.env.OPENROUTER_API_KEY ||
     '';
 
