@@ -1,127 +1,855 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gross Bros // Alien Terminal</title>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>GUARDIAN BROADCAST OS v8.7 BETA</title>
+  <link rel='preconnect' href='https://fonts.googleapis.com'>
+  <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+  <link href='https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Share+Tech+Mono&display=swap' rel='stylesheet'>
   <style>
-    :root{--bg:#020403;--panel:rgba(4,18,14,.9);--line:rgba(0,255,200,.18);--text:#d9fff6;--dim:rgba(217,255,246,.68);--neon:#00ffc8;--hot:#ff4fd8;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}
-    *{box-sizing:border-box} html,body{height:100%} body{margin:0;font-family:var(--sans);color:var(--text);background:radial-gradient(circle at top,rgba(0,255,200,.08),transparent 30%),radial-gradient(circle at bottom right,rgba(255,79,216,.12),transparent 24%),linear-gradient(180deg,#000,var(--bg));overflow-x:hidden}
-    body:before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(180deg,rgba(255,255,255,.02) 0 1px,transparent 1px 4px);opacity:.4}
-    .shell{width:min(1440px,calc(100vw - 24px));min-height:calc(100vh - 24px);margin:12px auto;border:1px solid rgba(0,255,200,.22);border-radius:26px;background:linear-gradient(180deg,rgba(0,0,0,.96),rgba(4,10,8,.98));box-shadow:0 30px 100px rgba(0,0,0,.7),0 0 80px rgba(0,255,200,.08);overflow:hidden}
-    .topbar,.bottombar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:15px 18px;background:rgba(0,0,0,.55);border-bottom:1px solid var(--line)} .bottombar{border-top:1px solid var(--line);border-bottom:0;color:var(--dim);font-size:12px}
-    .brand{display:flex;gap:12px;align-items:center} .orb{width:14px;height:14px;border-radius:50%;background:var(--neon);box-shadow:0 0 18px rgba(0,255,200,.8);animation:pulse 1.2s infinite} @keyframes pulse{50%{transform:scale(.7);opacity:.55}}
-    .title,.tab,.button,input,select,.chip,.tiny{font-family:var(--mono);letter-spacing:.14em} .title{text-transform:uppercase;font-size:clamp(13px,1.8vw,22px)} .subtitle,.tiny{font-size:11px;text-transform:uppercase;color:var(--dim)}
-    .status{font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:var(--dim)}
-    .button{border:1px solid rgba(0,255,200,.28);background:rgba(0,255,200,.06);color:var(--text);padding:11px 14px;border-radius:14px;cursor:pointer;text-transform:uppercase;transition:.15s}.button:hover{border-color:var(--neon);background:rgba(0,255,200,.12)}.button:disabled{opacity:.5;cursor:not-allowed}
-    .tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-bottom:1px solid var(--line);background:rgba(0,0,0,.45)} .tab{padding:14px 10px;text-align:center;color:rgba(217,255,246,.55);cursor:pointer;text-transform:uppercase;font-size:12px;user-select:none;border-right:1px solid rgba(0,255,200,.06)} .tab.active{color:var(--neon);background:linear-gradient(180deg,rgba(0,255,200,.14),rgba(0,255,200,.04))}
-    .content{padding:16px} .section{display:none}.section.active{display:block}
-    .grid{display:grid;gap:16px}.grid-2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))} .stack{display:grid;gap:12px}
-    .panel{border:1px solid var(--line);border-radius:22px;background:var(--panel);padding:16px;position:relative;overflow:hidden}.panel:after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 0 48%,rgba(0,255,200,.05) 50%,transparent 52%);pointer-events:none}
-    .eyebrow{font-family:var(--mono);text-transform:uppercase;letter-spacing:.3em;font-size:10px;color:var(--dim)} .headline{margin:8px 0 0;font-family:var(--mono);text-transform:uppercase;letter-spacing:.16em;line-height:1.08;font-size:clamp(22px,3.5vw,48px)} .copy{margin:10px 0 0;color:rgba(217,255,246,.82);line-height:1.75}
-    .chat{height:360px;overflow:auto;border:1px solid rgba(0,255,200,.16);border-radius:18px;background:rgba(0,0,0,.34);padding:12px;display:flex;flex-direction:column;gap:10px}.bubble{padding:11px 13px;border-radius:16px;background:rgba(0,255,200,.05);border:1px solid rgba(255,255,255,.04);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}.bubble.user{background:rgba(255,79,216,.08);border-color:rgba(255,79,216,.2)}.bubble.assistant{background:rgba(0,255,200,.06)}.bubble.system{background:rgba(255,204,79,.08);border-color:rgba(255,204,79,.18)}
-    .row{display:flex;gap:10px;flex-wrap:wrap}.composer{display:grid;grid-template-columns:1fr auto;gap:12px}.composer input{min-width:0}
-    input,select{width:100%;padding:13px 14px;border-radius:14px;border:1px solid rgba(0,255,200,.2);background:rgba(0,0,0,.58);color:var(--text);outline:none} input:focus,select:focus{border-color:var(--neon);box-shadow:0 0 0 2px rgba(0,255,200,.12)}
-    .chip{padding:7px 10px;border-radius:999px;border:1px solid rgba(0,255,200,.14);background:rgba(0,255,200,.05);font-size:11px;text-transform:uppercase;cursor:pointer;user-select:none;color:rgba(217,255,246,.86)} .chip.active{color:var(--neon);border-color:var(--neon)}
-    .discovery{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.token-card,.detail{border:1px solid rgba(0,255,200,.14);background:rgba(0,0,0,.34);border-radius:18px;padding:14px}.token-card strong,.detail-row span:last-child{font-family:var(--mono);letter-spacing:.08em}.token-card small,.copy,.muted{color:var(--dim)}.token-meta{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;font-family:var(--mono);font-size:12px;color:rgba(217,255,246,.7)}
-    .token-detail{display:grid;grid-template-columns:minmax(180px,240px) 1fr;gap:14px}.sigil{min-height:240px;border:1px solid rgba(0,255,200,.16);border-radius:20px;background:radial-gradient(circle at 30% 25%,rgba(0,255,200,.16),transparent 30%),radial-gradient(circle at 75% 65%,rgba(255,79,216,.16),transparent 28%),rgba(0,0,0,.78);display:grid;place-items:center;text-align:center;padding:16px}.ring{width:160px;height:160px;border-radius:50%;border:2px solid rgba(0,255,200,.45);display:grid;place-items:center;box-shadow:0 0 30px rgba(0,255,200,.12),inset 0 0 20px rgba(255,79,216,.08);font-family:var(--mono);text-transform:uppercase;letter-spacing:.18em}.ring span{display:block;font-size:11px;color:var(--dim);margin-top:8px}
-    .detail-list{display:grid;gap:10px}.detail-row{display:flex;justify-content:space-between;gap:12px;padding:12px 13px;border-radius:14px;border:1px solid rgba(0,255,200,.1);background:rgba(0,0,0,.3);font-family:var(--mono);font-size:12px;letter-spacing:.08em}
-    .log{display:grid;gap:10px}.log-item{padding:14px;border-radius:16px;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.03);line-height:1.7;color:rgba(217,255,246,.84)} .footer-links{display:flex;gap:16px;flex-wrap:wrap}.footer-links a{color:inherit;text-decoration:none}
-    @media (max-width:700px){.tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.composer,.token-detail{grid-template-columns:1fr}}
+    :root { --cyan: #00ffc8; --bg: #000; --panel: #06110f; --line: rgba(0,255,200,.18); }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: var(--bg); color: var(--cyan);
+      font-family: 'Share Tech Mono', monospace;
+    }
+    a { color: inherit; }
+    .shell {
+      max-width: 1480px; min-height: calc(100vh - 24px); margin: 12px auto;
+      border: 24px solid #1f1f1f; border-radius: 24px; overflow: hidden;
+      background: #050505; box-shadow: 0 30px 70px -20px rgba(0,0,0,.95), 0 0 100px -20px var(--cyan);
+      display: flex; flex-direction: column;
+    }
+    @media (max-width: 640px) {
+      .shell { margin: 8px auto; min-height: calc(100vh - 16px); border-width: 0; }
+    }
+    .topbar, .bottombar {
+      background: #0a0a0a; border-color: var(--line);
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 14px 18px; flex-wrap: wrap;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .dot { width: 14px; height: 14px; border-radius: 999px; background: #ff3b6b; box-shadow: 0 0 18px rgba(255,59,107,.85); animation: pulse 1.25s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+    .title { font-family: 'Orbitron', sans-serif; letter-spacing: .35em; text-transform: uppercase; font-size: clamp(14px, 2vw, 22px); }
+    .subtitle { font-size: 11px; color: rgba(0,255,200,.55); margin-top: 3px; }
+    .wallet-btn, .btn {
+      border: 1px solid rgba(0,255,200,.5); background: rgba(0,255,200,.06); color: var(--cyan);
+      border-radius: 18px; padding: 12px 18px; cursor: pointer; font: inherit; transition: .18s ease;
+    }
+    .wallet-btn:hover, .btn:hover { background: rgba(0,255,200,.12); border-color: var(--cyan); }
+    .status { font-size: 12px; color: rgba(0,255,200,.6); text-align: right; }
+    .ticker {
+      border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+      overflow: hidden; white-space: nowrap; background: linear-gradient(90deg, rgba(0,255,200,.08), rgba(0,255,200,.03));
+    }
+    .ticker-track {
+      display: inline-flex; align-items: center; gap: 1.2rem; padding: .65rem 1rem;
+      animation: ticker 20s linear infinite; will-change: transform;
+    }
+    .ticker-item { color: rgba(0,255,200,.9); font-size: 12px; white-space: nowrap; }
+    @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .tabs {
+      display: flex; overflow-x: auto; border-bottom: 1px solid var(--line);
+      background: #0b0b0b;
+    }
+    .tab {
+      flex: 1 0 120px; padding: 16px 12px; text-align: center; cursor: pointer;
+      border-right: 1px solid rgba(0,255,200,.06); user-select: none; transition: .18s ease;
+    }
+    .tab.active { color: var(--cyan); background: linear-gradient(180deg, rgba(0,255,200,.14), rgba(0,255,200,.03)); box-shadow: inset 0 -1px 0 rgba(0,255,200,.35); }
+    .content { flex: 1; overflow: auto; padding: 18px; background: #000; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .panel {
+      background: linear-gradient(180deg, rgba(7,18,17,.95), rgba(2,8,8,.95));
+      border: 1px solid var(--line); border-radius: 24px; padding: 18px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .grid { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .hero {
+      min-height: 180px; display: flex; align-items: center; justify-content: center; text-align: center;
+      letter-spacing: .35em; font-family: 'Orbitron', sans-serif; font-size: clamp(20px, 4vw, 34px);
+      color: var(--cyan);
+    }
+    .hero small { display: block; letter-spacing: .18em; font-size: 11px; margin-top: 10px; color: rgba(0,255,200,.55); }
+    .nft-panel {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top left, rgba(0,255,200,.12), transparent 42%),
+        radial-gradient(circle at bottom right, rgba(124,58,237,.12), transparent 38%),
+        linear-gradient(180deg, rgba(7,18,17,.98), rgba(2,8,8,.98));
+    }
+    .nft-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 0 46%, rgba(0,255,200,.08) 50%, transparent 54% 100%);
+      pointer-events: none;
+    }
+    .nft-display {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+    @media (max-width: 720px) {
+      .nft-display { grid-template-columns: 1fr; }
+    }
+    .nft-art {
+      position: relative;
+      min-height: 300px;
+      border-radius: 22px;
+      border: 1px solid rgba(0,255,200,.22);
+      background: radial-gradient(circle at 30% 20%, rgba(0,255,200,.22), rgba(0,0,0,.88) 55%), rgba(0,0,0,.65);
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03), 0 0 42px rgba(0,255,200,.08);
+    }
+    .nft-art img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: contrast(1.08) saturate(1.05);
+      mix-blend-mode: screen;
+      opacity: .95;
+    }
+    .nft-art::after {
+      content: 'FUSION PORTAL LIVE';
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 14px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,255,200,.2);
+      background: rgba(0,0,0,.6);
+      color: rgba(0,255,200,.85);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: .28em;
+      text-align: center;
+    }
+    .nft-meta {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+    .nft-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(22px, 3vw, 40px);
+      margin: 0;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    .nft-subtitle {
+      margin: 0;
+      color: #ddfff9;
+      opacity: .82;
+      line-height: 1.8;
+    }
+    .nft-stats {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+    .nft-stat {
+      padding: 12px 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(0,255,200,.12);
+      background: rgba(0,0,0,.38);
+    }
+    .nft-stat span {
+      display: block;
+      font-size: 10px;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      color: rgba(0,255,200,.55);
+      margin-bottom: 6px;
+    }
+    .nft-stat strong {
+      display: block;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      letter-spacing: .08em;
+      color: #f1fffd;
+    }
+    .trait-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .trait-pill {
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,255,200,.18);
+      background: rgba(0,255,200,.05);
+      color: rgba(0,255,200,.9);
+      font-size: 12px;
+      letter-spacing: .08em;
+      white-space: nowrap;
+    }
+    .chat-log {
+      height: 360px; overflow: auto; border: 1px solid rgba(0,255,200,.12); border-radius: 22px;
+      background: rgba(0,0,0,.3); padding: 12px; display: flex; flex-direction: column; gap: 10px;
+    }
+    .chat-terminal {
+      display: grid;
+      gap: 12px;
+    }
+    .bubble {
+      padding: 12px 14px; border-radius: 18px; background: rgba(0,255,200,.06); border: 1px solid rgba(0,255,200,.08);
+      color: #ddfff9; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere;
+    }
+    .selected-nft-card {
+      display: grid;
+      grid-template-columns: minmax(92px, 126px) minmax(0, 1fr);
+      gap: 12px;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(0,255,200,.18);
+      background: linear-gradient(180deg, rgba(0,255,200,.08), rgba(0,0,0,.35));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    }
+    @media (max-width: 520px) {
+      .selected-nft-card { grid-template-columns: 1fr; }
+    }
+    .selected-nft-art {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(0,255,200,.18);
+      background: rgba(0,0,0,.4);
+    }
+    .selected-nft-art img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .selected-nft-meta {
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+    .selected-nft-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 16px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #f1fffd;
+      margin: 0;
+    }
+    .selected-nft-subtitle {
+      margin: 0;
+      color: rgba(221,255,249,.86);
+      line-height: 1.55;
+      font-size: 12px;
+    }
+    .selected-nft-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .selected-nft-stat {
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,255,200,.15);
+      background: rgba(0,0,0,.3);
+      color: rgba(0,255,200,.88);
+      font-size: 11px;
+      letter-spacing: .08em;
+      white-space: nowrap;
+    }
+    .chat-terminal-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 10px;
+      align-items: stretch;
+      margin-top: 12px;
+    }
+    @media (max-width: 720px) {
+      .chat-terminal-actions { grid-template-columns: 1fr; }
+    }
+    .chat-terminal-actions input { min-width: 0; }
+    .chat-terminal-actions .btn { min-width: 0; }
+    .fuse-button-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      padding: 10px 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(0,255,200,.22);
+      background: rgba(0,0,0,.35);
+    }
+    .fuse-button-box .btn { flex: 0 0 auto; }
+    .fuse-price {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+      line-height: 1.1;
+    }
+    .fuse-price span {
+      color: rgba(0,255,200,.55);
+      font-size: 10px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+    }
+    .fuse-price strong {
+      font-family: 'Orbitron', sans-serif;
+      color: #f1fffd;
+      font-size: 14px;
+      letter-spacing: .08em;
+      white-space: nowrap;
+    }
+    .bubble.user { background: rgba(0,255,200,.12); }
+    .bubble.system { background: rgba(124,58,237,.12); }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    input, select {
+      flex: 1; min-width: 200px; padding: 14px 16px; border-radius: 18px; border: 1px solid rgba(0,255,200,.22);
+      background: rgba(0,0,0,.5); color: #f1fffd; font: inherit; outline: none;
+    }
+    select { appearance: none; -webkit-appearance: none; -moz-appearance: none; }
+    input:focus, select:focus { border-color: var(--cyan); box-shadow: 0 0 0 2px rgba(0,255,200,.12); }
+    .cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .fuse-panel {
+      display: grid;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top right, rgba(0,255,200,.12), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(124,58,237,.10), transparent 38%),
+        linear-gradient(180deg, rgba(7,18,17,.98), rgba(2,8,8,.98));
+    }
+    .fuse-panel::before {
+      content: '';
+      position: absolute;
+      inset: 1px;
+      border-radius: 23px;
+      pointer-events: none;
+      border: 1px solid rgba(0,255,200,.08);
+    }
+    .fuse-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .fuse-badge {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,255,200,.18);
+      background: rgba(0,255,200,.05);
+      color: rgba(0,255,200,.88);
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      font-size: 10px;
+    }
+    .fuse-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .fuse-readout {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(0,255,200,.12);
+      background: rgba(0,0,0,.35);
+      display: grid;
+      gap: 8px;
+    }
+    .fuse-readout span {
+      color: rgba(0,255,200,.55);
+      font-size: 10px;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+    }
+    .fuse-readout strong {
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: .12em;
+      font-size: 18px;
+      color: #f1fffd;
+    }
+    .fuse-note {
+      color: #ddfff9;
+      opacity: .82;
+      line-height: 1.75;
+      font-size: 13px;
+    }
+    .fuse-terminal {
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(0,255,200,.12);
+      background: rgba(0,0,0,.35);
+      display: grid;
+      gap: 8px;
+    }
+    .fuse-terminal-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: rgba(0,255,200,.85);
+      font-size: 12px;
+    }
+    .fuse-terminal-line span:last-child { color: #f1fffd; }
+    .card { border: 1px solid rgba(0,255,200,.15); border-radius: 24px; padding: 18px; background: rgba(0,255,200,.03); }
+    .leaderboard { display: grid; gap: 10px; }
+    .leader-row {
+      display: grid; grid-template-columns: 72px 1.5fr 100px 120px 120px; gap: 10px; align-items: center;
+      padding: 14px 16px; border-bottom: 1px solid rgba(0,255,200,.08);
+    }
+    .leader-row.head { font-size: 11px; text-transform: uppercase; letter-spacing: .35em; color: rgba(0,255,200,.55); background: rgba(0,0,0,.45); }
+    @media (max-width: 720px) {
+      .leader-row { grid-template-columns: 1fr; gap: 6px; }
+      .leader-row.head { display: none; }
+    }
+    .footer-links { display: flex; gap: 18px; flex-wrap: wrap; }
+    .muted { color: rgba(0,255,200,.6); }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <header class="topbar">
-      <div class="brand"><div class="orb"></div><div><div class="title">Grimy Alien Terminal</div><div class="subtitle">Gross Bros // XRP Ledger meme relay</div></div></div>
-      <div class="status" id="connection-status">ledger scan idling</div>
-      <button class="button" id="refresh-button">scan ledger</button>
+  <div class='shell'>
+    <header class='topbar'>
+      <div class='brand'>
+        <div class='dot'></div>
+        <div>
+          <div class='title'>GUARDIAN BROADCAST OS v8.7 BETA</div>
+          <div class='subtitle'>Neural CRT relay // terminal interface</div>
+        </div>
+      </div>
+      <button id='wallet-btn' class='wallet-btn' onclick='connectXaman(event)'>CONNECT XAMAN</button>
+      <div id='xaman-status' class='status'>Wallet disconnected.</div>
     </header>
 
-    <nav class="tabs" id="tabs">
-      <div class="tab active" data-tab="0">console</div>
-      <div class="tab" data-tab="1">scout</div>
-      <div class="tab" data-tab="2">synth</div>
-      <div class="tab" data-tab="3">archive</div>
-      <div class="tab" data-tab="4">settings</div>
+    <div class='ticker'>
+      <div id='warning-ticker-track' class='ticker-track'></div>
+    </div>
+
+    <nav class='tabs'>
+      <div class='tab active' data-tab='0' onclick='switchTab(0)'>CONSOLE</div>
+      <div class='tab' data-tab='1' onclick='switchTab(1)'>STORYLINE</div>
+      <div class='tab' data-tab='2' onclick='switchTab(2)'>FUSION LAB</div>
+      <div class='tab' data-tab='3' onclick='switchTab(3)'>LEADERBOARD</div>
+      <div class='tab' data-tab='4' onclick='switchTab(4)'>SOCIALS</div>
     </nav>
 
-    <main class="content">
-      <section class="section active" data-section="0">
-        <div class="grid grid-2">
-          <div class="panel stack">
-            <div><div class="eyebrow">chat relay</div><h1 class="headline">neon sludge transmission</h1><p class="copy">Chat always posts to <span class="chip active">/api/chat</span>. The active token context is pulled from the XRPL scanner and forwarded to the relay.</p></div>
-            <div class="chat" id="chat-box"></div>
-            <div class="composer"><input id="chat-input" maxlength="500" placeholder="type to the alien relay…" /><button class="button" id="send-button">send</button></div>
-            <div class="row" id="quick-prompts"></div>
+    <main class='content'>
+      <section id='section-0' class='section active'>
+        <div class='grid grid-2'>
+          <div class='panel'>
+            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Alien lore // transmission open</div>
+            <h1 style='font-family:Orbitron,sans-serif;font-size:clamp(28px,5vw,62px);margin:10px 0 0;'>COLLECTIVE LORE</h1>
+            <p style='line-height:1.8;color:#ddfff9;opacity:.86;max-width:58ch'>Before the collapse, the Gross Bros chased a fracture of light across the ledger. When the BTC miners breached the perimeter, the survivors fused into machine-linked guardians.</p>
+            <div class='row'>
+              <button class='btn' onclick='switchTab(1)'>READ TRANSMISSIONS</button>
+              <button class='btn' onclick='switchTab(2)'>OPEN FUSION LAB</button>
+            </div>
           </div>
-          <div class="panel stack">
-            <div><div class="eyebrow">current relic</div><h2 class="headline" style="font-size:clamp(18px,2.8vw,34px)">selected meme token</h2><p class="copy" id="selected-token-copy">No token selected yet. The scanner will surface a live meme token from the XRP Ledger and the relay will lock onto it.</p></div>
-            <div class="sigil"><div class="ring"><div><div id="sigil-code">--</div><span id="sigil-issuer">waiting for signal</span></div></div></div>
-            <div class="detail-list" id="selected-token-details"></div>
+          <div class='panel'>
+            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Daily signal</div>
+            <div style='font-family:Orbitron,sans-serif;font-size:clamp(22px,4vw,40px);margin-top:10px;'>BRO OF THE DAY</div>
+            <p style='line-height:1.8;color:#ddfff9;opacity:.86'>The current relay state favors the selected operative. Use the Fusion Lab to initiate communication and monitor the latest signal warnings.</p>
           </div>
         </div>
       </section>
 
-      <section class="section" data-section="1">
-        <div class="panel stack">
-          <div class="row" style="justify-content:space-between;align-items:end"><div><div class="eyebrow">ledger scout</div><h2 class="headline" style="font-size:clamp(18px,3vw,40px)">discover meme tokens</h2></div><div class="row" style="min-width:min(100%,420px)"><input id="search-input" placeholder="search by ticker, name, issuer, or meme slang" /><button class="button" id="search-button">hunt</button></div></div>
-          <p class="copy">This scanner pulls live token data, scores meme-ish entries, and accepts any valid token that can be resolved on the XRP Ledger. The UI is not hardcoded to one project.</p>
-          <div class="discovery" id="discovery-grid"></div>
+      <section id='section-1' class='section'>
+        <div class='panel'>
+          <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Storyline archive</div>
+          <h2 style='font-family:Orbitron,sans-serif;font-size:clamp(24px,4vw,48px);margin:10px 0 16px;'>TRANSMISSION LOGS</h2>
+          <div style='display:grid;gap:14px;color:#ddfff9;line-height:1.8;'>
+            <p>Before the collapse, the Gross Bros chased a fracture of light across the ledger.</p>
+            <p>When the BTC miners breached the perimeter, the survivors fused into machine-linked guardians.</p>
+            <p>Each tab carries a fragment of the broadcast. The fuse is the only path through the static.</p>
+          </div>
         </div>
       </section>
 
-      <section class="section" data-section="2">
-        <div class="panel stack">
-          <div><div class="eyebrow">token synth</div><h2 class="headline" style="font-size:clamp(18px,3vw,40px)">manual token acceptor</h2></div>
-          <div class="grid grid-2"><div class="stack"><label class="tiny muted">token key or code</label><input id="manual-code" placeholder="e.g. SOLO or SOLO.r..." /><label class="tiny muted">issuer address</label><input id="manual-issuer" placeholder="r... classic XRPL address" /><label class="tiny muted">display label</label><input id="manual-label" placeholder="optional label for the terminal" /><div class="row"><button class="button" id="validate-button">validate token</button><button class="button" id="accept-button">accept selected token</button></div></div><div class="stack"><div class="detail"><div class="eyebrow">accepted state</div><p class="copy" id="token-accept-copy">The terminal will load the first discovered meme token, then let the operator override it manually with any valid XRPL token key.</p></div><div class="detail-list" id="manual-preview"></div></div></div>
+      <section id='section-2' class='section'>
+        <div class='panel'>
+          <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Fusion Lab</div>
+          <div id='chat-terminal' class='chat-terminal'>
+            <div id='chat-log' class='chat-log' aria-live='polite'></div>
+            <div class='chat-terminal-actions'>
+              <input id='chat-input' maxlength='240' placeholder='Send a directive to the operative…'>
+              <button class='btn' onclick='startChatStream()'>Send</button>
+              <div class='fuse-button-box'>
+                <button id='fuse-button' class='btn' onclick='toggleFuseUnlock()'>Fuse</button>
+                <div class='fuse-price'>
+                  <span>Live $50 USD</span>
+                  <strong id='fuse-token-amount'>--</strong>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="section" data-section="3">
-        <div class="panel stack"><div><div class="eyebrow">alien archive</div><h2 class="headline" style="font-size:clamp(18px,3vw,40px)">broadcast notes</h2></div><div class="log"><div class="log-item">The scanner watches the token field in real time, not a fixed whitelist. That keeps the terminal open to any valid meme token surfaced by the ledger.</div><div class="log-item">The chat relay sends the active token context to the backend, where OpenRouter free models answer through the alien terminal voice.</div><div class="log-item">A token card is valid when it resolves on XRPSCAN and has a classic issuer address. If a token is found in the catalog, it can be accepted immediately.</div></div></div>
+      <section id='section-3' class='section'>
+        <div class='panel'>
+          <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Neural standings</div>
+          <h2 style='font-family:Orbitron,sans-serif;font-size:clamp(24px,4vw,48px);margin:10px 0 16px;'>LEADERBOARD</h2>
+          <div class='leaderboard'>
+            <div class='leader-row head'><div>Rank</div><div>Holder</div><div>Points</div><div>Chat Time</div><div>Win/Loss %</div></div>
+            <div class='leader-row'><div>#1</div><div>Operative Alpha</div><div>1024</div><div>06m</div><div>89%</div></div>
+            <div class='leader-row'><div>#2</div><div>Operative Beta</div><div>957</div><div>08m</div><div>84%</div></div>
+            <div class='leader-row'><div>#3</div><div>Operative Gamma</div><div>881</div><div>10m</div><div>80%</div></div>
+            <div class='leader-row'><div>#4</div><div>Operative Delta</div><div>812</div><div>12m</div><div>77%</div></div>
+          </div>
+        </div>
       </section>
 
-      <section class="section" data-section="4">
-        <div class="panel stack"><div><div class="eyebrow">settings</div><h2 class="headline" style="font-size:clamp(18px,3vw,40px)">terminal controls</h2></div><div class="grid grid-2"><div class="detail-row"><span>ledger source</span><span>xrpscan api</span></div><div class="detail-row"><span>chat route</span><span>/api/chat</span></div><div class="detail-row"><span>model primary</span><span>meta-llama/llama-3.1-8b-instruct:free</span></div><div class="detail-row"><span>model secondary</span><span>mistralai/mistral-7b-instruct:free</span></div><div class="detail-row"><span>automatic token discovery</span><span id="auto-status">enabled</span></div><div class="detail-row"><span>active token</span><span id="settings-token">none</span></div></div><div class="detail-row"><span>health</span><span id="health-state">awaiting scan</span></div></div>
+      <section id='section-4' class='section'>
+        <div class='cards'>
+          <a class='card' href='https://x.com/thegrossbros?s=21' target='_blank' rel='noreferrer' style='text-decoration:none;'>
+            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>X Network</div>
+            <div style='font-family:Orbitron,sans-serif;font-size:28px;margin-top:10px;'>Broadcast on X</div>
+            <p style='line-height:1.8;color:#ddfff9;opacity:.86'>Signal the collective, publish relays, and keep the terminal alive.</p>
+          </a>
+          <a class='card' href='https://discord.gg/fcZYk7UcB' target='_blank' rel='noreferrer' style='text-decoration:none;'>
+            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Discord</div>
+            <div style='font-family:Orbitron,sans-serif;font-size:28px;margin-top:10px;'>Join Discord</div>
+            <p style='line-height:1.8;color:#ddfff9;opacity:.86'>Enter the comms deck for live experiments, drops, and operative coordination.</p>
+          </a>
+        </div>
       </section>
     </main>
 
-    <footer class="bottombar"><div class="footer-links"><span>gross bros</span><span>xrpl relay</span><span>terminal build</span></div><div class="footer-links"><a href="#">repo root build</a><span id="catalog-count">0 tokens indexed</span></div></footer>
+    <footer class='bottombar'>
+      <div class='footer-links'>
+        <a href='https://x.com/thegrossbros' target='_blank'>𝕏</a>
+        <a href='https://discord.gg/fcZYk7UcB' target='_blank'>Discord</a>
+      </div>
+      <div class='footer-links muted'>
+        <span>Privacy</span>
+        <span>Terms</span>
+        <span>v8.7</span>
+      </div>
+    </footer>
   </div>
 
   <script>
-    const XRPSCAN_BASE = 'https://api.xrpscan.com/api/v1';
-    const MEME_HINTS = ['meme','doge','pepe','bonk','shib','shiba','frog','cat','kitty','wojak','moon','pump','grok','ape','bro','silly','toad','duck','rat','dog'];
-    const state = { messages:[{ role:'assistant', content:'Terminal awake. Drag a meme token out of the ledger and we will speak through the sludge.' }], catalog:[], selectedToken:null, discovery:[], busy:false };
-    const fmt = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
-    const $ = (id) => document.getElementById(id);
-    const chatBox = $('chat-box');
+    const enemyFeed = [
+      'ENEMY // BTC miners detected at the perimeter',
+      'ENEMY // Rift scanners locked on the Ledger',
+      'ENEMY // Fusion Core stable',
+      'ENEMY // Broadcast relay secured',
+      'ENEMY // Shadow drones approaching'
+    ];
+    const fuseTokenConfig = {
+      SPLASH: { label: 'SPLASH', currency: 'SPLASH', issuer: '', price: null, decimals: 6 },
+      PAZO: { label: 'PAZO', currency: 'PAZO', issuer: '', price: null, decimals: 6 },
+      xSPECTAR: { label: 'xSPECTAR', currency: 'xSPECTAR', issuer: '', price: null, decimals: 6 },
+      Opulence: { label: 'Opulence', currency: 'Opulence', issuer: '', price: null, decimals: 6 },
+      666: { label: '666', currency: '666', issuer: '', price: null, decimals: 6 },
+      DROP: { label: 'DROP', currency: 'DROP', issuer: '', price: null, decimals: 6 },
+      NXS: { label: 'NXS', currency: 'NXS', issuer: '', price: null, decimals: 6 },
+      Miracles: { label: 'Miracles', currency: 'Miracles', issuer: '', price: null, decimals: 6 },
+      XRV: { label: 'XRV', currency: 'XRV', issuer: '', price: null, decimals: 6 },
+      $FLIPPY: { label: '$FLIPPY', currency: '$FLIPPY', issuer: '', price: null, decimals: 6 },
+      BPUG: { label: 'BPUG', currency: 'BPUG', issuer: '', price: null, decimals: 6 },
+      BAPES: { label: 'BAPES', currency: 'BAPES', issuer: '', price: null, decimals: 6 },
+      XDawgs: { label: 'XDawgs', currency: 'XDawgs', issuer: '', price: null, decimals: 6 },
+      LIONS: { label: 'LIONS', currency: 'LIONS', issuer: '', price: null, decimals: 6 },
+      PHNIX: { label: 'PHNIX', currency: 'PHNIX', issuer: '', price: null, decimals: 6 },
+      FMNT: { label: 'FMNT', currency: 'FMNT', issuer: '', price: null, decimals: 6 },
+      ATM: { label: 'ATM', currency: 'ATM', issuer: '', price: null, decimals: 6 },
+      TRISK: { label: 'TRISK', currency: 'TRISK', issuer: '', price: null, decimals: 6 },
+      HONEY: { label: 'HONEY', currency: 'HONEY', issuer: '', price: null, decimals: 6 },
+      ARMY: { label: 'ARMY', currency: 'ARMY', issuer: '', price: null, decimals: 6 },
+      589: { label: '589', currency: '589', issuer: '', price: null, decimals: 6 },
+      UGA: { label: 'UGA', currency: 'UGA', issuer: '', price: null, decimals: 6 },
+      UCR: { label: 'UCR', currency: 'UCR', issuer: '', price: null, decimals: 6 },
+      BCHAMP: { label: 'BCHAMP', currency: 'BCHAMP', issuer: '', price: null, decimals: 6 },
+      FUZZY: { label: 'FUZZY', currency: 'FUZZY', issuer: '', price: null, decimals: 6 },
+      XRPB: { label: 'XRPB', currency: 'XRPB', issuer: '', price: null, decimals: 6 },
+      FARM: { label: 'FARM', currency: 'FARM', issuer: '', price: null, decimals: 6 },
+      $BINGO: { label: '$BINGO', currency: '$BINGO', issuer: '', price: null, decimals: 6 },
+      SPY: { label: 'SPY', currency: 'SPY', issuer: '', price: null, decimals: 6 },
+      SIGMA: { label: 'SIGMA', currency: 'SIGMA', issuer: '', price: null, decimals: 6 },
+      XPM: { label: 'XPM', currency: 'XPM', issuer: '', price: null, decimals: 6 },
+      BOO: { label: 'BOO', currency: 'BOO', issuer: '', price: null, decimals: 6 },
+      NIO: { label: 'NIO', currency: 'NIO', issuer: '', price: null, decimals: 6 },
+      WBC: { label: 'WBC', currency: 'WBC', issuer: '', price: null, decimals: 6 },
+      Grabs: { label: 'Grabs', currency: 'Grabs', issuer: '', price: null, decimals: 6 },
+      CHICKEN: { label: 'CHICKEN', currency: 'CHICKEN', issuer: '', price: null, decimals: 6 },
+      XMEME: { label: 'XMEME', currency: 'XMEME', issuer: '', price: null, decimals: 6 },
+      SMEG: { label: 'SMEG', currency: 'SMEG', issuer: '', price: null, decimals: 6 },
+      TAZZ: { label: 'TAZZ', currency: 'TAZZ', issuer: '', price: null, decimals: 6 }
+    };
+    const state = { connected: false, wallet: '', chat: [], fuseUnlocked: false, fuseToken: 'SPLASH', selectedNft: {
+      name: 'GROSS BROS FUSION RELIC',
+      image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 760"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%2300ffc8" stop-opacity=".95"/><stop offset="50%" stop-color="%23061f1b" stop-opacity=".95"/><stop offset="100%" stop-color="%237c3aed" stop-opacity=".95"/></linearGradient><radialGradient id="r" cx=".5" cy=".4" r=".5"><stop offset="0%" stop-color="%23ffffff" stop-opacity=".35"/><stop offset="45%" stop-color="%2300ffc8" stop-opacity=".18"/><stop offset="100%" stop-color="%23000000" stop-opacity="0"/></radialGradient></defs><rect width="600" height="760" fill="%23040a09"/><rect x="20" y="20" width="560" height="720" rx="34" fill="url(%23g)" stroke="%2300ffc8" stroke-opacity=".35" stroke-width="4"/><circle cx="300" cy="250" r="170" fill="url(%23r)"/><circle cx="300" cy="250" r="140" fill="none" stroke="%2300ffc8" stroke-opacity=".7" stroke-width="10"/><circle cx="300" cy="250" r="96" fill="none" stroke="%23ffffff" stroke-opacity=".12" stroke-width="4" stroke-dasharray="8 14"/><path d="M300 134 L352 222 L300 310 L248 222 Z" fill="%23ffffff" fill-opacity=".15" stroke="%2300ffc8" stroke-opacity=".9" stroke-width="5"/><path d="M192 420 C250 378 350 378 408 420 L300 542 Z" fill="%23000000" fill-opacity=".35" stroke="%2300ffc8" stroke-opacity=".5" stroke-width="4"/><rect x="100" y="602" width="400" height="46" rx="23" fill="%23000000" fill-opacity=".4" stroke="%2300ffc8" stroke-opacity=".28"/><text x="300" y="626" fill="%2300ffc8" fill-opacity=".92" font-family="monospace" font-size="26" text-anchor="middle">GROSS BROS // FUSION</text></svg>',
+      tokenId: '#0219',
+      network: 'XRPL MAINNET',
+      status: 'PORTAL SYNCED',
+      owner: 'CONNECTED WALLET',
+      traits: ['Neon Core', 'Fusion Portal', 'Terminal Frame', 'Signal Locked']
+    } };
 
-    function escapeHtml(value){ return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'); }
-    function isClassicAddress(value){ return /^r[1-9A-HJ-NP-Za-km-z]{25,34}$/.test(String(value||'').trim()); }
-    function memeScore(entry){ const hay = `${entry.code||''} ${entry.name||''} ${entry.desc||''} ${entry.issuer||''} ${entry.token||''}`.toLowerCase(); return MEME_HINTS.reduce((sum, hint) => sum + (hay.includes(hint) ? 1 : 0), 0); }
-    function normalizeToken(row){ if(!row) return null; const token = String(row.token || '').trim(); const code = String(row.code || row.symbol || token.split('.')[0] || '').trim(); const issuer = String(row.issuer || token.split('.')[1] || '').trim(); const name = String(row?.meta?.token?.name || row?.IssuingAccount?.name || code || 'UNKNOWN').trim(); const desc = String(row?.meta?.token?.desc || '').trim(); const key = token || (code && issuer ? `${code}.${issuer}` : ''); if(!key || !issuer) return null; return { ...row, key, code, issuer, name, desc, label:String(row.label || name || code || 'UNKNOWN').trim(), memeScore:memeScore({ code, name, desc, issuer, token }) }; }
-    function tokenMatchesQuery(token, query){ return `${token.key} ${token.code} ${token.name} ${token.desc} ${token.issuer}`.toLowerCase().includes(query.toLowerCase()); }
-    function summary(token){ return { price:Number(token.price || token.metrics?.price || 0), marketcap:Number(token.marketcap || token.metrics?.marketcap || 0), holders:Number(token.holders || token.metrics?.holders || 0) }; }
-    function formatCurrency(value){ if(!value || Number.isNaN(value)) return '—'; if(value >= 1) return `$${fmt.format(value)}`; if(value >= 0.0001) return `$${value.toFixed(6)}`; return `$${value.toExponential(2)}`; }
-    function renderChat(){ chatBox.innerHTML = state.messages.map((m) => `<div class="bubble ${m.role==='assistant'?'assistant':m.role==='user'?'user':'system'}">${escapeHtml(m.content || '')}</div>`).join(''); chatBox.scrollTop = chatBox.scrollHeight; }
-    function renderToken(token){ if(!token){ $('selected-token-copy').textContent = 'No token selected yet. The scanner will surface a live meme token from the XRP Ledger and the relay will lock onto it.'; $('sigil-code').textContent = '--'; $('sigil-issuer').textContent = 'waiting for signal'; $('selected-token-details').innerHTML = ''; $('manual-preview').innerHTML = ''; $('settings-token').textContent = 'none'; return; } const s = summary(token); $('selected-token-copy').textContent = `${token.label} is locked. The relay will now treat this token as the active meme relic.`; $('sigil-code').textContent = token.code || 'TOKEN'; $('sigil-issuer').textContent = token.issuer; $('selected-token-details').innerHTML = [['token key', token.key],['issuer', token.issuer],['holders', s.holders ? fmt.format(s.holders) : '—'],['marketcap', formatCurrency(s.marketcap)],['price', formatCurrency(s.price)],['meme score', String(token.memeScore || 0)]].map(([a,b]) => `<div class="detail-row"><span>${escapeHtml(a)}</span><span>${escapeHtml(b)}</span></div>`).join(''); $('manual-preview').innerHTML = `<div class="detail-row"><span>active key</span><span>${escapeHtml(token.key)}</span></div><div class="detail-row"><span>display name</span><span>${escapeHtml(token.label)}</span></div><div class="detail-row"><span>issuer</span><span>${escapeHtml(token.issuer)}</span></div>`; $('settings-token').textContent = token.key; }
-    function renderDiscovery(tokens){ $('catalog-count').textContent = `${tokens.length} tokens indexed`; $('discovery-grid').innerHTML = tokens.slice(0,24).map((token) => { const s = summary(token); return `<div class="token-card"><strong>${escapeHtml(token.label || token.code)}</strong><small>${escapeHtml(token.desc || 'no description surfaced')}</small><div class="token-meta"><span>${escapeHtml(token.code)}</span><span>${escapeHtml(token.issuer.slice(0,8))}…</span><span>score ${token.memeScore || 0}</span></div><div class="token-meta"><span>${escapeHtml(formatCurrency(s.price))}</span><span>${escapeHtml(s.holders ? fmt.format(s.holders) : '—')} holders</span></div><button class="button" data-accept="${escapeHtml(token.key)}">accept</button></div>`; }).join(''); $('discovery-grid').querySelectorAll('[data-accept]').forEach((btn) => btn.addEventListener('click', () => { const token = state.catalog.find((entry) => entry.key === btn.getAttribute('data-accept')); if(token) acceptToken(token); })); }
-    function setBusy(isBusy, text='scanning ledger'){ state.busy = isBusy; $('connection-status').textContent = isBusy ? text : 'ledger scan complete'; $('health-state').textContent = isBusy ? 'scanning' : 'live'; ['refresh-button','search-button','validate-button','accept-button','send-button'].forEach((id) => $(id).disabled = isBusy); }
-    async function fetchJson(url, options = {}){ const c = new AbortController(); const t = setTimeout(() => c.abort(), options.timeout || 12000); try { const response = await fetch(url, { ...options, signal:c.signal, headers:{ Accept:'application/json', ...(options.headers || {}) } }); if(!response.ok){ throw new Error(`${response.status} ${await response.text().catch(() => '')}`.trim()); } return await response.json(); } finally { clearTimeout(t); } }
-    function loadQuickPrompts(){ const prompts = ['What is this token?','Show me the latest meme relic.','Summon a short update.','Explain the token in alien slang.']; $('quick-prompts').innerHTML = prompts.map((p) => `<div class="chip">${escapeHtml(p)}</div>`).join(''); $('quick-prompts').querySelectorAll('.chip').forEach((chip) => chip.addEventListener('click', () => { $('chat-input').value = chip.textContent || ''; sendChat(); })); }
-    function bindTabs(){ $('tabs').addEventListener('click', (event) => { const tab = event.target.closest('.tab'); if(!tab) return; const index = Number(tab.dataset.tab); document.querySelectorAll('.tab').forEach((node) => node.classList.toggle('active', Number(node.dataset.tab) === index)); document.querySelectorAll('.section').forEach((node) => node.classList.toggle('active', Number(node.dataset.section) === index)); }); }
-    function acceptToken(token, announce = true){ if(!token) return; state.selectedToken = token; renderToken(token); if(announce){ state.messages.push({ role:'system', content:`Token accepted: ${token.key}` }); renderChat(); } $('manual-code').value = token.code || ''; $('manual-issuer').value = token.issuer || ''; $('manual-label').value = token.label || ''; }
-    async function loadCatalog(){ setBusy(true,'scanning ledger'); try { const data = await fetchJson(`${XRPSCAN_BASE}/tokens?limit=200`); const tokens = Array.isArray(data) ? data.map(normalizeToken).filter(Boolean) : []; state.catalog = tokens; state.discovery = tokens.filter((t) => t.memeScore > 0).sort((a,b) => b.memeScore - a.memeScore || (b.holders || 0) - (a.holders || 0)); if(!state.selectedToken){ const first = state.discovery[0] || state.catalog[0] || null; if(first) acceptToken(first, false); } renderDiscovery(state.discovery.length ? state.discovery : state.catalog); $('health-state').textContent = 'live'; $('connection-status').textContent = 'ledger scan complete'; } catch (error) { console.error(error); $('health-state').textContent = 'offline fallback'; $('connection-status').textContent = 'ledger scan failed'; const fallback = [{ key:'SOLO.rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz', code:'SOLO', issuer:'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz', label:'SOLO', name:'SOLO', desc:'fallback token', memeScore:1, price:0.01, holders:1, marketcap:0 }]; state.catalog = fallback; state.discovery = fallback; renderDiscovery(fallback); if(!state.selectedToken) acceptToken(fallback[0], false); } finally { setBusy(false); } }
-    async function lookupToken(key){ const clean = String(key || '').trim(); if(!clean) return null; try { const data = await fetchJson(`${XRPSCAN_BASE}/token/${encodeURIComponent(clean)}`); return normalizeToken(data); } catch (error) { console.error(error); return null; } }
-    function buildManualKey(){ const code = String($('manual-code').value || '').trim(); const issuer = String($('manual-issuer').value || '').trim(); const label = String($('manual-label').value || '').trim(); if(!code) return null; if(code.includes('.')){ const [c, maybeIssuer] = code.split('.'); return { key: code, code:c.trim(), issuer:(maybeIssuer || issuer).trim(), label:label || c.trim() }; } if(issuer) return { key:`${code}.${issuer}`, code, issuer, label:label || code }; return null; }
-    async function searchCatalog(){ const query = String($('search-input').value || '').trim(); if(!query){ renderDiscovery(state.discovery.length ? state.discovery : state.catalog); return; } const local = state.catalog.filter((token) => tokenMatchesQuery(token, query)); if(local.length){ renderDiscovery(local.sort((a,b) => b.memeScore - a.memeScore)); return; } const direct = await lookupToken(query); if(direct){ if(!state.catalog.find((entry) => entry.key === direct.key)) state.catalog.unshift(direct); renderDiscovery([direct]); acceptToken(direct); return; } renderDiscovery([]); }
-    async function validateManualToken(){ const built = buildManualKey(); if(!built){ state.messages.push({ role:'system', content:'Manual token needs a code or code.issuer pair.' }); renderChat(); return; } if(built.issuer && !isClassicAddress(built.issuer)){ state.messages.push({ role:'system', content:'Issuer does not look like a valid classic XRPL address.' }); renderChat(); return; } const token = await lookupToken(built.key); if(token){ acceptToken(token); state.messages.push({ role:'system', content:`Validated and accepted: ${token.key}` }); } else { state.messages.push({ role:'system', content:`Token not resolved: ${built.key}` }); } renderChat(); }
-    async function sendChat(){ const input = $('chat-input'); const text = String(input.value || '').trim(); if(!text) return; input.value = ''; state.messages.push({ role:'user', content:text }); renderChat(); setBusy(true, 'hailing the relay'); try { const response = await fetch('/api/chat', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ messages: state.messages.slice(-20), token: state.selectedToken ? { key:state.selectedToken.key, code:state.selectedToken.code, issuer:state.selectedToken.issuer, label:state.selectedToken.label, name:state.selectedToken.name, desc:state.selectedToken.desc, marketcap:state.selectedToken.marketcap || state.selectedToken.metrics?.marketcap || 0, price:state.selectedToken.price || state.selectedToken.metrics?.price || 0, holders:state.selectedToken.holders || state.selectedToken.metrics?.holders || 0 } : null }) }); const payload = await response.json(); if(!response.ok) throw new Error(payload?.error || `chat failed ${response.status}`); state.messages.push({ role:'assistant', content:String(payload.reply || 'The relay returned only static.') }); } catch (error) { console.error(error); state.messages.push({ role:'assistant', content:'Static burst. Try the relay again.' }); } finally { renderChat(); setBusy(false); } }
-    $('refresh-button').addEventListener('click', loadCatalog); $('search-button').addEventListener('click', searchCatalog); $('validate-button').addEventListener('click', validateManualToken); $('accept-button').addEventListener('click', () => { const built = buildManualKey(); if(!built) return; const token = state.catalog.find((entry) => entry.key === built.key) || { key:built.key, code:built.code, issuer:built.issuer, label:built.label || built.code, name:built.label || built.code, desc:'manual token entry', memeScore:0, price:0, holders:0, marketcap:0 }; acceptToken(token); state.messages.push({ role:'system', content:`Manual token selected: ${token.key}` }); renderChat(); }); $('send-button').addEventListener('click', sendChat); $('chat-input').addEventListener('keydown', (event) => { if(event.key === 'Enter') sendChat(); }); $('search-input').addEventListener('keydown', (event) => { if(event.key === 'Enter') searchCatalog(); });
-    function boot(){ loadQuickPrompts(); bindTabs(); renderChat(); renderToken(null); loadCatalog(); setInterval(loadCatalog, 10 * 60 * 1000); }
-    boot();
+    function switchTab(index) {
+      document.querySelectorAll('.tab').forEach((tab, i) => tab.classList.toggle('active', i === index));
+      document.querySelectorAll('.section').forEach((section, i) => section.classList.toggle('active', i === index));
+    }
+
+    function setWalletUI(connected, address) {
+      state.connected = connected;
+      state.wallet = address || '';
+      document.getElementById('wallet-btn').textContent = connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
+      document.getElementById('xaman-status').textContent = connected ? 'Connected: ' + address.slice(0, 6) + '…' + address.slice(-6) : 'Wallet disconnected.';
+    }
+
+    function setSelectedNft(nft) {
+      if (!nft) return;
+      state.selectedNft = {
+        ...state.selectedNft,
+        ...nft,
+        traits: Array.isArray(nft.traits) ? nft.traits : (state.selectedNft.traits || [])
+      };
+      renderChatLog();
+    }
+
+    function renderSelectedNftCard() {
+      const nft = state.selectedNft;
+      if (!nft) return '';
+      const traits = Array.isArray(nft.traits) && nft.traits.length ? nft.traits : [];
+      return [
+        '<div class="selected-nft-card">',
+        '  <div class="selected-nft-art">',
+        '    <img alt="Selected NFT" src="' + nft.image + '" />',
+        '  </div>',
+        '  <div class="selected-nft-meta">',
+        '    <p class="selected-nft-title">' + nft.name + '</p>',
+        '    <p class="selected-nft-subtitle">Card loaded into the chat log so the holder can chat or fuse with the selected asset.</p>',
+        '    <div class="selected-nft-stats">',
+        '      <span class="selected-nft-stat">Token ' + nft.tokenId + '</span>',
+        '      <span class="selected-nft-stat">' + nft.network + '</span>',
+        '      <span class="selected-nft-stat">' + nft.status + '</span>',
+        '      <span class="selected-nft-stat">Owner: ' + nft.owner + '</span>',
+        '    </div>',
+        '    <div class="trait-pills">' + traits.map((trait) => '<div class="trait-pill">' + trait + '</div>').join('') + '</div>',
+        '  </div>',
+        '</div>'
+      ].join('');
+    }
+
+    function renderChatLog() {
+      const log = document.getElementById('chat-log');
+      if (!log) return;
+      const content = [renderSelectedNftCard()].concat(state.chat.map((entry) => {
+        const role = entry.role === 'user' ? 'user' : 'system';
+        return '<div class="bubble ' + role + '">' + (role === 'user' ? 'YOU\n' : 'SYSTEM\n') + (entry.text || entry.content || '') + '</div>';
+      }));
+      log.innerHTML = content.join('');
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function getFuseRate(token) {
+      const entry = fuseTokenConfig[token];
+      return entry && typeof entry.price === 'number' ? entry.price : null;
+    }
+
+    function renderFuseQuote() {
+      const token = state.fuseToken;
+      const price = getFuseRate(token);
+      const amountEl = document.getElementById('fuse-token-amount');
+      const rateEl = document.getElementById('fuse-token-rate');
+      const gateEl = document.getElementById('fuse-gate-state');
+      const badgeEl = document.getElementById('fuse-lock-badge');
+      const buttonEl = document.getElementById('fuse-button');
+      if (!amountEl || !rateEl || !gateEl || !badgeEl || !buttonEl) return;
+      const unlocked = state.fuseUnlocked;
+      buttonEl.textContent = unlocked ? 'FUSE ARMED' : 'FUSE';
+      badgeEl.textContent = unlocked ? 'UNLOCKED' : 'LOCKED';
+      gateEl.textContent = unlocked ? 'OPEN' : 'SEALED';
+      const label = fuseTokenConfig[token]?.label || token;
+      if (!price || price <= 0) {
+        amountEl.textContent = unlocked ? 'RATE PENDING' : '--';
+        rateEl.textContent = `${label} price pending`;
+        return;
+      }
+      const tokenAmount = 50 / price;
+      amountEl.textContent = `${tokenAmount.toFixed(token === 'RLUSD' ? 2 : tokenAmount < 0.01 ? 6 : 4)} ${label}`;
+      rateEl.textContent = `1 ${label} = $${price.toFixed(token === 'RLUSD' ? 2 : 4)}`;
+    }
+
+    async function refreshFusePrices() {
+      const ids = ['ripple', 'dogecoin', 'pepe', 'bonk'];
+      try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids.join(',') + '&vs_currencies=usd');
+        if (!res.ok) throw new Error('price lookup failed');
+        const prices = await res.json();
+        fuseTokenConfig.XRP.price = Number(prices?.ripple?.usd || 0);
+        fuseTokenConfig.DOGE.price = Number(prices?.dogecoin?.usd || 0);
+        fuseTokenConfig.PEPE.price = Number(prices?.pepe?.usd || 0);
+        fuseTokenConfig.BONK.price = Number(prices?.bonk?.usd || 0);
+      } catch (error) {
+        console.error(error);
+        if (!fuseTokenConfig.XRP.price) fuseTokenConfig.XRP.price = 0.5;
+        if (!fuseTokenConfig.DOGE.price) fuseTokenConfig.DOGE.price = 0.1;
+        if (!fuseTokenConfig.PEPE.price) fuseTokenConfig.PEPE.price = 0.00001;
+        if (!fuseTokenConfig.BONK.price) fuseTokenConfig.BONK.price = 0.00002;
+      }
+      renderFuseQuote();
+    }
+
+    function toggleFuseUnlock() {
+      state.fuseUnlocked = !state.fuseUnlocked;
+      renderFuseQuote();
+    }
+
+    function loadWarningTicker() {
+      const track = document.getElementById('warning-ticker-track');
+      if (!track) return;
+      const feed = enemyFeed.concat(enemyFeed);
+      track.innerHTML = feed.map((item, index) => '<span class=\'ticker-item\'>' + item + '</span>' + (index < feed.length - 1 ? '<span class=\'ticker-item\'>•</span>' : '')).join('');
+    }
+
+    function appendChat(role, text) {
+      state.chat.push({ role, text });
+      renderChatLog();
+      return state.chat[state.chat.length - 1];
+    }
+
+    async function connectXaman(event) {
+      if (event && event.preventDefault) event.preventDefault();
+      const btn = document.getElementById('wallet-btn');
+      btn.disabled = true;
+      btn.textContent = 'CONNECTING...';
+      try {
+        const res = await fetch('/api/xaman?action=create-payload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ txjson: { TransactionType: 'SignIn' } })
+        });
+        const payload = await res.json();
+        if (payload?.next?.always) window.open(payload.next.always, '_blank');
+        const uuid = payload?.uuid;
+        if (!uuid) throw new Error('No payload uuid returned');
+        let attempts = 0;
+        const timer = setInterval(async () => {
+          attempts += 1;
+          if (attempts > 35) {
+            clearInterval(timer);
+            btn.disabled = false;
+            btn.textContent = 'CONNECT XAMAN';
+            return;
+          }
+          const check = await fetch('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(uuid));
+          const status = await check.json();
+          if ((status.meta && status.meta.signed) || status.signed) {
+            clearInterval(timer);
+            const address = status?.response?.account || status?.account || status?.resolved?.account || '';
+            if (address) setWalletUI(true, address);
+          }
+          if (status.meta && status.meta.expired) {
+            clearInterval(timer);
+            btn.disabled = false;
+            btn.textContent = 'CONNECT XAMAN';
+          }
+        }, 2500);
+      } catch (error) {
+        console.error(error);
+        btn.disabled = false;
+        btn.textContent = 'CONNECT XAMAN';
+        alert('Xaman connection failed');
+      }
+    }
+
+    async function startChatStream() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      appendChat('user', text);
+      state.chat.push({ role: 'assistant', text: '' });
+      renderChatLog();
+      const assistantIndex = state.chat.length - 1;
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+          body: JSON.stringify({
+            stream: true,
+            operative: { name: state.selectedNft?.name || 'Guest Operative', walletAddress: state.wallet || '' },
+            messages: [{ role: 'user', content: text }]
+          })
+        });
+        if (!res.ok) throw new Error('Chat request failed: ' + res.status);
+        if (!res.body) {
+          state.chat[assistantIndex].text = 'Relay fallback active.';
+          renderChatLog();
+          return;
+        }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        const consumeLine = (line) => {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) return;
+          const payloadText = trimmed.slice(5).trim();
+          if (!payloadText || payloadText === '[DONE]') return;
+          let token = '';
+          try {
+            const payload = JSON.parse(payloadText);
+            token = String(payload.token || payload.response || payload.message || payload.content || payload.text || '');
+          } catch {
+            token = payloadText;
+          }
+          if (token) {
+            state.chat[assistantIndex].text += token;
+            renderChatLog();
+          }
+        };
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          let newlineIndex = buffer.indexOf('\n');
+          while (newlineIndex >= 0) {
+            const line = buffer.slice(0, newlineIndex);
+            buffer = buffer.slice(newlineIndex + 1);
+            consumeLine(line);
+            newlineIndex = buffer.indexOf('\n');
+          }
+        }
+
+        buffer += decoder.decode();
+        if (buffer.trim()) consumeLine(buffer);
+      } catch (error) {
+        console.error(error);
+        state.chat[assistantIndex].text = 'Relay fallback active.';
+        renderChatLog();
+      }
+    }
+
+
+    window.connectXaman = connectXaman;
+    window.startChatStream = startChatStream;
+    window.toggleFuseUnlock = toggleFuseUnlock;
+    window.refreshFusePrices = refreshFusePrices;
+
+    document.getElementById('chat-input').addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') startChatStream();
+    });
+
+    loadWarningTicker();
+    refreshFusePrices();
+    renderChatLog();
+    setInterval(refreshFusePrices, 90000);
+    switchTab(0);
   </script>
 </body>
 </html>
