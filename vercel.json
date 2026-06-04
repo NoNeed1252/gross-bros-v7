@@ -1,7 +1,6 @@
 {
   "rewrites": [
-    { "source": "/index.html", "destination": "/index-den.html" },
-    { "source": "/", "destination": "/index-den.html" }
+    { "source": "/", "destination": "/index.html" }
   ],
   "headers": [
     {
