@@ -252,14 +252,23 @@
           body: JSON.stringify({ txjson: { TransactionType: 'SignIn' } })
         });
         const payload = await res.json();
-        if (payload?.next?.always) window.open(payload.next.always, '_blank');
+        
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const url = (isMobile && payload?.next?.app_deep_link) ? payload.next.app_deep_link : payload?.next?.always;
+        
+        if (url) {
+          window.open(url, '_blank');
+        } else {
+          throw new Error('No valid payload URL returned');
+        }
+        
         const uuid = payload?.uuid;
         if (!uuid) throw new Error('No payload uuid returned');
         
         let attempts = 0;
         const timer = setInterval(async () => {
           attempts += 1;
-          if (attempts > 35) {
+          if (attempts > 60) { // Increased timeout for better UX
             clearInterval(timer);
             btn.disabled = false;
             btn.textContent = 'CONNECT WALLET';
@@ -324,19 +333,31 @@
       state.chat.push({ role: 'user', text });
       renderChatLog();
       
+      // Dynamic responses based on input keywords
+      let response = 'DIRECTIVE RECEIVED. ANALYZING DATA STREAM...';
+      const lower = text.toLowerCase();
+      if (lower.includes('status')) response = 'SYSTEM STABLE. NEURAL SYNC AT 98%.';
+      if (lower.includes('fuse') || lower.includes('fusion')) response = 'FUSION CORE PRIMED. AWAITING FINAL AUTHORIZATION.';
+      if (lower.includes('who') || lower.includes('lore')) response = 'ACCESSING DATA ARCHIVE... THE GROSS BROS WERE BORN FROM THE LEDGER.';
+      
       setTimeout(() => {
-        state.chat.push({ role: 'system', text: 'DIRECTIVE RECEIVED. ANALYZING DATA STREAM...' });
+        state.chat.push({ role: 'system', text: response });
         renderChatLog();
       }, 800);
     }
 
     function init() {
       const ticker = document.getElementById('warning-ticker-track');
-      const items = ['SIGNAL STABLE', 'NEURAL LINK ACTIVE', 'FUSION READY', 'ENCRYPTION ENABLED'];
+      const items = ['SIGNAL STABLE', 'NEURAL LINK ACTIVE', 'FUSION READY', 'ENCRYPTION ENABLED', 'SCANNING PERIMETER', 'RELAY SECURED'];
       ticker.innerHTML = items.concat(items).map(i => `<span class="ticker-item">${i}</span>`).join(' • ');
       
       const track = document.getElementById('nft-selection-track');
       track.innerHTML = nftCollection.map(n => `<div class="nft-select-card"><img src="${n.image}"></div>`).join('');
+      
+      // Add event listener for enter key in chat
+      document.getElementById('chat-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') startChatStream();
+      });
     }
 
     init();
