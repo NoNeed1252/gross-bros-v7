@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const app = express();
-const port = process.env.PORT || 8080;
+const port = 80;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -36,6 +36,7 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+// Explicitly bind to 0.0.0.0
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on 0.0.0.0:${port}`);
 });
