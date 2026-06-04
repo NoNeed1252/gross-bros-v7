@@ -19,6 +19,9 @@ const wrapHandler = (handler) => async (req, res) => {
         // Vercel handlers typically look like: export default async function(req, res)
         // If it's a module.exports style, or default export:
         const actualHandler = handler.default || handler;
+        
+        // Pass req.query and req.body to simulate Vercel's behavior if needed, 
+        // though standard Express req/res usually suffice for these simple handlers.
         await actualHandler(req, res);
     } catch (error) {
         console.error('API Error:', error);
@@ -28,7 +31,8 @@ const wrapHandler = (handler) => async (req, res) => {
     }
 };
 
-app.post('/api/xaman', wrapHandler(xamanHandler));
+// Use app.all or match the specific method used by the frontend
+app.use('/api/xaman', wrapHandler(xamanHandler));
 app.post('/api/chat', wrapHandler(chatHandler));
 
 // Catch-all to serve index.html for frontend routing
