@@ -185,14 +185,16 @@ export default async function handler(req, res) {
       { role: 'system', content: systemPrompt },
       ...messages,
     ];
+    const PRIMARY_MODEL = 'mistralai/mistral-7b-instruct:free';
+    const SECONDARY_MODEL = 'google/gemma-7b-it:free';
     try {
-      await streamOpenRouter({ messages: openAiMessages, model: 'mistralai/mistral-7b-instruct:free' });
+      await streamOpenRouter({ messages: openAiMessages, model: PRIMARY_MODEL });
       return;
     } catch (error) {
       console.error('[chat] OpenRouter primary relay failed:', error?.message || error);
     }
     try {
-      await streamOpenRouter({ messages: openAiMessages, model: 'google/gemma-7b-it:free' });
+      await streamOpenRouter({ messages: openAiMessages, model: SECONDARY_MODEL });
       return;
     } catch (error) {
       console.error('[chat] OpenRouter secondary relay failed:', error?.message || error);

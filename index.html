@@ -578,12 +578,14 @@
       'ENEMY // Broadcast relay secured',
       'ENEMY // Shadow drones approaching'
     ];
+    const XRPL_RPC_ENDPOINTS = ['https://xrplcluster.com', 'https://s2.ripple.com:51234'];
+    const XRPL_RPC_ENDPOINT = XRPL_RPC_ENDPOINTS[0];
     const fuseTokenConfig = {
-      XRP: { label: 'XRP', coinGeckoId: 'ripple', price: null },
-      RLUSD: { label: 'RLUSD', price: 1 },
-      DOGE: { label: 'DOGE', coinGeckoId: 'dogecoin', price: null },
-      PEPE: { label: 'PEPE', coinGeckoId: 'pepe', price: null },
-      BONK: { label: 'BONK', coinGeckoId: 'bonk', price: null }
+      GROSS: { label: 'GROSS', currency: 'GROSS', issuer: '', price: null, decimals: 6 },
+      ARMY: { label: 'ARMY', currency: 'ARMY', issuer: '', price: null, decimals: 6 },
+      PHNIX: { label: 'PHNIX', currency: 'PHNIX', issuer: '', price: null, decimals: 6 },
+      RIPPIE: { label: 'RIPPIE', currency: 'RIPPIE', issuer: '', price: null, decimals: 6 },
+      DROP: { label: 'DROP', currency: 'DROP', issuer: '', price: null, decimals: 6 }
     };
     const nftCollection = [
       {
@@ -625,7 +627,6 @@
     ];
 
     const BRO_COLLECTION_ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
-    const XRPL_RPC_ENDPOINT = 'https://xrplcluster.com';
     const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
     const SUPABASE_URL = window.__SUPABASE_URL || window.SUPABASE_URL || window.NEXT_PUBLIC_SUPABASE_URL || '';
     const SUPABASE_KEY = window.__SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY || window.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -737,6 +738,94 @@
 
     function extractNftId(nft) {
       return String(nft?.NFTokenID || nft?.nftoken_id || nft?.NFTID || nft?.nft_id || nft?.index || '').trim();
+    }
+
+    function encodeCurrencyCode(code) {
+      const normalized = String(code || '').trim().toUpperCase();
+      if (!normalized) return '';
+      if (normalized.length === 3 && /^[A-Z0-9]{3}$/.test(normalized)) return normalized;
+      return Array.from(new TextEncoder().encode(normalized))
+        .map((byte) => byte.toString(16).padStart(2, '0'))
+        .join('')
+        .toUpperCase()
+        .padEnd(40, '0')
+        .slice(0, 40);
+    }
+
+    function parseXrplAmount(value) {
+      if (typeof value === 'string' || typeof value === 'number') {
+        const numeric = Number(value);
+        return Number.isFinite(numeric) ? numeric / 1000000 : null;
+      }
+      if (!value || typeof value !== 'object') return null;
+      const amount = Number(value.value ?? value.amount ?? value.delivered_amount ?? value.quantity ?? value.nums ?? NaN);
+      return Number.isFinite(amount) ? amount : null;
+    }
+
+    function getTokenIssuer(token) {
+      const entry = fuseTokenConfig[token];
+      const configured = String(entry?.issuer || window.__XRPL_TOKEN_ISSUERS?.[token] || window.XRPL_TOKEN_ISSUERS?.[token] || BRO_COLLECTION_ISSUER || '').trim();
+      return configured;
+    }
+
+    function getTokenDecimals(token) {
+      const decimals = Number(fuseTokenConfig[token]?.decimals);
+      return Number.isFinite(decimals) && decimals >= 0 ? decimals : 6;
+    }
+
+    async function fetchXrpUsdPrice() {
+      try {
+        const response = await fetch('/api/xrp-price', { cache: 'no-store' });
+        const data = await response.json().catch(() => null);
+        const price = Number(data?.xrpUsd);
+        if (response.ok && Number.isFinite(price) && price > 0) return price;
+      } catch (error) {
+        console.warn('XRP price lookup failed', error);
+      }
+      return null;
+    }
+
+    async function fetchTokenUsdPrice(token, xrpUsdPrice) {
+      const issuer = getTokenIssuer(token);
+      if (!issuer) return null;
+      const currency = encodeCurrencyCode(token);
+      if (!currency) return null;
+      for (const endpoint of XRPL_RPC_ENDPOINTS) {
+        try {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              id: 'gross-bros-price-' + token,
+              method: 'book_offers',
+              params: [{
+                taker_gets: { currency, issuer },
+                taker_pays: 'XRP',
+                ledger_index: 'validated',
+                limit: 10
+              }]
+            }),
+            cache: 'no-store'
+          });
+          if (!response.ok) continue;
+          const data = await response.json().catch(() => null);
+          const offers = Array.isArray(data?.result?.offers) ? data.result.offers : Array.isArray(data?.offers) ? data.offers : [];
+          const best = offers.find((offer) => offer?.TakerGets || offer?.taker_gets || offer?.TakerPays || offer?.taker_pays) || offers[0];
+          if (!best) continue;
+          const tokenAmount = parseXrplAmount(best.TakerGets ?? best.taker_gets);
+          const xrpAmount = parseXrplAmount(best.TakerPays ?? best.taker_pays);
+          if (Number.isFinite(tokenAmount) && tokenAmount > 0 && Number.isFinite(xrpAmount) && xrpAmount > 0) {
+            const xrpUsd = Number(xrpUsdPrice);
+            if (Number.isFinite(xrpUsd) && xrpUsd > 0) return (xrpAmount / tokenAmount) * xrpUsd;
+            return xrpAmount / tokenAmount;
+          }
+        } catch (error) {
+          console.warn('Token price lookup failed for', token, endpoint, error);
+        }
+      }
+      return null;
     }
 
     async function fetchCollectionNfts(issuer, taxon = 1) {
@@ -904,11 +993,10 @@
 
     function formatFuseAmount(token, amount) {
       if (!Number.isFinite(amount)) return '--';
-      if (token === 'RLUSD') return amount.toFixed(2);
       if (amount >= 1000) return amount.toFixed(2);
       if (amount >= 1) return amount.toFixed(4);
       if (amount >= 0.01) return amount.toFixed(6);
-      return amount.toFixed(8);
+      return amount.toFixed(Math.min(8, Math.max(6, getTokenDecimals(token))));
     }
 
     function renderFuseQuote() {
@@ -920,6 +1008,8 @@
       const gateEl = document.getElementById('fuse-gate-state');
       const badgeEl = document.getElementById('fuse-lock-badge');
       const buttonEl = document.getElementById('fuse-button');
+      const selectEl = document.getElementById('fuse-token-select');
+      if (selectEl && selectEl.value !== token) selectEl.value = token;
       if (!amountEl || !rateEl || !statusEl || !gateEl || !badgeEl || !buttonEl) return;
       const unlocked = state.fuseUnlocked;
       buttonEl.textContent = unlocked ? 'FUSE ARMED' : 'FUSE';
@@ -934,25 +1024,27 @@
       }
       const tokenAmount = state.fuseTargetUsd / price;
       amountEl.textContent = formatFuseAmount(token, tokenAmount) + ' ' + label;
-      rateEl.textContent = '1 ' + label + ' = $' + price.toFixed(token === 'RLUSD' ? 2 : 6);
+      rateEl.textContent = '1 ' + label + ' = $' + price.toFixed(Math.min(6, getTokenDecimals(token)));
     }
 
     async function refreshFusePrices() {
-      const ids = ['ripple', 'dogecoin', 'pepe', 'bonk'];
       try {
-        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids.join(',') + '&vs_currencies=usd');
-        if (!res.ok) throw new Error('price lookup failed');
-        const prices = await res.json();
-        fuseTokenConfig.XRP.price = Number(prices?.ripple?.usd || 0);
-        fuseTokenConfig.DOGE.price = Number(prices?.dogecoin?.usd || 0);
-        fuseTokenConfig.PEPE.price = Number(prices?.pepe?.usd || 0);
-        fuseTokenConfig.BONK.price = Number(prices?.bonk?.usd || 0);
+        const liveXrpPrice = await fetchXrpUsdPrice();
+        const xrpPrice = Number.isFinite(liveXrpPrice) && liveXrpPrice > 0 ? liveXrpPrice : 0.5;
+        fuseTokenConfig.XRP = { ...(fuseTokenConfig.XRP || {}), label: 'XRP', currency: 'XRP', price: xrpPrice, decimals: 6 };
+        const tokenKeys = Object.keys(fuseTokenConfig).filter((token) => token !== 'XRP');
+        const tokenPrices = await Promise.all(tokenKeys.map(async (token) => [token, await fetchTokenUsdPrice(token, xrpPrice)]));
+        for (const [token, price] of tokenPrices) {
+          if (Number.isFinite(price) && price > 0) {
+            fuseTokenConfig[token].price = price;
+          }
+        }
+        if (!Number.isFinite(fuseTokenConfig.XRP.price) || fuseTokenConfig.XRP.price <= 0) {
+          fuseTokenConfig.XRP.price = 0.5;
+        }
       } catch (error) {
         console.error(error);
-        if (!fuseTokenConfig.XRP.price) fuseTokenConfig.XRP.price = 0.5;
-        if (!fuseTokenConfig.DOGE.price) fuseTokenConfig.DOGE.price = 0.1;
-        if (!fuseTokenConfig.PEPE.price) fuseTokenConfig.PEPE.price = 0.00001;
-        if (!fuseTokenConfig.BONK.price) fuseTokenConfig.BONK.price = 0.00002;
+        if (!Number.isFinite(fuseTokenConfig.XRP.price) || fuseTokenConfig.XRP.price <= 0) fuseTokenConfig.XRP.price = 0.5;
       }
       renderFuseQuote();
     }
