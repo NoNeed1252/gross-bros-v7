@@ -5,14 +5,18 @@ export default async function handler(req, res) {
 
   console.log(`Xaman API Request: Action=${action}, Method=${req.method}`);
 
+  // Use the specific keys requested
+  const apiKey = process.env.NEXT_PUBLIC_XAMAN_API_KEY || process.env.XAMAN_API_KEY;
+  const apiSecret = process.env.XAMAN_API_SECRET;
+
   if (action === 'create-payload') {
     try {
       const response = await fetch('https://xumm.app/api/v1/platform/payload', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': process.env.XAMAN_API_KEY,
-          'X-API-Secret': process.env.XAMAN_API_SECRET
+          'X-API-Key': apiKey,
+          'X-API-Secret': apiSecret
         },
         // Re-wrap the body to ensure we only send valid Xaman payload fields
         body: JSON.stringify({
@@ -42,8 +46,8 @@ export default async function handler(req, res) {
     try {
       const response = await fetch(`https://xumm.app/api/v1/platform/payload/${uuid}`, {
         headers: {
-          'X-API-Key': process.env.XAMAN_API_KEY,
-          'X-API-Secret': process.env.XAMAN_API_SECRET
+          'X-API-Key': apiKey,
+          'X-API-Secret': apiSecret
         }
       });
       const data = await response.json();
