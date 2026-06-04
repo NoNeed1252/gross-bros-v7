@@ -375,6 +375,12 @@
       line-height: 1.75;
       font-size: 13px;
     }
+    .fuse-note {
+      color: #ddfff9;
+      opacity: .82;
+      line-height: 1.75;
+      font-size: 13px;
+    }
     .fuse-terminal {
       padding: 14px 16px;
       border-radius: 18px;
@@ -1144,7 +1150,7 @@
       renderChatLog();
       const assistantIndex = state.chat.length - 1;
       try {
-        const res = await fetch('/api/chat', {
+        const res = await fetch('/api/chat.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
           body: JSON.stringify({
