@@ -90,9 +90,17 @@
     .selected-nft-bubble {
       display: grid; gap: 10px; padding: 15px; border: 1px solid var(--line);
       background: rgba(0,255,200,0.05); margin-bottom: 15px; border-radius: 4px;
-      justify-items: center;
+      justify-items: center; position: relative; z-index: 10;
     }
-    .selected-nft-bubble img { max-width: 200px; border: 1px solid var(--cyan); box-shadow: 0 0 10px rgba(0,255,200,0.3); }
+    .selected-nft-bubble img { 
+      max-width: 200px; 
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--cyan); 
+      box-shadow: 0 0 15px rgba(0,255,200,0.4);
+      display: block;
+      margin: 0 auto;
+    }
 
     .chat-terminal-actions { display: flex; gap: 10px; margin-top: 15px; }
     input {
@@ -268,7 +276,7 @@
         let attempts = 0;
         const timer = setInterval(async () => {
           attempts += 1;
-          if (attempts > 60) { // Increased timeout for better UX
+          if (attempts > 60) {
             clearInterval(timer);
             btn.disabled = false;
             btn.textContent = 'CONNECT WALLET';
@@ -310,6 +318,7 @@
         if (nftDisplay && nftImg) {
           nftDisplay.style.display = 'grid';
           nftImg.src = state.selectedNft.image;
+          console.log("NFT Displayed:", state.selectedNft.image);
         }
       }
     }
@@ -333,12 +342,13 @@
       state.chat.push({ role: 'user', text });
       renderChatLog();
       
-      // Dynamic responses based on input keywords
       let response = 'DIRECTIVE RECEIVED. ANALYZING DATA STREAM...';
       const lower = text.toLowerCase();
-      if (lower.includes('status')) response = 'SYSTEM STABLE. NEURAL SYNC AT 98%.';
-      if (lower.includes('fuse') || lower.includes('fusion')) response = 'FUSION CORE PRIMED. AWAITING FINAL AUTHORIZATION.';
-      if (lower.includes('who') || lower.includes('lore')) response = 'ACCESSING DATA ARCHIVE... THE GROSS BROS WERE BORN FROM THE LEDGER.';
+      if (lower.includes('help')) response = 'COMMAND LIST: [STATUS] [FUSION] [LORE] [SYNC]. DIRECTIVES MUST BE PRECISE.';
+      if (lower.includes('alive')) response = 'SIGNAL DETECTED. I AM THE VOID IN THE LEDGER. I AM BROADCASTING.';
+      if (lower.includes('status')) response = 'SYSTEM STABLE. NEURAL SYNC AT 98%. PERIMETER SECURE.';
+      if (lower.includes('fuse') || lower.includes('fusion')) response = 'FUSION CORE PRIMED. AWAITING FINAL AUTHORIZATION FROM OPERATIVE.';
+      if (lower.includes('who') || lower.includes('lore')) response = 'ACCESSING DATA ARCHIVE... THE GROSS BROS WERE BORN FROM THE LEDGER FRACTURE.';
       
       setTimeout(() => {
         state.chat.push({ role: 'system', text: response });
@@ -354,7 +364,6 @@
       const track = document.getElementById('nft-selection-track');
       track.innerHTML = nftCollection.map(n => `<div class="nft-select-card"><img src="${n.image}"></div>`).join('');
       
-      // Add event listener for enter key in chat
       document.getElementById('chat-input').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') startChatStream();
       });
