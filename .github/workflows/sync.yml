@@ -1,0 +1,20 @@
+name: Sync to IONOS VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH and Sync
+        uses: appleboy/ssh-action@master
+        with:
+          host: 216.250.127.169
+          username: root
+          password: vAUL03juyPr1hu
+          script: |
+            cd /root/gross-bros-v7 && git fetch origin && git reset --hard origin/main && pm2 restart all --update-env
