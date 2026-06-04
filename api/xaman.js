@@ -1,4 +1,6 @@
-export default async function handler(req, res) {
+const fetch = require('node-fetch');
+
+module.exports = async function handler(req, res) {
   // Merge query and body params to ensure 'action' is always found regardless of request method
   const action = req.query.action || (req.body && req.body.action);
   const uuid = req.query.uuid || (req.body && req.body.uuid);
@@ -9,6 +11,11 @@ export default async function handler(req, res) {
   const apiKey = process.env.NEXT_PUBLIC_XAMAN_API_KEY || process.env.XAMAN_API_KEY;
   const apiSecret = process.env.XAMAN_API_SECRET;
 
+  if (!apiKey || !apiSecret) {
+    console.error('Missing Xaman API Credentials in Environment');
+    return res.status(500).json({ error: 'Missing configuration', message: 'API Keys not set on server' });
+  }
+
   if (action === 'create-payload') {
     try {
       const response = await fetch('https://xumm.app/api/v1/platform/payload', {
@@ -18,7 +25,6 @@ export default async function handler(req, res) {
           'X-API-Key': apiKey,
           'X-API-Secret': apiSecret
         },
-        // Re-wrap the body to ensure we only send valid Xaman payload fields
         body: JSON.stringify({
           txjson: {
             TransactionType: 'SignIn'
