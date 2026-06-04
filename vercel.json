@@ -1,5 +1,11 @@
 {
-  "redirects": [
-    { "source": "/", "destination": "https://raw.githubusercontent.com/NoNeed1252/gross-bros-v7/main/index.html", "permanent": false }
+  "cleanUrls": true,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
   ]
 }
