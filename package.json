@@ -12,5 +12,6 @@
     "node-fetch": "^2.6.9",
     "xrpl": "^3.0.0",
     "@supabase/supabase-js": "^2.38.0"
-  }
+  },
+  "redeploy": "1"
 }
