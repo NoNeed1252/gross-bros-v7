@@ -486,7 +486,7 @@
               <input id='chat-input' maxlength='240' placeholder='Send a directive to the operative…'>
               <button class='btn' onclick='startChatStream()'>Send</button>
               <div class='fuse-button-box'>
-                <button id='fuse-button' class='btn' onclick='toggleFuseUnlock()'>Fuse</button>
+                <button id='fuse-button' class='btn' onclick='initiateFusionPayment()'>Fuse</button>
                 <div class='fuse-price'>
                   <span>Live $50 USD</span>
                   <strong id='fuse-token-amount'>--</strong>
@@ -1203,6 +1203,45 @@
       }
     }
 
+    async function initiateFusionPayment() {
+      if (!state.connected || !state.wallet) {
+        alert('Please connect Xaman wallet first');
+        return;
+      }
+      const token = state.fuseToken;
+      const price = getFuseRate(token);
+      if (!price) {
+        alert('Live rate pending, try again in a moment');
+        return;
+      }
+      const amount = (state.fuseTargetUsd / price).toFixed(6);
+      const destination = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
+      
+      const txjson = {
+        TransactionType: 'Payment',
+        Destination: destination,
+        Amount: token === 'XRP' ? String(Math.floor(amount * 1000000)) : {
+          currency: token,
+          issuer: destination,
+          value: amount
+        }
+      };
+
+      try {
+        const res = await fetch('/api/xaman?action=create-payload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ txjson })
+        });
+        const payload = await res.json();
+        if (payload?.next?.always) window.open(payload.next.always, '_blank');
+        document.getElementById('fuse-payment-status').textContent = 'FUSION PENDING...';
+      } catch (error) {
+        console.error(error);
+        alert('Fusion payment failed');
+      }
+    }
+
 
     function bootApp() {
       initializeInteractiveShell();
@@ -1224,6 +1263,7 @@
     window.selectNft = selectNft;
     window.handleFuseTokenChange = handleFuseTokenChange;
     window.switchTab = switchTab;
+    window.initiateFusionPayment = initiateFusionPayment;
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', bootApp, { once: true });
