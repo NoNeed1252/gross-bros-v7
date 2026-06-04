@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GROSS-BROS-V7 // TERMINAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #000000;
+            --primary-color: #00ff41; /* Neon Green */
+            --secondary-color: #ffb000; /* Amber */
+            --accent-color: #008f11;
+            --scanline-color: rgba(18, 16, 16, 0.1);
+            --font-main: 'VT323', monospace;
+            --font-header: 'Orbitron', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            cursor: crosshair;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            font-family: var(--font-main);
+            font-size: 1.2rem;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            text-shadow: 0 0 5px var(--primary-color);
+        }
+
+        /* CRT Overlay Effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(var(--scanline-color) 50%, rgba(0, 0, 0, 0) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+            z-index: 100;
+            animation: flicker 0.15s infinite;
+        }
+
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: rgba(18, 16, 16, 0.1);
+            opacity: 0;
+            z-index: 101;
+            pointer-events: none;
+            animation: pulse 4s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.27861; }
+            5% { opacity: 0.34769; }
+            10% { opacity: 0.23604; }
+            15% { opacity: 0.90626; }
+            20% { opacity: 0.18128; }
+            25% { opacity: 0.83891; }
+            30% { opacity: 0.65583; }
+            35% { opacity: 0.67807; }
+            40% { opacity: 0.26559; }
+            45% { opacity: 0.84693; }
+            50% { opacity: 0.96019; }
+            55% { opacity: 0.08594; }
+            60% { opacity: 0.20313; }
+            65% { opacity: 0.71988; }
+            70% { opacity: 0.53455; }
+            75% { opacity: 0.37288; }
+            80% { opacity: 0.71428; }
+            85% { opacity: 0.70419; }
+            90% { opacity: 0.7003; }
+            95% { opacity: 0.36108; }
+            100% { opacity: 0.24387; }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.1; }
+            50% { opacity: 0.2; }
+            100% { opacity: 0.1; }
+        }
+
+        header {
+            padding: 10px 20px;
+            border-bottom: 2px solid var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 255, 65, 0.05);
+        }
+
+        header h1 {
+            font-family: var(--font-header);
+            font-size: 1.5rem;
+            margin: 0;
+            letter-spacing: 4px;
+        }
+
+        #status-bar {
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .output-line {
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .system-msg { color: var(--secondary-color); }
+        .error-msg { color: #ff0000; text-shadow: 0 0 5px #ff0000; }
+        .success-msg { color: var(--primary-color); font-weight: bold; }
+        .secondary-msg { color: #00ffff; }
+
+        #input-area {
+            display: flex;
+            padding: 10px 20px;
+            border-top: 1px solid var(--accent-color);
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .prompt {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        input {
+            background: transparent;
+            border: none;
+            color: var(--primary-color);
+            font-family: var(--font-main);
+            font-size: 1.2rem;
+            flex: 1;
+            outline: none;
+            text-shadow: 0 0 5px var(--primary-color);
+        }
+
+        .ascii-art {
+            white-space: pre;
+            font-family: monospace;
+            font-size: 0.6rem;
+            line-height: 1;
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--accent-color); }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>GROSS-BROS-V7 // CORE</h1>
+        <div id="status-bar">SYSTEM: ONLINE | SECURE_LINK: ACTIVE</div>
+    </header>
+
+    <main id="terminal">
+        <div class="ascii-art">
+   ______                       ____                       _    ______
+  / ____/________  __________  / __ )_________  __________| |  / /__  /
+ / / __/ ___/ __ \/ ___/ ___/ / __  / ___/ __ \/ ___/ ___/ | / /  / / 
+/ /_/ / /  / /_/ (__  |__  ) / /_/ / /  / /_/ (__  |__  )  |/ /  / /  
+\____/_/   \____/____/____/ /_____/_/   \____/____/____/   |___/  /_/   
+                                                                        
+        </div>
+        <div class="output-line system-msg">Initializing Galactic Operative Hub v7.0.4...</div>
+        <div class="output-line system-msg">Loading neural interfaces... OK</div>
+        <div class="output-line system-msg">Connecting to XRPL Mainnet... CONNECTED</div>
+        <div class="output-line">Welcome back, Operative. Type 'help' for available protocols.</div>
+    </main>
+
+    <div id="input-area">
+        <span class="prompt">OP@G-B-V7:~$</span>
+        <input type="text" id="terminal-input" autofocus autocomplete="off">
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const input = document.getElementById('terminal-input');
+
+        const protocols = {
+            'help': 'Available commands: help, status, xaman-auth, clear, sys-info',
+            'status': 'All systems nominal. PM2 process [xaman-express-api] running on port 8080.',
+            'sys-info': 'OS: GROSS-OS v7 | KERNEL: 5.15.0-GB | UPTIME: 142h 12m',
+            'clear': 'CLEAR'
+        };
+
+        input.addEventListener('keydown', async (e) => {
+            if (e.key === 'Enter') {
+                const cmd = input.value.trim().toLowerCase();
+                printLine(`OP@G-B-V7:~$ ${cmd}`);
+                
+                if (cmd === 'clear') {
+                    terminal.innerHTML = '';
+                } else if (cmd === 'xaman-auth') {
+                    await handleXamanAuth();
+                } else if (protocols[cmd]) {
+                    printLine(protocols[cmd], 'system-msg');
+                } else if (cmd !== '') {
+                    printLine(`Unknown protocol: ${cmd}`, 'error-msg');
+                }
+
+                input.value = '';
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        });
+
+        function printLine(text, className = '') {
+            const line = document.createElement('div');
+            line.className = 'output-line ' + className;
+            line.textContent = text;
+            terminal.appendChild(line);
+        }
+
+        async function handleXamanAuth() {
+            printLine('Initiating Xaman Auth payload...', 'system-msg');
+            try {
+                const res = await fetch('/api/xaman', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'create-payload' })
+                });
+                const data = await res.json();
+                if (data.uuid) {
+                    printLine(`Payload Created: ${data.uuid}`, 'success-msg');
+                    printLine(`Action Required: Open Xaman app or visit: ${data.next}`, 'secondary-msg');
+                    window.open(data.next, '_blank');
+                } else {
+                    printLine('Error: ' + (data.error || 'Unknown failure'), 'error-msg');
+                    console.error('Xaman Auth Error:', data);
+                }
+            } catch (err) {
+                printLine('Connection failed: ' + err.message, 'error-msg');
+                console.error('Fetch Exception:', err);
+            }
+        }
+    </script>
+</body>
+</html>
