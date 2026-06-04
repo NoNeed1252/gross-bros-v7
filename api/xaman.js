@@ -20,11 +20,12 @@ export default async function handler(req, res) {
     });
   }
 
-  const action = String(req.query?.action || '').trim();
   const body = typeof req.body === 'string'
     ? (() => { try { return JSON.parse(req.body || '{}'); } catch { return {}; } })()
     : (req.body && typeof req.body === 'object' ? req.body : {});
-  const uuid = String(req.query?.uuid || body.uuid || '').trim();
+
+  const action = String(body.action || req.query?.action || '').trim();
+  const uuid = String(body.uuid || req.query?.uuid || '').trim();
   const destinationAddress = String(body.destinationAddress || req.query?.destinationAddress || '').trim();
 
   try {
