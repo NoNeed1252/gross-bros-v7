@@ -11,29 +11,24 @@ app.use(express.static(path.join(__dirname)));
 
 // API Routes - Dynamic loading of Vercel handlers
 const xamanHandler = require('./api/xaman.js');
-const chatHandler = require('./api/chat.js');
 
 // Helper to mock Vercel's req/res objects for the existing handlers
 const wrapHandler = (handler) => async (req, res) => {
     try {
-        // Vercel handlers typically look like: export default async function(req, res)
-        // If it's a module.exports style, or default export:
         const actualHandler = handler.default || handler;
-        
-        // Pass req.query and req.body to simulate Vercel's behavior if needed, 
-        // though standard Express req/res usually suffice for these simple handlers.
+        // The Vercel handler expects (req, res), but it also relies on req.query and req.body
+        // In Express, these are already populated, but some handlers check req.method
         await actualHandler(req, res);
     } catch (error) {
         console.error('API Error:', error);
         if (!res.headersSent) {
-            res.status(500).json({ error: 'Internal Server Error', details: error.message });
+            res.status(500).json({ error: 'Internal Server Error', message: error.message });
         }
     }
 };
 
-// Use app.all or match the specific method used by the frontend
-app.use('/api/xaman', wrapHandler(xamanHandler));
-app.post('/api/chat', wrapHandler(chatHandler));
+// Use app.all to capture both GET (check-payload) and POST (create-payload)
+app.all('/api/xaman', wrapHandler(xamanHandler));
 
 // Catch-all to serve index.html for frontend routing
 app.get('*', (req, res) => {
