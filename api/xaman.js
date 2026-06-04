@@ -1,67 +1,88 @@
-const fetch = require('node-fetch');
+export default async function handler(req, res) {
+  const apiKey = String(process.env.XAMAN_API_KEY || '').trim();
+  const apiSecret = String(process.env.XAMAN_API_SECRET || '').trim();
+  const baseUrl = 'https://xumm.app/api/v1/platform';
 
-module.exports = async function handler(req, res) {
-  const action = req.query.action || (req.body && req.body.action);
-  const uuid = req.query.uuid || (req.body && req.body.uuid);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Cache-Control', 'no-store');
 
-  const apiKey = process.env.XAMAN_API_KEY || process.env.NEXT_PUBLIC_XAMAN_API_KEY;
-  const apiSecret = process.env.XAMAN_API_SECRET;
-
-  if (!apiKey || !apiSecret) {
-    return res.status(500).json({ error: 'Missing configuration', message: 'API Keys not set on server' });
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
 
-  if (action === 'create-payload') {
-    try {
-      // Logic for adding custom options and meta
-      const payloadBody = {
-        txjson: {
-          TransactionType: 'SignIn'
-        },
-        options: {
-          submit: false,
-          expire: 240
-        },
-        custom_meta: {
-          identifier: 'gross-bros-v9-gate'
-        }
+  if (!apiKey || !apiSecret) {
+    return res.status(500).json({
+      ok: false,
+      error: 'Missing Xaman environment variables.',
+      missingEnvKeys: [!apiKey ? 'XAMAN_API_KEY' : null, !apiSecret ? 'XAMAN_API_SECRET' : null].filter(Boolean),
+    });
+  }
+
+  const action = String(req.query?.action || '').trim();
+  const body = typeof req.body === 'string'
+    ? (() => { try { return JSON.parse(req.body || '{}'); } catch { return {}; } })()
+    : (req.body && typeof req.body === 'object' ? req.body : {});
+  const uuid = String(req.query?.uuid || body.uuid || '').trim();
+  const destinationAddress = String(body.destinationAddress || req.query?.destinationAddress || '').trim();
+
+  try {
+    if (action === 'create-payload') {
+      const payloadBody = body.txjson || {
+        TransactionType: 'SignIn'
       };
 
-      const response = await fetch('https://xumm.app/api/v1/platform/payload', {
+      const upstream = await fetch(`${baseUrl}/payload`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-API-Key': apiKey,
-          'X-API-Secret': apiSecret
+          'X-API-Secret': apiSecret,
         },
-        body: JSON.stringify(payloadBody)
+        body: JSON.stringify({
+          txjson: payloadBody,
+          options: {
+            submit: false,
+            expire: 5,
+            ...(body.options && typeof body.options === 'object' ? body.options : {}),
+          },
+          ...(destinationAddress ? {
+            custom_meta: {
+              ...(body.custom_meta && typeof body.custom_meta === 'object' ? body.custom_meta : {}),
+              destinationAddress,
+            }
+          } : {}),
+        }),
       });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        console.error('Xaman API Error:', data);
-        return res.status(response.status).json({ error: 'Xaman API rejection', details: data });
+
+      const data = await upstream.json().catch(() => ({}));
+      return res.status(upstream.status).json(data);
+    }
+
+    if (action === 'check-payload') {
+      if (!uuid) {
+        return res.status(400).json({ ok: false, error: 'uuid is required for check-payload.' });
       }
 
-      return res.status(200).json(data);
-    } catch (err) {
-      return res.status(500).json({ error: 'Internal fetch error', message: err.message });
-    }
-  }
-
-  if (action === 'check-payload') {
-    if (!uuid) return res.status(400).json({ error: 'Missing uuid' });
-    try {
-      const response = await fetch(`https://xumm.app/api/v1/platform/payload/${uuid}`, {
-        headers: { 'X-API-Key': apiKey, 'X-API-Secret': apiSecret }
+      const upstream = await fetch(`${baseUrl}/payload/${encodeURIComponent(uuid)}`, {
+        method: 'GET',
+        headers: {
+          'X-API-Key': apiKey,
+          'X-API-Secret': apiSecret,
+        },
       });
-      const data = await response.json();
-      return res.status(200).json(data);
-    } catch (err) {
-      return res.status(500).json({ error: 'Internal fetch error', message: err.message });
-    }
-  }
 
-  return res.status(400).json({ error: 'Invalid action' });
+      const data = await upstream.json().catch(() => ({}));
+      return res.status(upstream.status).json(data);
+    }
+
+    return res.status(400).json({ ok: false, error: 'Invalid action. Use create-payload or check-payload.' });
+  } catch (error) {
+    console.error('Xaman proxy error:', error);
+    return res.status(500).json({
+      ok: false,
+      error: error instanceof Error ? error.message : 'Proxy error',
+    });
+  }
 }
