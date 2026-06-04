@@ -427,7 +427,7 @@
 
     <nav class='tabs'>
       <div class='tab active' data-tab='0' onclick='switchTab(0)'>CONSOLE</div>
-      <div class='tab' data-tab='1' onclick='switchTab(1)'>STORYLINE</div>
+      <div class='tab' data-tab='1' onclick='switchTab(1)'>LORE</div>
       <div class='tab' data-tab='2' onclick='switchTab(2)'>FUSION LAB</div>
       <div class='tab' data-tab='3' onclick='switchTab(3)'>LEADERBOARD</div>
       <div class='tab' data-tab='4' onclick='switchTab(4)'>SOCIALS</div>
@@ -461,7 +461,7 @@
 
       <section id='section-1' class='section'>
         <div class='panel'>
-          <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Storyline archive</div>
+          <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Lore archive</div>
           <h2 style='font-family:Orbitron,sans-serif;font-size:clamp(24px,4vw,48px);margin:10px 0 16px;'>LORE</h2>
           <div style='display:grid;gap:14px;color:#ddfff9;line-height:1.8;'>
             <p>The Gross Bros were forged when a fracture opened in the ledger and turned the city into signal.</p>
@@ -624,105 +624,12 @@
       }
     ];
 
-    const BRO_COLLECTION_ISSUER = "rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY";
-    const XRPL_RPC_ENDPOINT = "https://xrplcluster.com";
-    const IPFS_GATEWAY = "https://ipfs.io/ipfs/";
-    const state = { connected: false, wallet: "", chat: [], fuseUnlocked: false, fuseToken: "XRP", selectedNft: nftCollection[0], fuseTargetUsd: 50 };
-
-    function setBroOfDayStatus(message) {
-      const statusEl = document.getElementById("bro-of-day-status");
-      if (statusEl) statusEl.textContent = message || "";
-    }
-
-    function createRpcError(kind, message, extras = {}) {
-      return Object.assign(new Error(message), { kind, ...extras });
-    }
-
-    function describeRpcFailure(error) {
-      if (!error) return "Unknown error";
-      if (error.kind === "http") return "HTTP " + error.status + (error.statusText ? " " + error.statusText : "");
-      if (error.kind === "rpc") {
-        const suffix = error.rpcErrorMessage ? ": " + error.rpcErrorMessage : "";
-        return "RPC " + error.rpcError + suffix + (error.status ? " (HTTP " + error.status + ")" : "");
-      }
-      if (error.kind === "empty") return error.message || "Empty result";
-      if (error.kind === "network") return "Network/CORS fetch failed";
-      return error.message || String(error);
-    }
-
-    async function fetchJsonRpc(method, params, context) {
-      let response;
-      try {
-        response = await fetch(XRPL_RPC_ENDPOINT, {
-          method: "POST",
-          mode: "cors",
-          cache: "no-store",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: "gross-bros-" + method,
-            method,
-            params: [params]
-          })
-        });
-      } catch (error) {
-        throw createRpcError("network", context + " network failure", { cause: error });
-      }
-
-      const rawText = await response.text();
-      let parsed = null;
-      try {
-        parsed = rawText ? JSON.parse(rawText) : null;
-      } catch {
-        parsed = null;
-      }
-
-      if (!response.ok) {
-        throw createRpcError("http", context + " HTTP " + response.status, {
-          status: response.status,
-          statusText: response.statusText,
-          body: rawText.slice(0, 500)
-        });
-      }
-
-      const rpcResult = parsed?.result || parsed || null;
-      const rpcError = rpcResult?.error || parsed?.error || null;
-      if (rpcError) {
-        throw createRpcError("rpc", context + " RPC " + rpcError, {
-          status: response.status,
-          rpcError,
-          rpcErrorMessage: rpcResult?.error_message || parsed?.error_message || "",
-          body: rawText.slice(0, 500)
-        });
-      }
-
-      return rpcResult;
-    }
-
-    function extractMintedNftId(row) {
-      return String(
-        row?.meta?.nftoken_id ||
-        row?.meta?.nftokenID ||
-        row?.meta?.NFTokenID ||
-        row?.tx?.NFTokenID ||
-        row?.transaction?.NFTokenID ||
-        row?.hash ||
-        ""
-      ).trim();
-    }
-
-    function buildMintRecord(row, issuer, targetTaxon) {
-      const tx = row?.tx || row?.transaction || row || {};
-      return {
-        Issuer: issuer,
-        NFTokenID: extractMintedNftId(row),
-        NFTokenTaxon: normalizeTaxon(tx?.NFTokenTaxon ?? tx?.nftoken_taxon ?? tx?.Taxon ?? targetTaxon) ?? targetTaxon,
-        URI: String(tx?.URI || tx?.uri || row?.URI || row?.uri || ""),
-        txHash: String(row?.hash || tx?.hash || ""),
-        owner: String(tx?.Account || tx?.account || issuer),
-        _ledger: row?.ledger_index || tx?.ledger_index || null
-      };
-    }
+    const BRO_COLLECTION_ISSUER = 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY';
+    const XRPL_RPC_ENDPOINT = 'https://xrplcluster.com';
+    const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
+    const SUPABASE_URL = window.__SUPABASE_URL || window.SUPABASE_URL || window.NEXT_PUBLIC_SUPABASE_URL || '';
+    const SUPABASE_KEY = window.__SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY || window.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    const state = { connected: false, wallet: '', chat: [], fuseUnlocked: false, fuseToken: 'XRP', selectedNft: nftCollection[0], fuseTargetUsd: 50 };
 
 
     function hexToUtf8(hexValue) {
@@ -759,161 +666,165 @@
     }
 
     function cleanLoreText(metadata) {
-      const candidates = [metadata?.lore, metadata?.backstory, metadata?.story, metadata?.description];
+      const candidates = [metadata?.lore, metadata?.backstory, metadata?.story, metadata?.description, metadata?.content, metadata?.message, metadata?.transmission, metadata?.body];
       const raw = candidates.find((value) => typeof value === 'string' && value.trim()) || '';
       const lines = String(raw)
         .replace(/\r\n/g, '\n')
         .split(/\n+/)
         .map((line) => line.trim())
         .filter(Boolean)
-        .filter((line) => !/^(traits?|attributes?|serial(?: number)?|background(?: type)?|token(?: id)?|issuer|taxon|edition|rarity|owner|contract)\b[:\-]*/i.test(line))
+        .filter((line) => !/^(traits?|attributes?|serial(?: number)?|background(?: type)?|token(?: id)?|issuer|taxon|edition|rarity|owner|contract|collection|name|title)\b[:\-]*/i.test(line))
         .filter((line) => !/^#\s*\d+/.test(line));
       const text = lines.join(' ').replace(/\s{2,}/g, ' ').trim();
       return text || 'Live NFT lore is loading from the full BRO collection.';
     }
 
-    function renderBroOfDayLoading(message, status) {
-      const descEl = document.getElementById("bro-of-day-description");
-      if (descEl) descEl.textContent = message || "Live NFT lore is loading from the full BRO collection.";
-      setBroOfDayStatus(status || "RPC: waiting to load.");
+    function transmissionTextFromRow(row) {
+      return cleanLoreText(row);
+    }
+
+    function transmissionImageFromRow(row) {
+      return xrplUriToHttp(row?.image || row?.image_url || row?.imageUrl || row?.art || '');
+    }
+
+    function extractSelectedSerial(nft) {
+      const candidates = [nft?.serial, nft?.Serial, nft?.NFTokenSerial, nft?.nftoken_serial, nft?.NFTSerial, nft?.sequence, nft?.index];
+      for (const value of candidates) {
+        const numeric = Number(value);
+        if (Number.isFinite(numeric)) return numeric;
+      }
+      const tokenId = extractNftId(nft);
+      const trailingDigits = String(tokenId).match(/(\d{1,8})$/);
+      return trailingDigits ? Number(trailingDigits[1]) : null;
+    }
+
+    function transmissionMatchesSelection(row, selectedId, selectedSerial) {
+      const rowTokenId = String(row?.token_id || row?.tokenId || row?.nftoken_id || row?.NFTokenID || row?.NFTokenId || row?.id || '').trim();
+      const rowSerial = Number(row?.serial ?? row?.token_serial ?? row?.nft_serial ?? row?.serial_number ?? row?.nftoken_serial);
+      if (selectedId && rowTokenId && rowTokenId === selectedId) return true;
+      if (selectedSerial != null && Number.isFinite(rowSerial) && rowSerial === selectedSerial) return true;
+      return false;
+    }
+
+    async function loadTransmissionLore(selectedNft) {
+      if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+      const headers = { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY };
+      const url = SUPABASE_URL.replace(/\/$/, '') + '/rest/v1/transmissions?select=token_id,serial,backstory,lore,content,message,description,image,image_url,created_at&order=created_at.desc&limit=100';
+      const response = await fetch(url, { headers, cache: 'no-store' });
+      if (!response.ok) throw new Error('Supabase transmissions fetch failed: ' + response.status);
+      const rows = await response.json();
+      if (!Array.isArray(rows) || !rows.length) return null;
+      const selectedId = extractNftId(selectedNft);
+      const selectedSerial = extractSelectedSerial(selectedNft);
+      const matched = rows.find((row) => transmissionMatchesSelection(row, selectedId, selectedSerial)) || rows[dailyRotationSeed() % rows.length];
+      return {
+        lore: transmissionTextFromRow(matched),
+        image: transmissionImageFromRow(matched),
+        row: matched
+      };
+    }
+
+    function renderBroOfDayLoading(message) {
+      const descEl = document.getElementById('bro-of-day-description');
+      if (descEl) descEl.textContent = message || 'Live NFT lore is loading from the full BRO collection.';
+    }
+
+    function extractTaxon(nft) {
+      const raw = nft?.NFTokenTaxon ?? nft?.nftoken_taxon ?? nft?.taxon ?? nft?.Taxon ?? nft?.NFTokenTaxonID;
+      const numeric = Number(raw);
+      return Number.isFinite(numeric) ? numeric : null;
+    }
+
+    function extractNftId(nft) {
+      return String(nft?.NFTokenID || nft?.nftoken_id || nft?.NFTID || nft?.nft_id || nft?.index || '').trim();
     }
 
     async function fetchCollectionNfts(issuer, taxon = 1) {
       const targetTaxon = normalizeTaxon(taxon) ?? 1;
-      const items = [];
-      const seen = new Set();
-      let marker = null;
-
-      for (let page = 0; page < 50; page += 1) {
-        const params = {
-          account: issuer,
-          ledger_index_min: -1,
-          ledger_index_max: -1,
-          binary: false,
-          forward: false,
-          limit: 400
-        };
-        if (marker) params.marker = marker;
-
-        const result = await fetchJsonRpc("account_tx", params, "Issuer collection crawl");
-        const txs = Array.isArray(result?.transactions) ? result.transactions : [];
-        for (const row of txs) {
-          const tx = row?.tx || row?.transaction || {};
-          if (String(tx?.TransactionType || "") !== "NFTokenMint") continue;
-          if (String(tx?.Account || "") !== issuer) continue;
-          if (normalizeTaxon(tx?.NFTokenTaxon ?? tx?.nftoken_taxon ?? tx?.Taxon) !== targetTaxon) continue;
-          const record = buildMintRecord(row, issuer, targetTaxon);
-          const id = record.NFTokenID || record.txHash;
-          if (!id || seen.has(id)) continue;
-          seen.add(id);
-          items.push(record);
-        }
-
-        marker = result?.marker || null;
-        if (!marker) break;
-      }
-
-      if (!items.length) {
-        const fallback = await fetchJsonRpc("account_nfts", {
-          account: issuer,
-          ledger_index: "validated",
-          limit: 400
-        }, "Issuer account_nfts fallback");
-        const fallbackItems = Array.isArray(fallback?.account_nfts) ? fallback.account_nfts : [];
-        for (const nft of fallbackItems) {
-          if (String(nft?.Issuer || nft?.issuer || "") !== issuer) continue;
-          if (normalizeTaxon(nft?.NFTokenTaxon ?? nft?.nftoken_taxon ?? nft?.taxon ?? nft?.Taxon) !== targetTaxon) continue;
-          const id = String(nft?.NFTokenID || nft?.nftoken_id || nft?.NFTID || nft?.nft_id || "").trim();
-          if (!id || seen.has(id)) continue;
-          seen.add(id);
-          items.push({
-            Issuer: issuer,
-            NFTokenID: id,
-            NFTokenTaxon: targetTaxon,
-            URI: String(nft?.URI || nft?.uri || ""),
-            txHash: "",
-            owner: String(nft?.Owner || nft?.owner || issuer),
-            _ledger: null
+      let lastError = null;
+      try {
+        const items = [];
+        const seen = new Set();
+        let marker = null;
+        for (let page = 0; page < 20; page += 1) {
+          const params = {
+            issuer,
+            taxon: targetTaxon,
+            ledger_index: 'validated',
+            limit: 400
+          };
+          if (marker) params.marker = marker;
+          const body = {
+            jsonrpc: '2.0',
+            id: 'gross-bros-bro-of-day',
+            method: 'nfts_by_issuer',
+            params: [params]
+          };
+          const response = await fetch(XRPL_RPC_ENDPOINT, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(body),
+            cache: 'no-store'
           });
+          if (!response.ok) throw new Error('XRPL request failed: ' + response.status);
+          const data = await response.json().catch(() => null);
+          const result = data?.result || data || null;
+          const pageItems = Array.isArray(result?.nfts)
+            ? result.nfts
+            : Array.isArray(result?.account_nfts)
+              ? result.account_nfts
+              : Array.isArray(result?.issuer_nfts)
+                ? result.issuer_nfts
+                : [];
+          for (const nft of pageItems) {
+            if (String(nft?.Issuer || nft?.issuer || '').trim() !== issuer) continue;
+            if (extractTaxon(nft) !== targetTaxon) continue;
+            const id = extractNftId(nft);
+            if (id && seen.has(id)) continue;
+            if (id) seen.add(id);
+            items.push(nft);
+          }
+          marker = result?.marker || null;
+          if (!marker) break;
         }
+        if (items.length) return items.sort((a, b) => extractNftId(a).localeCompare(extractNftId(b)));
+      } catch (error) {
+        lastError = error;
+        console.error('fetchCollectionNfts failed', { rpcUrl: XRPL_RPC_ENDPOINT, issuer, taxon: targetTaxon, error });
       }
-
-      if (!items.length) {
-        throw createRpcError("empty", "No Taxon " + targetTaxon + " NFT records returned for issuer " + issuer, {
-          issuer,
-          taxon: targetTaxon
-        });
-      }
-
-      return items.sort((a, b) => String(a.NFTokenID).localeCompare(String(b.NFTokenID)));
+      throw lastError || new Error('Unable to load XRPL NFTs.');
     }
 
     async function loadBroOfDay() {
-      renderBroOfDayLoading("Live NFT lore is loading from the full BRO collection.", "RPC: fetching validated issuer history…");
+      renderBroOfDayLoading();
       try {
         const nfts = await fetchCollectionNfts(BRO_COLLECTION_ISSUER, 1);
+        if (!nfts.length) throw new Error('No collection NFTs found');
         const seed = dailyRotationSeed();
-        const attempts = Math.min(nfts.length, 10);
-        let metadata = null;
-        let imageUrl = "";
-        let loreText = "";
-        let lastError = null;
-
-        for (let attempt = 0; attempt < attempts; attempt += 1) {
-          const selected = nfts[(seed + attempt) % nfts.length];
-          const metadataUri = xrplUriToHttp(selected?.URI || selected?.uri || selected?.nft_uri || "");
-          if (!metadataUri) {
-            lastError = createRpcError("empty", "Selected NFT is missing a metadata URI.", { nftId: selected?.NFTokenID || "" });
-            continue;
-          }
-
-          const trimmedUri = metadataUri.length > 96 ? metadataUri.slice(0, 95) + "…" : metadataUri;
-          setBroOfDayStatus("Metadata fetch attempt " + (attempt + 1) + "/" + attempts + ": " + trimmedUri);
-
-          let metadataResponse;
-          try {
-            metadataResponse = await fetch(metadataUri, { cache: "no-store" });
-          } catch (error) {
-            lastError = createRpcError("network", "Metadata network failure", { cause: error, url: metadataUri });
-            continue;
-          }
-
-          if (!metadataResponse.ok) {
-            lastError = createRpcError("http", "Metadata HTTP " + metadataResponse.status, {
-              status: metadataResponse.status,
-              statusText: metadataResponse.statusText,
-              url: metadataUri
-            });
-            continue;
-          }
-
-          metadata = await metadataResponse.json().catch(() => null);
-          if (!metadata || typeof metadata !== "object") {
-            lastError = createRpcError("empty", "Metadata response was empty or invalid JSON.", { url: metadataUri });
-            continue;
-          }
-
-          imageUrl = xrplUriToHttp(metadata?.image || metadata?.animation || metadata?.image_url || "");
-          loreText = cleanLoreText(metadata);
-          break;
+        const selected = nfts[seed % nfts.length];
+        const metadataUri = xrplUriToHttp(selected?.URI || selected?.uri || selected?.nft_uri || '');
+        if (!metadataUri) throw new Error('Missing metadata URI');
+        const metadataResponse = await fetch(metadataUri);
+        if (!metadataResponse.ok) throw new Error('Metadata fetch failed: ' + metadataResponse.status);
+        const metadata = await metadataResponse.json();
+        const fallbackImage = xrplUriToHttp(metadata?.image || metadata?.animation || metadata?.image_url || '');
+        const fallbackLore = cleanLoreText(metadata);
+        let transmission = null;
+        try {
+          transmission = await loadTransmissionLore(selected);
+        } catch (supabaseError) {
+          console.warn('Supabase transmissions lookup failed', supabaseError);
         }
-
-        if (!metadata) {
-          throw lastError || createRpcError("empty", "No metadata could be loaded for the current selection.", {});
-        }
-
-        const descEl = document.getElementById("bro-of-day-description");
-        const imgEl = document.getElementById("bro-of-day-image");
+        const descEl = document.getElementById('bro-of-day-description');
+        const imgEl = document.getElementById('bro-of-day-image');
+        const loreText = transmission?.lore || fallbackLore;
+        const imageUrl = transmission?.image || fallbackImage;
         if (descEl) descEl.textContent = loreText;
         if (imgEl && imageUrl) imgEl.src = imageUrl;
-        setBroOfDayStatus("Loaded " + nfts.length + " Taxon 1 NFTs from issuer history.");
       } catch (error) {
         console.error(error);
-        const reason = describeRpcFailure(error);
-        renderBroOfDayLoading(
-          error?.kind === "empty" ? (error.message || "No Taxon 1 NFTs were returned for this issuer.") : "Live XRPL fetch failed. The terminal is keeping the layout intact while the signal retries.",
-          "Debug: " + reason
-        );
+        renderBroOfDayLoading('Live XRPL fetch failed. The terminal is keeping the layout intact while the signal retries.');
       }
     }
 
@@ -1144,7 +1055,7 @@
       renderChatLog();
       const assistantIndex = state.chat.length - 1;
       try {
-        const res = await fetch('/api/chat.js', {
+        const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
           body: JSON.stringify({

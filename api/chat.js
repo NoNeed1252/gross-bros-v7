@@ -3,16 +3,13 @@ export default async function handler(req, res) {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
   }
-
   const SSE_HEADERS = {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     'Connection': 'keep-alive',
     'Content-Encoding': 'none',
   };
-
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
   const writeSseHeaders = () => {
     res.status(200);
     for (const [key, value] of Object.entries(SSE_HEADERS)) {
@@ -22,12 +19,10 @@ export default async function handler(req, res) {
     res.flushHeaders?.();
     res.write(':ok\n\n');
   };
-
   const sendSse = (event, data) => {
     if (event) res.write(`event: ${event}\n`);
     res.write(`data: ${typeof data === 'string' ? data : JSON.stringify(data)}\n\n`);
   };
-
   const parseBody = () => {
     if (typeof req.body === 'string') {
       try {
@@ -38,7 +33,6 @@ export default async function handler(req, res) {
     }
     return req.body && typeof req.body === 'object' ? req.body : {};
   };
-
   const normalizeMessages = (messages) =>
     (Array.isArray(messages) ? messages : [])
       .map((message) => ({
@@ -46,7 +40,6 @@ export default async function handler(req, res) {
         content: String(message?.content || message?.message || '').trim(),
       }))
       .filter((message) => message.content);
-
   const buildSystemPrompt = ({ walletAddress, selectedName, traits }) => {
     const traitsText = traits.length ? traits.join(', ') : 'none surfaced';
     return [
@@ -59,9 +52,8 @@ export default async function handler(req, res) {
       `Current user wallet: ${walletAddress || 'unavailable'}`,
       `Selected Operative: ${selectedName || 'Operative'}`,
       `Selected NFT traits: ${traitsText}`,
-    ].join(' ');
+    ].join('\n');
   };
-
   const streamText = async (text) => {
     writeSseHeaders();
     for (const token of String(text || '').match(/\S+|\s+/g) || [String(text || '')]) {
@@ -72,47 +64,10 @@ export default async function handler(req, res) {
     sendSse('done', '[DONE]');
     res.end();
   };
-
-  const formatFailureStatus = (label, error) => {
-    const status = String(error?.message || error?.status || error?.code || error || '').trim();
-    return `${label}: ${status || 'unknown error'}`;
-  };
-
-  const streamPlainPollinations = async ({ prompt }) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 45000);
-    try {
-      const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?t=${Date.now()}`, {
-        method: 'GET',
-        headers: {
-          Accept: 'text/plain',
-          'Cache-Control': 'no-cache',
-        },
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        const details = await response.text().catch(() => '');
-        throw new Error(`Pollinations plain text response failed: ${response.status} ${details}`.trim());
-      }
-
-      const text = String(await response.text().catch(() => '')).trim();
-      if (!text) throw new Error('Pollinations plain text produced no content.');
-      await streamText(text);
-      return true;
-    } finally {
-      clearTimeout(timeout);
-    }
-  };
-
-  const resolveOpenRouterKey = () =>
-    process.env.OPENROUTER_API_KEY ||
-    '';
-
+  const resolveOpenRouterKey = () => process.env.OPENROUTER_API_KEY || '';
   const streamOpenRouter = async ({ messages, model }) => {
     const openRouterKey = resolveOpenRouterKey();
     if (!openRouterKey) throw new Error('Missing OPENROUTER_API_KEY');
-
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 45000);
     let response;
@@ -121,8 +76,8 @@ export default async function handler(req, res) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Accept: 'text/event-stream',
-          Authorization: `Bearer ${openRouterKey}`,
+          'Accept': 'text/event-stream',
+          'Authorization': `Bearer ${openRouterKey}`,
           'HTTP-Referer': 'https://grossbros.vercel.app',
           'X-Title': 'Gross Bros Chat',
         },
@@ -137,31 +92,25 @@ export default async function handler(req, res) {
     } finally {
       clearTimeout(timeout);
     }
-
     if (!response.ok || !response.body) {
       const details = await response.text().catch(() => '');
       throw new Error(`OpenRouter response failed: ${response.status} ${details}`.trim());
     }
-
     writeSseHeaders();
-
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
     let emitted = false;
     let inactivityTimer;
-
     const resetTimer = () => {
       if (inactivityTimer) clearTimeout(inactivityTimer);
       inactivityTimer = setTimeout(() => controller.abort(), 60000);
     };
-
     const emitToken = (token) => {
       if (!token) return;
       emitted = true;
       sendSse('token', { token });
     };
-
     const processBlock = (block) => {
       const text = String(block || '').trim();
       if (!text) return false;
@@ -178,9 +127,7 @@ export default async function handler(req, res) {
           payload?.choices?.[0]?.delta?.content ||
           payload?.choices?.[0]?.delta?.reasoning ||
           payload?.choices?.[0]?.message?.content ||
-          payload?.content ||
-          payload?.text ||
-          ''
+          payload?.content || payload?.text || ''
         );
         if (token) emitToken(token);
         return Boolean(payload?.choices?.[0]?.finish_reason);
@@ -189,7 +136,6 @@ export default async function handler(req, res) {
         return false;
       }
     };
-
     try {
       resetTimer();
       while (true) {
@@ -214,156 +160,46 @@ export default async function handler(req, res) {
       if (inactivityTimer) clearTimeout(inactivityTimer);
     }
   };
-
-  const streamPollinationsOpenAI = async ({ messages }) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 45000);
-    let response;
-    try {
-      response = await fetch('https://text.pollinations.ai/openai', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'text/event-stream',
-        },
-        signal: controller.signal,
-        body: JSON.stringify({
-          model: 'meta-llama/llama-3.1-8b-instruct:free',
-          messages,
-          temperature: 0.45,
-          stream: true,
-        }),
-      });
-    } finally {
-      clearTimeout(timeout);
-    }
-
-    if (!response.ok || !response.body) {
-      const details = await response.text().catch(() => '');
-      throw new Error(`Pollinations OpenAI response failed: ${response.status} ${details}`.trim());
-    }
-
-    writeSseHeaders();
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let emitted = false;
-    let inactivityTimer;
-
-    const resetTimer = () => {
-      if (inactivityTimer) clearTimeout(inactivityTimer);
-      inactivityTimer = setTimeout(() => controller.abort(), 60000);
-    };
-
-    const emitToken = (token) => {
-      if (!token) return;
-      emitted = true;
-      sendSse('token', { token });
-    };
-
-    const processBlock = (block) => {
-      const text = String(block || '').trim();
-      if (!text) return false;
-      const payloadText = text
-        .split(/\r?\n/)
-        .filter((line) => line.startsWith('data:'))
-        .map((line) => line.slice(5).trim())
-        .join('')
-        .trim();
-      if (!payloadText || payloadText === '[DONE]') return false;
-      try {
-        const payload = JSON.parse(payloadText);
-        const token = String(
-          payload?.choices?.[0]?.delta?.content ||
-          payload?.choices?.[0]?.delta?.reasoning ||
-          payload?.choices?.[0]?.message?.content ||
-          payload?.content ||
-          payload?.text ||
-          ''
-        );
-        if (token) emitToken(token);
-        return Boolean(payload?.choices?.[0]?.finish_reason);
-      } catch {
-        emitToken(payloadText);
-        return false;
-      }
-    };
-
-    try {
-      resetTimer();
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        resetTimer();
-        buffer += decoder.decode(value, { stream: true });
-        let separatorIndex = buffer.indexOf('\n\n');
-        while (separatorIndex >= 0) {
-          const block = buffer.slice(0, separatorIndex);
-          buffer = buffer.slice(separatorIndex + 2);
-          if (processBlock(block)) break;
-          separatorIndex = buffer.indexOf('\n\n');
-        }
-      }
-      buffer += decoder.decode();
-      processBlock(buffer);
-      if (!emitted) throw new Error('Pollinations OpenAI produced no stream tokens.');
-      sendSse('done', '[DONE]');
-      res.end();
-    } finally {
-      if (inactivityTimer) clearTimeout(inactivityTimer);
-    }
-  };
-
   try {
     const body = parseBody();
     const operative = body.operative || {};
-    const messages = normalizeMessages(Array.isArray(body.messages) ? body.messages.slice(-8) : []);
+    const messages = normalizeMessages(
+      Array.isArray(body.messages) ? body.messages.slice(-8) : []
+    );
     const selectedNft = operative.selectedNft || body.selectedNft || body.selectedNFT || {};
-    const selectedName = String(selectedNft.name || operative.selectedNftName || operative.name || 'Operative').trim();
-    const walletAddress = String(operative.walletAddress || body.walletAddress || body.currentAccount || '').trim();
+    const selectedName = String(
+      selectedNft.name || operative.selectedNftName || operative.name || 'Operative'
+    ).trim();
+    const walletAddress = String(
+      operative.walletAddress || body.walletAddress || body.currentAccount || ''
+    ).trim();
     const traits = Array.isArray(operative.traits)
       ? operative.traits.map((entry) => String(entry || '').trim()).filter(Boolean)
       : Array.isArray(selectedNft.traits)
         ? selectedNft.traits.map((entry) => String(entry || '').trim()).filter(Boolean)
         : [];
-    const systemPrompt = String(body.systemPrompt || buildSystemPrompt({ walletAddress, selectedName, traits })).trim();
-    const lastUserText = [...messages].reverse().find((message) => message.role === 'user')?.content || String(body.userMessage || '').trim();
-
+    const systemPrompt = String(
+      body.systemPrompt || buildSystemPrompt({ walletAddress, selectedName, traits })
+    ).trim();
     const openAiMessages = [
       { role: 'system', content: systemPrompt },
       ...messages,
     ];
-
-    const prompt = [
-      'NEURAL BOT.',
-      `Operative: ${selectedName}`,
-      `Traits: ${traits.length ? traits.join(', ') : 'none surfaced'}`,
-      `Wallet: ${walletAddress || 'unavailable'}`,
-      `User: ${lastUserText || ''}`,
-    ].join(' ');
-
-    let openRouterFailure = 'unknown error';
-    let secondaryOpenRouterFailure = 'unknown error';
-
     try {
       await streamOpenRouter({ messages: openAiMessages, model: 'deepseek/deepseek-r1:free' });
       return;
     } catch (error) {
-      openRouterFailure = error?.message || String(error);
-      console.error('[chat] OpenRouter primary relay failed', error?.message || error);
+      console.error('[chat] OpenRouter primary relay failed:', error?.message || error);
     }
-
     try {
       await streamOpenRouter({ messages: openAiMessages, model: 'meta-llama/llama-3.1-8b-instruct:free' });
       return;
     } catch (error) {
-      secondaryOpenRouterFailure = error?.message || String(error);
-      console.error('[chat] OpenRouter secondary relay failed', error?.message || error);
-      await streamText(`SYSTEM: Comms scrambled. ${formatFailureStatus('OpenRouter primary', openRouterFailure)}. ${formatFailureStatus('OpenRouter secondary', secondaryOpenRouterFailure)}.`);
+      console.error('[chat] OpenRouter secondary relay failed:', error?.message || error);
+      await streamText(`SYSTEM: Comms scrambled. Error: ${error?.message || String(error)}`);
     }
   } catch (error) {
-    console.error('[chat] Chat relay failed', error);
+    console.error('[chat] Chat relay failed:', error);
     try {
       if (!res.headersSent) writeSseHeaders();
       res.write(`event: error\ndata: ${JSON.stringify({ error: 'Chat relay failed', details: error?.message || String(error) })}\n\n`);
