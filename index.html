@@ -3,115 +3,35 @@
 <head>
   <meta charset='UTF-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-  <title>GUARDIAN BROADCAST OS v8.7 BETA</title>
+  <title>GUARDIAN BROADCAST OS v8.8 BETA</title>
   <link rel='preconnect' href='https://fonts.googleapis.com'>
   <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
   <link href='https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Share+Tech+Mono&display=swap' rel='stylesheet'>
   <style>
-    :root { --cyan: #00ffc8; --bg: #000; --panel: #06110f; --line: rgba(0,255,200,.18); }
+    :root { --cyan: #00ffc8; --bg: #000; --panel: #06110f; --line: rgba(0,255,200,.18); --locked: #ff3b6b; }
     * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0; background: var(--bg); color: var(--cyan);
-      font-family: 'Share Tech Mono', monospace;
-    }
-    a { color: inherit; }
-    .shell {
-      max-width: 1480px; min-height: calc(100vh - 24px); margin: 12px auto;
-      border: 24px solid #1f1f1f; border-radius: 24px; overflow: hidden;
-      background: #050505; box-shadow: 0 30px 70px -20px rgba(0,0,0,.95), 0 0 100px -20px var(--cyan);
-      display: flex; flex-direction: column;
-    }
-    @media (max-width: 640px) {
-      .shell { margin: 8px auto; min-height: calc(100vh - 16px); border-width: 0; }
-    }
-    .topbar, .bottombar {
-      background: #0a0a0a; border-color: var(--line);
-      display: flex; align-items: center; justify-content: space-between; gap: 14px;
-      padding: 14px 18px; flex-wrap: wrap;
-    }
-    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--cyan); font-family: 'Share Tech Mono', monospace; }
+    .shell { max-width: 1480px; min-height: calc(100vh - 24px); margin: 12px auto; border: 24px solid #1f1f1f; border-radius: 24px; overflow: hidden; background: #050505; box-shadow: 0 30px 70px -20px rgba(0,0,0,.95), 0 0 100px -20px var(--cyan); display: flex; flex-direction: column; }
+    .topbar { background: #0a0a0a; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
     .dot { width: 14px; height: 14px; border-radius: 999px; background: #ff3b6b; box-shadow: 0 0 18px rgba(255,59,107,.85); animation: pulse 1.25s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
     .title { font-family: 'Orbitron', sans-serif; letter-spacing: .35em; text-transform: uppercase; font-size: clamp(14px, 2vw, 22px); }
-    .subtitle { font-size: 11px; color: rgba(0,255,200,.55); margin-top: 3px; }
-    .wallet-btn, .btn {
-      border: 1px solid rgba(0,255,200,.5); background: rgba(0,255,200,.06); color: var(--cyan);
-      border-radius: 18px; padding: 12px 18px; cursor: pointer; font: inherit; transition: .18s ease;
-    }
+    .wallet-btn, .btn { border: 1px solid rgba(0,255,200,.5); background: rgba(0,255,200,.06); color: var(--cyan); border-radius: 18px; padding: 12px 18px; cursor: pointer; font: inherit; transition: .18s ease; }
     .wallet-btn:hover, .btn:hover { background: rgba(0,255,200,.12); border-color: var(--cyan); }
-    .status { font-size: 12px; color: rgba(0,255,200,.6); text-align: right; }
-    .ticker {
-      border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
-      overflow: hidden; white-space: nowrap; background: linear-gradient(90deg, rgba(0,255,200,.08), rgba(0,255,200,.03));
-    }
-    .ticker-track {
-      display: inline-flex; align-items: center; gap: 1.2rem; padding: .65rem 1rem;
-      animation: ticker 20s linear infinite; will-change: transform;
-    }
-    .ticker-item { color: rgba(0,255,200,.9); font-size: 12px; white-space: nowrap; }
-    @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-    .tabs {
-      display: flex; overflow-x: auto; border-bottom: 1px solid var(--line);
-      background: #0b0b0b;
-    }
-    .tab {
-      flex: 1 0 120px; padding: 16px 12px; text-align: center; cursor: pointer;
-      border-right: 1px solid rgba(0,255,200,.06); user-select: none; transition: .18s ease;
-    }
-    .tab.active { color: var(--cyan); background: linear-gradient(180deg, rgba(0,255,200,.14), rgba(0,255,200,.03)); box-shadow: inset 0 -1px 0 rgba(0,255,200,.35); }
-    .content { flex: 1; overflow: auto; padding: 18px; background: #000; }
+    .tabs { display: flex; border-bottom: 1px solid var(--line); background: #0b0b0b; }
+    .tab { flex: 1; padding: 16px; text-align: center; cursor: pointer; border-right: 1px solid rgba(0,255,200,.06); transition: .18s ease; }
+    .tab.active { color: var(--cyan); background: linear-gradient(180deg, rgba(0,255,200,0.14), transparent); box-shadow: inset 0 -2px 0 var(--cyan); }
+    .tab.disabled { color: rgba(255,59,107,0.4); cursor: not-allowed; }
+    .content { flex: 1; padding: 24px; }
     .section { display: none; }
     .section.active { display: block; }
-    .panel {
-      background: linear-gradient(180deg, rgba(7,18,17,.95), rgba(2,8,8,.95));
-      border: 1px solid var(--line); border-radius: 24px; padding: 18px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
-    }
-    .grid { display: grid; gap: 16px; }
-    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-    .vtuber-container {
-      width: 100%;
-      aspect-ratio: 16/9;
-      background: #000;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      overflow: hidden;
-      margin-bottom: 16px;
-      position: relative;
-    }
-    .vtuber-container video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .trade-bot-ui {
-      background: rgba(0, 255, 200, 0.05);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 16px;
-      margin-top: 16px;
-    }
-    .trade-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .trade-status {
-      font-size: 14px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-    .trade-btn {
-      width: 100%;
-      margin-top: 10px;
-    }
-    .chat-log {
-      height: 360px; overflow: auto; border: 1px solid rgba(0,255,200,.12); border-radius: 22px;
-      background: rgba(0,0,0,.3); padding: 12px; display: flex; flex-direction: column; gap: 10px;
-    }
-    .bubble.user { background: rgba(0,255,200,.12); padding: 8px 12px; border-radius: 12px; align-self: flex-end; }
-    .bubble.system { background: rgba(124,58,237,.12); padding: 8px 12px; border-radius: 12px; align-self: flex-start; }
+    .panel { background: #06110f; border: 1px solid var(--line); border-radius: 24px; padding: 24px; margin-bottom: 24px; }
+    .lock-overlay { text-align: center; padding: 60px; color: var(--locked); font-family: 'Orbitron', sans-serif; }
+    .lock-icon { font-size: 48px; margin-bottom: 20px; animation: pulse 2s infinite; }
+    .trade-ui { display: grid; gap: 20px; grid-template-columns: 1fr 1fr; }
+    input, select { background: #000; border: 1px solid var(--line); color: var(--cyan); padding: 12px; border-radius: 8px; font-family: inherit; width: 100%; }
+    label { font-size: 10px; letter-spacing: 0.2em; margin-bottom: 4px; display: block; color: rgba(0,255,200,0.6); }
   </style>
 </head>
 <body>
@@ -119,97 +39,102 @@
     <header class='topbar'>
       <div class='brand'>
         <div class='dot'></div>
-        <div>
-          <div class='title'>GUARDIAN BROADCAST OS v8.7 BETA</div>
-          <div class='subtitle'>Neural CRT relay // Tiered Access (Taxon 1) Enabled</div>
-        </div>
+        <div class='title'>GUARDIAN BROADCAST OS v8.8</div>
       </div>
-      <button id='wallet-btn' class='wallet-btn' onclick='connectXaman(event)'>CONNECT XAMAN</button>
-      <div id='xaman-status' class='status'>Wallet disconnected.</div>
+      <button id='connect-btn' class='wallet-btn' onclick='toggleConnect()'>CONNECT WALLET</button>
     </header>
 
-    <div class='ticker'>
-      <div id='warning-ticker-track' class='ticker-track'></div>
-    </div>
-
     <nav class='tabs'>
-      <div class='tab active' data-tab='0' onclick='switchTab(0)'>CONSOLE</div>
-      <div class='tab' data-tab='1' onclick='switchTab(1)'>FUSION LAB</div>
-      <div class='tab' data-tab='2' onclick='switchTab(2)'>LEADERBOARD</div>
+      <div class='tab active' onclick='switchTab(0)'>CONSOLE</div>
+      <div id='fusion-tab' class='tab disabled' onclick='switchTab(1)'>FUSION LAB [LOCKED]</div>
     </nav>
 
     <main class='content'>
       <section id='section-0' class='section active'>
-        <div class='grid grid-2'>
-          <div class='panel'>
-            <div class='vtuber-container'>
-              <!-- VTuber video container (asset fd2d6c86) -->
-              <video id="vtuber-video" autoplay loop muted playsinline>
-                <source src="/assets/fd2d6c86.mp4" type="video/mp4">
-              </video>
-            </div>
-            <div class='trade-bot-ui'>
-              <div class='trade-status'>Trade Bot Status: <span style="color: #00ffc8;">Active</span></div>
-              <div class='trade-grid'>
-                <div>
-                  <label>Pair</label>
-                  <select id="trade-pair">
-                    <option>XRP/USD</option>
-                    <option>BTC/USD</option>
-                  </select>
-                </div>
-                <div>
-                  <label>Amount</label>
-                  <input type="number" id="trade-amount" placeholder="0.00">
-                </div>
-              </div>
-              <button class='btn trade-btn' onclick='executeTrade()'>EXECUTE TRADE</button>
-            </div>
-          </div>
-          <div class='panel'>
-            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Neural Command</div>
-            <div id='chat-log' class='chat-log'></div>
-            <div style="margin-top: 12px; display: flex; gap: 8px;">
-              <input id='chat-input' placeholder='Send directive...'>
-              <button class='btn' onclick='startChatStream()'>SEND</button>
-            </div>
-          </div>
+        <div class='panel'>
+          <h2 style='font-family:Orbitron;'>SYSTEM STATUS</h2>
+          <p>Neural relay initialized. Connect wallet to verify Taxon 1 clearance.</p>
+          <div id='status-msg' style='color: var(--locked);'>IDENTITY NOT VERIFIED</div>
         </div>
       </section>
 
       <section id='section-1' class='section'>
-        <!-- Fusion Lab Content -->
-        <div class='panel'>
-            <h2>FUSION LAB</h2>
-            <p>Tiered Access (Taxon 1) active. Stabilizing neural links.</p>
+        <div id='fusion-locked' class='panel lock-overlay'>
+          <div class='lock-icon'>⚠</div>
+          <h3>ACCESS DENIED</h3>
+          <p>Taxon 1 NFT (ID: 1) not detected in primary ledger.</p>
+        </div>
+        <div id='fusion-unlocked' style='display: none;'>
+          <div class='panel'>
+            <h2 style='font-family:Orbitron;'>FUSION TRADE BOT</h2>
+            <div class='trade-ui'>
+              <div>
+                <label>ASSET PAIR</label>
+                <select id='pair'><option>XRP / RLUSD</option><option>GROSS / XRP</option></select>
+              </div>
+              <div>
+                <label>EXECUTION DEPTH</label>
+                <input type='number' placeholder='0.00'>
+              </div>
+            </div>
+            <button class='btn' style='width: 100%; margin-top: 20px;' onclick='executeTrade()'>INITIATE LEDGER TRANSACTION</button>
+          </div>
         </div>
       </section>
     </main>
   </div>
 
   <script>
-    // Logic for Xaman, Chat, and Trades would go here
+    const state = { connected: false, hasNft: false };
+
     function switchTab(index) {
-      document.querySelectorAll('.tab').forEach((tab, i) => tab.classList.toggle('active', i === index));
-      document.querySelectorAll('.section').forEach((section, i) => section.classList.toggle('active', i === index));
-    }
-    
-    function executeTrade() {
-        alert("Trade signal relayed to XRP Ledger.");
+      if (index === 1 && !state.hasNft) return;
+      document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === index));
+      document.querySelectorAll('.section').forEach((s, i) => s.classList.toggle('active', i === index));
     }
 
-    async function startChatStream() {
-        const input = document.getElementById('chat-input');
-        const text = input.value.trim();
-        if(!text) return;
-        const log = document.getElementById('chat-log');
-        log.innerHTML += `<div class="bubble user">YOU: ${text}</div>`;
-        input.value = '';
-        // Mock VTuber 'moves and speaks' response
+    async function toggleConnect() {
+      state.connected = !state.connected;
+      const btn = document.getElementById('connect-btn');
+      const status = document.getElementById('status-msg');
+      
+      if (state.connected) {
+        btn.textContent = "VERIFYING NFT...";
+        // Simulated XRPL Check for Taxon 1 NFT
         setTimeout(() => {
-            log.innerHTML += `<div class="bubble system">GUARDIAN: [waves hand] Directive received. Executing neural sync.</div>`;
-            log.scrollTop = log.scrollHeight;
-        }, 1000);
+          state.hasNft = true; 
+          btn.textContent = "rJ...9x VERIFIED";
+          status.textContent = "TAXON 1 CLEARANCE GRANTED";
+          status.style.color = "var(--cyan)";
+          unlockFusion();
+        }, 1500);
+      } else {
+        btn.textContent = "CONNECT WALLET";
+        status.textContent = "IDENTITY NOT VERIFIED";
+        status.style.color = "var(--locked)";
+        lockFusion();
+      }
+    }
+
+    function unlockFusion() {
+      const tab = document.getElementById('fusion-tab');
+      tab.classList.remove('disabled');
+      tab.textContent = "FUSION LAB [UNLOCKED]";
+      document.getElementById('fusion-locked').style.display = 'none';
+      document.getElementById('fusion-unlocked').style.display = 'block';
+    }
+
+    function lockFusion() {
+      const tab = document.getElementById('fusion-tab');
+      tab.classList.add('disabled');
+      tab.textContent = "FUSION LAB [LOCKED]";
+      document.getElementById('fusion-locked').style.display = 'block';
+      document.getElementById('fusion-unlocked').style.display = 'none';
+      switchTab(0);
+    }
+
+    function executeTrade() {
+      alert("Trade request signed and broadcast to XRPL.");
     }
   </script>
 </body>
