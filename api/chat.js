@@ -192,7 +192,7 @@ export default async function handler(req, res) {
       console.error('[chat] OpenRouter primary relay failed:', error?.message || error);
     }
     try {
-      await streamOpenRouter({ messages: openAiMessages, model: 'openchat/openchat-7b:free' });
+      await streamOpenRouter({ messages: openAiMessages, model: 'google/gemma-7b-it:free' });
       return;
     } catch (error) {
       console.error('[chat] OpenRouter secondary relay failed:', error?.message || error);
