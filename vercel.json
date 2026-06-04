@@ -2,10 +2,7 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/api/chat", "destination": "/api/chat.js" },
-    { "source": "/api/xaman", "destination": "/api/xaman.js" },
-    { "source": "/api/fusion-gate", "destination": "/api/fusion-gate.js" },
-    { "source": "/api/callback", "destination": "/api/callback.js" },
+    { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
