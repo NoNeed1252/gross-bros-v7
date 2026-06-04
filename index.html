@@ -241,15 +241,47 @@
     }
 
     async function connectXaman(event) {
+      if (event && event.preventDefault) event.preventDefault();
       const btn = document.getElementById('wallet-btn');
-      btn.textContent = 'LINKING...';
-      
-      // Simulate successful connection
-      setTimeout(() => {
-        state.connected = true;
-        state.wallet = "rMOCK...WALLET";
-        setWalletUI(true, state.wallet);
-      }, 1000);
+      btn.disabled = true;
+      btn.textContent = 'CONNECTING...';
+      try {
+        const res = await fetch('/api/xaman?action=create-payload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ txjson: { TransactionType: 'SignIn' } })
+        });
+        const payload = await res.json();
+        if (payload?.next?.always) window.open(payload.next.always, '_blank');
+        const uuid = payload?.uuid;
+        if (!uuid) throw new Error('No payload uuid returned');
+        
+        let attempts = 0;
+        const timer = setInterval(async () => {
+          attempts += 1;
+          if (attempts > 35) {
+            clearInterval(timer);
+            btn.disabled = false;
+            btn.textContent = 'CONNECT WALLET';
+            return;
+          }
+          const check = await fetch('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(uuid));
+          const status = await check.json();
+          if ((status.meta && status.meta.signed) || status.signed) {
+            clearInterval(timer);
+            const address = status?.response?.account || status?.account || status?.resolved?.account || '';
+            if (address) {
+              state.connected = true;
+              state.wallet = address;
+              setWalletUI(true, address);
+            }
+          }
+        }, 2500);
+      } catch (error) {
+        console.error(error);
+        btn.disabled = false;
+        btn.textContent = 'CONNECT WALLET';
+      }
     }
 
     function setWalletUI(connected, address) {
@@ -261,6 +293,7 @@
       
       if (connected) {
         btn.textContent = 'LINKED';
+        btn.disabled = false;
         status.textContent = address.slice(0, 6) + '...' + address.slice(-4);
         msg.textContent = "AUTHENTICATION COMPLETE. ACCESS GRANTED.";
         msg.style.color = "var(--cyan)";
