@@ -1,0 +1,1 @@
+Force redeploy: Update version to THE DEN // V7.4 and ensure tab system is active.
