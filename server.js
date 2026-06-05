@@ -32,33 +32,43 @@ app.post('/api/deploy', (req, res) => {
 });
 
 /**
- * API Handler Wrapper
- * Adapts Vercel-style (ESM/Default Export) handlers to Express.
- * This ensures consistency across the Ionos VPS environment.
+ * Dynamic ESM Loader for CommonJS
+ * Caches imported modules to avoid redundant loads.
  */
-const wrapHandler = (handler) => async (req, res) => {
+const moduleCache = new Map();
+
+const loadHandler = async (modulePath) => {
+    if (moduleCache.has(modulePath)) {
+        return moduleCache.get(modulePath);
+    }
+    // Dynamic import works from CJS to load ESM
+    const module = await import(`./api/${modulePath}`);
+    const handler = module.default || module;
+    moduleCache.set(modulePath, handler);
+    return handler;
+};
+
+const routeHandler = (fileName) => async (req, res) => {
     try {
-        // Support both CommonJS (require) and ESM (import) style exports
-        const actualHandler = handler.default || handler;
-        await actualHandler(req, res);
+        const handler = await loadHandler(fileName);
+        await handler(req, res);
     } catch (error) {
-        console.error('API Error:', error);
+        console.error(`API Error [${fileName}]:`, error);
         if (!res.headersSent) {
-            res.status(500).json({ error: 'Internal Server Error', message: error.message });
+            res.status(500).json({ 
+                error: 'Internal Server Error', 
+                message: error.message,
+                path: fileName
+            });
         }
     }
 };
 
-// API Routes - Mount dynamic handlers
-const xamanHandler = require('./api/xaman.js');
-const chatHandler = require('./api/chat.js');
-const fusionGateHandler = require('./api/fusion-gate.js');
-const callbackHandler = require('./api/callback.js');
-
-app.all('/api/xaman', wrapHandler(xamanHandler));
-app.all('/api/chat', wrapHandler(chatHandler));
-app.all('/api/fusion-gate', wrapHandler(fusionGateHandler));
-app.all('/api/callback', wrapHandler(callbackHandler));
+// API Routes - Mounted using dynamic ESM loader
+app.all('/api/xaman', routeHandler('xaman.js'));
+app.all('/api/chat', routeHandler('chat.js'));
+app.all('/api/fusion-gate', routeHandler('fusion-gate.js'));
+app.all('/api/callback', routeHandler('callback.js'));
 
 // SPA Routing: Redirect all other requests to index.html
 app.get('*', (req, res) => {
