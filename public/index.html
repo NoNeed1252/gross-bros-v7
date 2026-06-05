@@ -711,7 +711,7 @@
     const BRO_COLLECTION_ISSUER = "rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY";
     const XRPL_RPC_ENDPOINT = "https://xrplcluster.com";
     const IPFS_GATEWAY = "https://ipfs.io/ipfs/";
-    const state = { connected: false, wallet: "", chat: [], fuseUnlocked: false, fuseToken: "XRP", selectedNft: nftCollection[0], userNfts: [], fuseTargetUsd: 50 };
+    const state = { connected: false, wallet: "", chat: [], fuseUnlocked: false, fuseToken: "XRP", selectedNft: null, userNfts: [], fuseTargetUsd: 50 };
 
     function setBroOfDayStatus(message) {
       const statusEl = document.getElementById("bro-of-day-status");
@@ -1031,16 +1031,25 @@
           traits: []
         }));
         
+        if (state.userNfts.length > 0) {
+          state.selectedNft = state.userNfts[0];
+        } else {
+          state.selectedNft = null;
+        }
+        
         renderNftSelection();
         renderHeldNft();
       } catch (e) {
         console.error("NFT Fetch error", e);
         state.userNfts = [];
+        state.selectedNft = null;
+        renderNftSelection();
+        renderHeldNft();
       }
     }
 
     function getActiveCollection() {
-      return (state.connected && state.userNfts && state.userNfts.length > 0) ? state.userNfts : nftCollection;
+      return (state.connected && state.userNfts) ? state.userNfts : [];
     }
 
 
@@ -1048,19 +1057,35 @@
     function setWalletUI(connected, address) {
       state.connected = connected;
       state.wallet = address || '';
-      if (connected && address) fetchUserNfts(address);
+      if (connected && address) {
+        fetchUserNfts(address);
+      } else {
+        state.userNfts = [];
+        state.selectedNft = null;
+        renderNftSelection();
+        renderHeldNft();
+      }
       document.getElementById('wallet-btn').textContent = connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
       document.getElementById('xaman-status').textContent = connected ? 'Connected: ' + address.slice(0, 6) + '&' + address.slice(-6) : 'Wallet disconnected.';
     }
 
     function getSelectedNft() {
-      return state.selectedNft || getActiveCollection()[0];
+      return state.selectedNft;
     }
 
     function renderNftSelection() {
       const track = document.getElementById('nft-selection-track');
       if (!track) return;
-      track.innerHTML = getActiveCollection().map((nft, index) => {
+      const collection = getActiveCollection();
+      
+      if (collection.length === 0) {
+        track.innerHTML = '<div class="muted" style="padding: 30px; text-align: center; width: 100%; letter-spacing: 0.25em; font-size: 11px; opacity: 0.6;">' + 
+          (state.connected ? 'NO GROSS BROS DETECTED IN WALLET' : 'CONNECT WALLET TO SYNC OPERATIVES') + 
+          '</div>';
+        return;
+      }
+
+      track.innerHTML = collection.map((nft, index) => {
         const active = getSelectedNft()?.name === nft.name;
         const activeClass = active ? 'active' : '';
         return '<button type="button" class="nft-select-card ' + activeClass + '" onclick="selectNft(' + index + ')">' +
@@ -1072,7 +1097,8 @@
     }
 
     function selectNft(index) {
-      const nft = getActiveCollection()[index];
+      const collection = getActiveCollection();
+      const nft = collection[index];
       if (!nft) return;
       state.selectedNft = nft;
       renderHeldNft();
@@ -1103,7 +1129,7 @@
       if (!container) return;
       const nft = getSelectedNft();
       if (!nft) {
-        container.innerHTML = '<div class="held-nft-empty">NO OPERATIVE HELD</div>';
+        container.innerHTML = '<div style="padding: 24px; text-align: center; width: 100%; border: 1px dashed rgba(0,255,200,0.15); border-radius: 18px; color: rgba(0,255,200,0.4); letter-spacing: 0.2em; font-size: 11px;">NO ACTIVE OPERATIVE LINKED</div>';
         return;
       }
       const traitsHtml = (nft.traits || []).map(function(trait) {
