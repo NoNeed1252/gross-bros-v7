@@ -1,8 +1,9 @@
 import fetch from 'node-fetch';
 
 /**
- * Gross Bros - Neural Chat Relay v2
+ * Gross Bros - Neural Chat Relay v2.1
  * Streaming SSE endpoint for neon alien operatives.
+ * Updated to stream exact error details for debugging.
  */
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
@@ -48,7 +49,10 @@ export default async function handler(req, res) {
 
     try {
         // Try OpenRouter First
-        if (OPENROUTER_API_KEY) {
+        if (!OPENROUTER_API_KEY) {
+            console.warn("Missing OPENROUTER_API_KEY");
+            // No error streamed yet, moving to fallback logic
+        } else {
             const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
                 headers: {
@@ -87,33 +91,43 @@ export default async function handler(req, res) {
                         resolve();
                     });
                 });
+            } else {
+                const errText = await response.text();
+                console.error("OpenRouter API Error:", response.status, errText);
+                streamSSE(`[DEBUG] OpenRouter Error ${response.status}: ${errText.slice(0, 200)}...`);
             }
         }
 
         // Fallback to local Ollama
-        const ollamaRes = await fetch(OLLAMA_ENDPOINT, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: "llama3",
-                messages: finalMessages,
-                stream: false
-            })
-        });
+        try {
+            const ollamaRes = await fetch(OLLAMA_ENDPOINT, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: "llama3",
+                    messages: finalMessages,
+                    stream: false
+                })
+            });
 
-        if (ollamaRes.ok) {
-            const data = await ollamaRes.json();
-            const reply = data.message?.content || "Relay stabilized. Static cleared.";
-            streamSSE(reply);
-            res.write('data: [DONE]\\n\\n');
-            return res.end();
+            if (ollamaRes.ok) {
+                const data = await ollamaRes.json();
+                const reply = data.message?.content || "Relay stabilized. Static cleared.";
+                streamSSE(reply);
+                res.write('data: [DONE]\\n\\n');
+                return res.end();
+            } else {
+                const errText = await ollamaRes.text();
+                throw new Error(`Ollama Error ${ollamaRes.status}: ${errText}`);
+            }
+        } catch (ollamaErr) {
+            console.error("Ollama Fallback Error:", ollamaErr.message);
+            throw new Error(`Primary and Fallback Providers Failed. Last Error: ${ollamaErr.message}`);
         }
 
-        throw new Error("All AI providers offline");
-
     } catch (err) {
-        console.error("Chat Error:", err);
-        streamSSE("Signal lost... Perimeter breach detected... Try again when the clouds clear.");
+        console.error("Final Chat Error:", err);
+        streamSSE(`[SIGNAL_LOST] Neural link severed. Diagnostic: ${err.message}`);
         res.write('data: [DONE]\\n\\n');
         res.end();
     }
