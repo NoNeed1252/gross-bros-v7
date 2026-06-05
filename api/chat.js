@@ -63,7 +63,7 @@ STRICT PROTOCOLS:
   if (orKey) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout for cloud
 
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -75,7 +75,7 @@ STRICT PROTOCOLS:
         },
         signal: controller.signal,
         body: JSON.stringify({
-          model: 'google/gemini-flash-1.5',
+          model: 'google/gemini-flash-1.5', // Faster & smarter than local
           messages: finalMessages,
           stream: stream,
           max_tokens: 150
@@ -86,6 +86,8 @@ STRICT PROTOCOLS:
       if (response.ok) {
         await handleStream(response, res, 'openai');
         success = true;
+      } else {
+        console.error('OpenRouter Error Status:', response.status);
       }
     } catch (err) {
       console.error('OpenRouter Primary Failed:', err.message);
@@ -118,7 +120,7 @@ STRICT PROTOCOLS:
     const OLLAMA_URL = 'http://216.250.127.169:8443/v1/chat/completions';
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // Quick 3s timeout for the unstable VPS
 
       const response = await fetch(OLLAMA_URL, {
         method: 'POST',
