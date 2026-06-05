@@ -1,6 +1,6 @@
 /**
  * Galactic Gross Bros - Chat API (SSE)
- * Handles OpenRouter streaming with proper model identifiers.
+ * Handles OpenRouter streaming with proper model identifiers and payload transformation.
  */
 const fetch = require('node-fetch');
 
@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
       },
       body: JSON.stringify({
         model: targetModel,
-        messages: messages,
+        messages: messages || [{ role: 'user', content: 'Hello' }],
         stream: stream
       })
     });
@@ -39,8 +39,28 @@ module.exports = async (req, res) => {
       return res.end();
     }
 
+    // Transform OpenRouter/OpenAI stream to a format the current frontend can parse
     response.body.on('data', (chunk) => {
-      res.write(chunk);
+      const lines = chunk.toString().split('\n');
+      for (const line of lines) {
+        if (line.trim().startsWith('data:')) {
+          const dataText = line.trim().slice(5).trim();
+          if (dataText === '[DONE]') {
+            res.write('data: [DONE]\n\n');
+            continue;
+          }
+          try {
+            const json = JSON.parse(dataText);
+            const content = json.choices?.[0]?.delta?.content || json.choices?.[0]?.text || '';
+            if (content) {
+              res.write(`data: ${JSON.stringify({ token: content })}\n\n`);
+            }
+          } catch (e) {
+            // Fallback: send raw if parsing fails
+            res.write(line + '\n\n');
+          }
+        }
+      }
     });
 
     response.body.on('end', () => {
@@ -52,7 +72,7 @@ module.exports = async (req, res) => {
     });
 
   } catch (error) {
-    res.write(`data: ${JSON.stringify({ error: 'Internal Server Error' })}\n\n`);
+    res.write(`data: ${JSON.stringify({ error: 'Internal Server Error', message: error.message })}\n\n`);
     res.end();
   }
 };
