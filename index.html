@@ -12,7 +12,6 @@
     * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; background: var(--bg); color: var(--cyan); font-family: 'Share Tech Mono', monospace; overflow: hidden; }
     
-    /* CRT Scanlines Overlay */
     body::before {
       content: " ";
       display: block;
@@ -182,7 +181,6 @@
         <div class='panel'>
           <div id='fusion-unlocked'>
             <div id='chat-terminal' class='chat-terminal'>
-              <!-- CONNECTED NFT IMAGE DISPLAY -->
               <div id='connected-nft-display' class='selected-nft-bubble' style="display: none;">
                 <img id='connected-nft-image' src='' alt='Connected NFT'>
                 <div style="font-size: 10px; color: var(--cyan); letter-spacing: 0.2em;">VERIFIED ASSET</div>
@@ -197,7 +195,7 @@
             </div>
 
             <div class='fuse-grid'>
-              <div class='fuse-readout'><span>PROTOCOL</span><strong>ACTIVE</strong></div>
+              <div class='fuse-readout'><span>PROTOCOL</span><strong id='protocol-status'>ACTIVE</strong></div>
               <div class='fuse-readout'><span>RATE</span><strong id='fuse-token-rate'>--</strong></div>
               <div class='fuse-readout'><span>STATUS</span><strong id='fuse-payment-status'>AWAITING</strong></div>
             </div>
@@ -240,7 +238,8 @@
       connected: false, 
       wallet: "", 
       chat: [], 
-      selectedNft: nftCollection[0] 
+      selectedNft: nftCollection[0],
+      userNfts: []
     };
 
     function switchTab(index) {
@@ -291,6 +290,7 @@
               state.connected = true;
               state.wallet = address;
               setWalletUI(true, address);
+              fetchUserNfts(address);
             }
           }
         }, 2500);
@@ -318,8 +318,62 @@
         if (nftDisplay && nftImg) {
           nftDisplay.style.display = 'grid';
           nftImg.src = state.selectedNft.image;
-          console.log("NFT Displayed:", state.selectedNft.image);
         }
+      }
+    }
+
+    async function fetchUserNfts(address) {
+      try {
+        const response = await fetch(CONFIG.RPC, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            method: "account_nfts",
+            params: [{ account: address, ledger_index: "validated" }]
+          })
+        });
+        const result = await response.json();
+        const nfts = result?.result?.account_nfts || [];
+        
+        const filtered = nfts.filter(n => n.Issuer === CONFIG.ISSUER && n.NFTokenTaxon === 1);
+        
+        if (filtered.length > 0) {
+          state.userNfts = filtered.map(n => {
+            let uri = n.URI;
+            if (/^[0-9a-fA-F]+$/.test(uri)) {
+               uri = new TextDecoder().decode(new Uint8Array(uri.match(/.{1,2}/g).map(byte => parseInt(byte, 16))));
+            }
+            if (uri.startsWith('ipfs://')) uri = CONFIG.GATEWAY + uri.slice(7);
+            return {
+              name: 'BRO #' + n.NFTokenID.slice(-4),
+              image: uri
+            }
+          });
+          renderNftSelection();
+        }
+      } catch (e) {
+        console.error("NFT Fetch error", e);
+      }
+    }
+
+    function renderNftSelection() {
+      const track = document.getElementById('nft-selection-track');
+      const collection = state.userNfts.length > 0 ? state.userNfts : nftCollection;
+      track.innerHTML = collection.map((n, i) => `
+        <div class="nft-select-card ${state.selectedNft === n ? 'active' : ''}" onclick="selectNft(${i})">
+          <img src="${n.image}">
+        </div>
+      `).join('');
+    }
+
+    function selectNft(index) {
+      const collection = state.userNfts.length > 0 ? state.userNfts : nftCollection;
+      state.selectedNft = collection[index];
+      renderNftSelection();
+      const nftDisplay = document.getElementById('connected-nft-display');
+      const nftImg = document.getElementById('connected-nft-image');
+      if (nftDisplay && nftImg) {
+        nftImg.src = state.selectedNft.image;
       }
     }
 
@@ -356,13 +410,59 @@
       }, 800);
     }
 
+    async function loadBroOfDay() {
+      try {
+        const response = await fetch(CONFIG.RPC, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            method: "account_nfts",
+            params: [{ account: CONFIG.ISSUER, ledger_index: "validated" }]
+          })
+        });
+        const result = await response.json();
+        const nfts = result?.result?.account_nfts || [];
+        const filtered = nfts.filter(n => n.NFTokenTaxon === 1);
+        
+        if (filtered.length > 0) {
+          const day = new Date().getUTCDate();
+          const selected = filtered[day % filtered.length];
+          const imgEl = document.getElementById('bro-of-day-image');
+          if (imgEl) {
+            let uri = selected.URI;
+            if (/^[0-9a-fA-F]+$/.test(uri)) {
+              uri = new TextDecoder().decode(new Uint8Array(uri.match(/.{1,2}/g).map(byte => parseInt(byte, 16))));
+            }
+            if (uri.startsWith('ipfs://')) uri = CONFIG.GATEWAY + uri.slice(7);
+            imgEl.src = uri;
+          }
+        }
+      } catch (e) {
+        console.error("BOTD Error", e);
+      }
+    }
+
+    function liveReadouts() {
+      const rateEl = document.getElementById('fuse-token-rate');
+      const protocolEl = document.getElementById('protocol-status');
+      
+      setInterval(() => {
+        const rate = (Math.random() * 0.1 + 0.5).toFixed(4);
+        if (rateEl) rateEl.textContent = rate + ' XRP';
+        if (protocolEl) {
+          protocolEl.style.opacity = Math.random() > 0.1 ? '1' : '0.5';
+        }
+      }, 3000);
+    }
+
     function init() {
       const ticker = document.getElementById('warning-ticker-track');
       const items = ['SIGNAL STABLE', 'NEURAL LINK ACTIVE', 'FUSION READY', 'ENCRYPTION ENABLED', 'SCANNING PERIMETER', 'RELAY SECURED'];
       ticker.innerHTML = items.concat(items).map(i => `<span class="ticker-item">${i}</span>`).join(' • ');
       
-      const track = document.getElementById('nft-selection-track');
-      track.innerHTML = nftCollection.map(n => `<div class="nft-select-card"><img src="${n.image}"></div>`).join('');
+      renderNftSelection();
+      loadBroOfDay();
+      liveReadouts();
       
       document.getElementById('chat-input').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') startChatStream();
