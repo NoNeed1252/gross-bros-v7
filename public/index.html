@@ -551,6 +551,118 @@
       padding: 0 !important;
       background: #000 !important;
       border: 1px solid rgba(0, 255, 200, 0.15) !important;
+    }
+    .showcase-inner {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .nft-art-frame {
+      position: relative;
+      aspect-ratio: 1/1;
+      width: 100%;
+      background: #050505;
+      overflow: hidden;
+    }
+    .nft-art-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .neural-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 6px 12px;
+      background: rgba(0, 255, 200, 0.1);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--cyan);
+      border-radius: 4px;
+      font-size: 10px;
+      color: var(--cyan);
+      letter-spacing: 1px;
+    }
+    .nft-info-box {
+      padding: 24px;
+      background: rgba(7, 18, 17, 0.95);
+      flex-grow: 1;
+    }
+    .nft-lore-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #ddfff9;
+      opacity: 0.9;
+      margin: 0;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+      .botd-highlight-panel { padding: 24px !important; }
+      .botd-action-grid { grid-template-columns: 1fr; }
+    }
+    /* --- NEW BRO OF THE DAY STYLES --- */
+    .botd-highlight-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 40px !important;
+      background: linear-gradient(135deg, rgba(0, 255, 200, 0.05) 0%, rgba(0, 0, 0, 0.8) 100%) !important;
+      position: relative;
+      overflow: hidden;
+    }
+    .botd-meta-header {
+      font-size: 10px;
+      letter-spacing: 0.5em;
+      color: var(--cyan);
+      opacity: 0.6;
+      margin-bottom: 8px;
+    }
+    .botd-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(32px, 6vw, 56px) !important;
+      margin: 0 0 20px 0 !important;
+      line-height: 1 !important;
+      color: #fff;
+      text-shadow: 0 0 20px rgba(0, 255, 200, 0.3);
+    }
+    .botd-description {
+      font-size: 15px;
+      line-height: 1.6;
+      color: rgba(241, 255, 253, 0.8);
+      max-width: 45ch;
+      margin-bottom: 32px;
+    }
+    .botd-action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    .botd-footer-status {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: rgba(0, 255, 200, 0.5);
+      border-top: 1px solid rgba(0, 255, 200, 0.1);
+      padding-top: 20px;
+    }
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+      animation: pulse 2s infinite;
+    }
+
+    /* Showcase Panel */
+    .showcase-panel {
+      padding: 0 !important;
+      background: #000 !important;
+      border: 1px solid rgba(0, 255, 200, 0.15) !important;
       border-radius: 24px;
       overflow: hidden;
     }
@@ -634,44 +746,24 @@
 
     <main class='content'>
       <section id='section-0' class='section active'>
-        <div class="grid grid-2">
-          <!-- BOTD Left: Text & Actions -->
-          <div class="panel botd-highlight-panel">
-            <div class="botd-meta-header">
-              <span class="glitch-text" data-text="NEURAL HIGHLIGHT">NEURAL HIGHLIGHT</span>
-            </div>
-            <h1 class="botd-title">BRO OF THE DAY</h1>
-            <p class="botd-description">Daily operative rotation extracted from the XRPL mainnet collection. Synchronizing neural lore...</p>
-            
-            <div class="botd-action-grid">
-              <button class="btn btn-primary" onclick="switchTab(1)">
-                <span class="btn-label">READ LORE</span>
-              </button>
-              <button class="btn btn-outline" onclick="switchTab(2)">
-                <span class="btn-label">FUSION LAB</span>
-              </button>
-              <a href="https://xrp.cafe/collection/galactic-gross-bros" target="_blank" class="btn btn-accent" style="text-decoration:none;">
-                <span class="btn-label">ACQUIRE NFT</span>
-              </a>
-            </div>
-
-            <div class="botd-footer-status">
-              <div class="status-indicator"></div>
-              <span id="bro-of-day-status">SIGNAL: STABLE // SYNCED</span>
+        <div class='grid grid-2'>
+          <div class='panel'>
+            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>BRO OF THE DAY</div>
+            <h1 style='font-family:Orbitron,sans-serif;font-size:clamp(28px,5vw,62px);margin:10px 0 0;'>BRO OF THE DAY</h1>
+            <p style='line-height:1.8;color:#ddfff9;opacity:.86;max-width:58ch'>Daily rotation pulled from the full issuer collection, with one NFT selected every 24 hours.</p>
+            <div class='row'>
+              <button class='btn' onclick='switchTab(1)'>READ TRANSMISSIONS</button>
+              <button class='btn' onclick='switchTab(2)'>BUY A BRO</button>
             </div>
           </div>
-
-          <!-- BOTD Right: Visuals -->
-          <div class="panel showcase-panel">
-            <div class="showcase-inner">
-              <div class="nft-art-frame">
-                <div class="corner-tl"></div><div class="corner-tr"></div>
-                <div class="corner-bl"></div><div class="corner-br"></div>
-                <img id="bro-of-day-image" alt="Bro of the Day" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'><rect width='600' height='600' fill='%23050505'/><text x='300' y='320' fill='%2300ffc8' font-family='monospace' font-size='24' text-anchor='middle' opacity='0.5'>INITIALIZING SENSORS...</text></svg>">
-                <div class="neural-badge">NEURAL LINK ACTIVE</div>
+          <div class='panel nft-panel'>
+            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Daily signal</div>
+            <div class='nft-display' style='margin-top:14px;'>
+              <div class='nft-art'>
+                <img id='bro-of-day-image' alt='Bro of the Day' src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 760"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%2300ffc8" stop-opacity=".2"/><stop offset="100%" stop-color="%23000000" stop-opacity=".92"/></linearGradient></defs><rect width="600" height="760" fill="%23030607"/><rect x="24" y="24" width="552" height="712" rx="36" fill="url(%23g)" stroke="%2300ffc8" stroke-opacity=".26" stroke-width="4"/><text x="300" y="340" fill="%2300ffc8" fill-opacity=".9" font-family="monospace" font-size="30" text-anchor="middle">SCANNING XRPL...</text></svg>'>
               </div>
-              <div class="nft-info-box">
-                <p id="bro-of-day-description" class="nft-lore-text">Analyzing broadcast data...</p>
+              <div class='nft-meta'>
+                <p id='bro-of-day-description' class='nft-subtitle'>Live NFT lore is loading from the full BRO collection.</p>
               </div>
             </div>
           </div>
@@ -1504,7 +1596,7 @@
       renderChatLog();
       const assistantIndex = state.chat.length - 1;
       try {
-        const res = await fetch('/api/chat', {
+        const res = await fetch('/api/chat.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
           body: JSON.stringify({
@@ -1579,21 +1671,6 @@
       setInterval(refreshFusePrices, 90000);
       setInterval(loadBroOfDay, 3600000);
       switchTab(0);
-    }
-
-    function sanitizeMarkup(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    function appendChat(role, text) {
-      state.chat.push({ role, text });
-      renderChatLog();
     }
 
     window.connectXaman = connectXaman;
