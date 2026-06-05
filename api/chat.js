@@ -1,6 +1,6 @@
 /**
  * Galactic Gross Bros - Chat API (SSE)
- * Handles OpenRouter streaming with automatic live-model rotation and local Ollama port 8443 failover.
+ * Handles OpenRouter streaming with automatic live-model rotation and robust VPS/Local failover.
  */
 const fetch = require('node-fetch');
 
@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer \${process.env.OPENROUTER_API_KEY}\`,
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
           'HTTP-Referer': 'https://gross-bros.vercel.app',
           'X-Title': 'Gross Bros Terminal',
           'Content-Type': 'application/json'
@@ -66,8 +66,8 @@ module.exports = async (req, res) => {
 
       if (!response.ok) {
         const errText = await response.text();
-        console.warn(\`OpenRouter model \${model} failed:\`, errText);
-        lastError = \`OpenRouter (\${model}): \${errText}\`;
+        console.warn(`OpenRouter model ${model} failed:`, errText);
+        lastError = `OpenRouter (${model}): ${errText}`;
         continue;
       }
 
@@ -75,16 +75,21 @@ module.exports = async (req, res) => {
       success = true;
       break;
     } catch (err) {
-      console.error(\`Error with OpenRouter model \${model}:\`, err.message);
+      console.error(`Error with OpenRouter model ${model}:`, err.message);
       lastError = err.message;
     }
   }
 
-  // 2. Local Ollama port 8443 failover
+  // 2. Ollama failover logic
   if (!success) {
-    console.log('OpenRouter exhausted. Falling back to local Ollama on port 8443...');
+    // If on Vercel, use public VPS IP; otherwise use local loopback
+    const ollamaUrl = process.env.VERCEL 
+      ? 'http://216.250.127.169:8443/v1/chat/completions'
+      : 'http://127.0.0.1:8443/v1/chat/completions';
+
+    console.log(`OpenRouter exhausted. Falling back to Ollama at ${ollamaUrl}...`);
     try {
-      const response = await fetch('http://127.0.0.1:8443/v1/chat/completions', {
+      const response = await fetch(ollamaUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -98,66 +103,70 @@ module.exports = async (req, res) => {
 
       if (!response.ok) {
         const errText = await response.text();
-        throw new Error(\`Ollama failed: \${errText}\`);
+        throw new Error(`Ollama failed: ${errText}`);
       }
 
       await handleStream(response, res);
       success = true;
     } catch (err) {
       console.error('Ollama fallback failed:', err.message);
-      lastError = \`Ollama: \${err.message}. Previous: \${lastError}\`;
+      lastError = `Ollama: ${err.message}. Previous: ${lastError}`;
     }
   }
 
   if (!success && !res.writableEnded) {
-    res.write(\`data: \${JSON.stringify({ error: 'All AI services failed', details: lastError })}\\n\\n\`);
+    res.write(`data: ${JSON.stringify({ error: 'All AI services failed', details: lastError })}\n\n`);
     res.end();
   }
 };
 
+/**
+ * Handle streaming logic using async iterator for stability and memory efficiency.
+ */
 async function handleStream(response, res) {
-  return new Promise((resolve, reject) => {
-    let buffer = '';
+  let buffer = '';
 
-    const processLine = (line) => {
-      const trimmed = line.trim();
-      if (!trimmed.startsWith('data:')) return;
-      const dataText = trimmed.slice(5).trim();
-      if (!dataText) return;
+  const processLine = (line) => {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('data:')) return;
+    const dataText = trimmed.slice(5).trim();
+    if (!dataText) return;
 
-      if (dataText === '[DONE]') {
-        res.write('data: [DONE]\\n\\n');
-        return;
+    if (dataText === '[DONE]') {
+      res.write('data: [DONE]\n\n');
+      return;
+    }
+
+    try {
+      const json = JSON.parse(dataText);
+      const content = json.choices?.[0]?.delta?.content || json.choices?.[0]?.text || '';
+      if (content) {
+        res.write(`data: ${JSON.stringify({ token: content })}\n\n`);
       }
+    } catch (e) {
+      // Pass-through raw data if parsing fails
+      res.write(line + '\n\n');
+    }
+  };
 
-      try {
-        const json = JSON.parse(dataText);
-        const content = json.choices?.[0]?.delta?.content || json.choices?.[0]?.text || '';
-        if (content) {
-          res.write(\`data: \${JSON.stringify({ token: content })}\\n\\n\`);
-        }
-      } catch (e) {
-        res.write(line + '\\n\\n');
-      }
-    };
-
-    response.body.on('data', (chunk) => {
+  try {
+    // Iterate over chunks using the async iterator to avoid buffer leaks
+    for await (const chunk of response.body) {
       buffer += chunk.toString();
       let newlineIndex;
-      while ((newlineIndex = buffer.indexOf('\\n')) >= 0) {
+      while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
         const line = buffer.slice(0, newlineIndex);
         buffer = buffer.slice(newlineIndex + 1);
         processLine(line);
       }
-    });
+    }
 
-    response.body.on('end', () => {
-      if (buffer.trim()) processLine(buffer);
-      resolve();
-    });
-
-    response.body.on('error', (err) => {
-      reject(err);
-    });
-  });
+    // Process any remaining data in the buffer
+    if (buffer.trim()) {
+      processLine(buffer);
+    }
+  } catch (err) {
+    console.error('Stream processing error:', err.message);
+    throw err;
+  }
 }
