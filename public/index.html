@@ -520,9 +520,7 @@
       <section id='section-0' class='section active'>
         <div class='grid grid-2'>
           <div class='panel'>
-            <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>BRO OF THE DAY</div>
-            <h1 style='font-family:Orbitron,sans-serif;font-size:clamp(28px,5vw,62px);margin:10px 0 0;'>BRO OF THE DAY</h1>
-            <p style='line-height:1.8;color:#ddfff9;opacity:.86;max-width:58ch'>Daily rotation pulled from the full issuer collection, with one NFT selected every 24 hours.</p>
+            <h1 style='font-family:Orbitron,sans-serif;font-size:clamp(28px,5vw,62px);margin:10px 0 16px;'>BRO OF THE DAY</h1>
             <div class='row'>
               <button class='btn' onclick='switchTab(1)'>READ TRANSMISSIONS</button>
               <button class='btn' onclick='switchTab(2)'>OPEN FUSION LAB</button>
@@ -1368,7 +1366,7 @@
       renderChatLog();
       const assistantIndex = state.chat.length - 1;
       try {
-        const res = await fetch('/api/chat.js', {
+        const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
           body: JSON.stringify({
