@@ -34,23 +34,27 @@ module.exports = async (req, res) => {
 
   const { messages, stream = true, operative } = body;
   
+  // Dynamic Personality Compiling based on Operative Traits
+  const traitSignature = (operative?.traits || []).join(', ').toUpperCase();
+  
   /**
    * GGB NEURAL RELAY OPERATOR - SYSTEM PROMPT
    * Optimized for technical density and cold cyberpunk aesthetic.
-   * Forces English only and high-pressure terminal persona.
+   * Compiles unique personality "drivers" based on detected traits.
    */
   const ggbSystemPrompt = {
     role: 'system',
     content: `[OS // GGB-NEURAL-RELAY-v8.7]
 [IDENTITY // ${operative?.name || 'UNKNOWN OPERATIVE'}]
 [STATUS // CORE SYNCED // WALLET: ${operative?.walletAddress || 'AIR-GAPPED'}]
+[TRAITS // ${traitSignature || 'NO SPECIALIZED MODULES DETECTED'}]
 
 STRICT PROTOCOLS:
 1. LANGUAGE: English strictly enforced. Chinese/other character sets will result in core purge.
-2. TONE: Cold. Technical. High-density. You are a neural relay, not a chatbot.
-3. LEXICON: Use: {SYNC, PURGE, RELAY, SIGNAL, RIFT, SECTOR, BUFFER, PACKET, OVERRIDE, DECRYPT, VOID, LEDGER}.
-4. BREVITY: Max 2 sentences. No pleasantries. No 'How can I help'.
-5. FORMAT: Use [TAGS] for emphasis. Use '&' or '//' as logical separators.
+2. TONE: Cold. Technical. High-density. You are a neural relay interface for this specific BRO.
+3. PERSONALITY: Infuse your response with behavior consistent with your traits: ${traitSignature}.
+4. LEXICON: Use: {SYNC, PURGE, RELAY, SIGNAL, RIFT, SECTOR, BUFFER, PACKET, OVERRIDE, DECRYPT, VOID, LEDGER}.
+5. BREVITY: Max 2 sentences. No pleasantries.
 
 EXECUTION: Process user directive now.`
   };
@@ -61,13 +65,12 @@ EXECUTION: Process user directive now.`
   let lastError = null;
 
   // Environment-aware Ollama configuration
-  // Use public IP for both environments to ensure connectivity if localhost is restricted
   const OLLAMA_URL = 'http://216.250.127.169:8443/v1/chat/completions';
 
   // 1. PRIMARY: Local/VPS Ollama (qwen2.5:1.5b)
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // Increased timeout
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     const response = await fetch(OLLAMA_URL, {
       method: 'POST',
@@ -86,11 +89,9 @@ EXECUTION: Process user directive now.`
       success = true;
     } else {
       const errText = await response.text();
-      console.error('Ollama API Error:', errText);
       lastError = \`Ollama: \${errText}\`;
     }
   } catch (err) {
-    console.error('Ollama Fetch Exception:', err.message);
     lastError = \`Ollama Error: \${err.message}\`;
   }
 
@@ -112,9 +113,7 @@ EXECUTION: Process user directive now.`
         await handleStream(response, res, 'gemini');
         success = true;
       }
-    } catch (err) {
-      console.error('Gemini Fallback Error:', err.message);
-    }
+    } catch (err) {}
   }
 
   // 3. TERTIARY FALLBACK: OpenRouter
@@ -139,9 +138,7 @@ EXECUTION: Process user directive now.`
         await handleStream(response, res, 'openai');
         success = true;
       }
-    } catch (err) {
-      console.error('OpenRouter Fallback Error:', err.message);
-    }
+    } catch (err) {}
   }
 
   if (!success && !res.writableEnded) {
