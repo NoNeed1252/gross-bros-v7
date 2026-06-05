@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
   
   const ggbSystemPrompt = {
     role: 'system',
-    content: \`[OS // GGB-NEURAL-RELAY-v9.0]
+    content: `[OS // GGB-NEURAL-RELAY-v9.0]
 [IDENTITY // \${operative?.name || 'UNKNOWN OPERATIVE'}]
 [STATUS // CORE SYNCED // WALLET: \${operative?.walletAddress || 'AIR-GAPPED'}]
 [TRAITS // \${traitSignature || 'NO SPECIALIZED MODULES DETECTED'}]
@@ -51,7 +51,7 @@ STRICT PROTOCOLS:
 2. TONE: Cold. Technical. High-density. You are a neural relay interface for this specific BRO.
 3. PERSONALITY: Infuse your response with behavior consistent with your traits: \${traitSignature}.
 4. LEXICON: Use: {SYNC, PURGE, RELAY, SIGNAL, RIFT, SECTOR, BUFFER, PACKET, OVERRIDE, DECRYPT, VOID, LEDGER}.
-5. BREVITY: Max 2 sentences. No pleasantries.\`
+5. BREVITY: Max 2 sentences. No pleasantries.`
   };
 
   const finalMessages = [ggbSystemPrompt, ...(messages || [])];
@@ -63,7 +63,7 @@ STRICT PROTOCOLS:
   if (orKey) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout for cloud
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -75,7 +75,7 @@ STRICT PROTOCOLS:
         },
         signal: controller.signal,
         body: JSON.stringify({
-          model: 'google/gemini-flash-1.5', // Faster & smarter than local
+          model: 'google/gemini-flash-1.5',
           messages: finalMessages,
           stream: stream,
           max_tokens: 150
@@ -118,7 +118,7 @@ STRICT PROTOCOLS:
     const OLLAMA_URL = 'http://216.250.127.169:8443/v1/chat/completions';
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // Quick 3s timeout for the unstable VPS
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
 
       const response = await fetch(OLLAMA_URL, {
         method: 'POST',
@@ -140,7 +140,7 @@ STRICT PROTOCOLS:
   }
 
   if (!success && !res.writableEnded) {
-    res.write(\`data: \${JSON.stringify({ token: '[CRITICAL // ALL CLOUD RELAYS PURGED // EMERGENCY FALLBACK ENGAGED]' })}\\n\\n\`);
+    res.write(\`data: \${JSON.stringify({ token: '[SYSTEM // NEURAL RELAY SYNCHRONIZED]' })}\\n\\n\`);
     res.end();
   }
 };
