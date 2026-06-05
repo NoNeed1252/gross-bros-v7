@@ -178,13 +178,15 @@
       padding: 16px;
       margin-bottom: 12px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       gap: 16px;
       font-family: 'Share Tech Mono', monospace;
     }
     .held-nft-image-wrapper {
-      width: 80px;
-      height: 80px;
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 1/1;
       border: 1px solid rgba(0, 255, 200, 0.25);
       border-radius: 14px;
       background: rgba(0, 255, 200, 0.04);
@@ -197,17 +199,20 @@
     .held-nft-image-wrapper img {
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover;
     }
     .held-nft-info {
       flex: 1;
       display: flex;
       flex-direction: column;
+      align-items: center;
+      text-align: center;
       gap: 6px;
     }
     .held-nft-header {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 10px;
       flex-wrap: wrap;
     }
@@ -242,6 +247,7 @@
     .held-nft-badges {
       display: flex;
       flex-wrap: wrap;
+      justify-content: center;
       gap: 6px;
       margin-top: 2px;
     }
@@ -1686,6 +1692,21 @@
       document.addEventListener('DOMContentLoaded', bootApp, { once: true });
     } else {
       bootApp();
+    }
+    
+    function sanitizeMarkup(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+    
+    function appendChat(role, text) {
+      state.chat.push({ role, text });
+      renderChatLog();
     }
   </script>
 </body>
