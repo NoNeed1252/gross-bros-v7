@@ -560,6 +560,7 @@
             <div>
               <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Fusion Lab</div>
               <h2 style='font-family:Orbitron,sans-serif;font-size:clamp(24px,4vw,48px);margin:10px 0 0;'>NEURAL TERMINAL</h2>
+            </div>
             <div id='fuse-lock-badge' class='fuse-badge'>LOCKED</div>
           </div>
           <div id='held-nft-display' class='held-nft-panel'></div>
@@ -1150,6 +1151,10 @@
       log.scrollTop = log.scrollHeight;
     }
 
+    function sanitizeMarkup(value) {
+      return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     function getFuseRate(token) {
       const entry = fuseTokenConfig[token];
       return entry && typeof entry.price === 'number' ? entry.price : null;
@@ -1454,11 +1459,17 @@
       }
     }
 
+    function appendChat(role, text) {
+      state.chat.push({ role, text });
+      renderChatLog();
+    }
+
 
     function bootApp() {
       initializeInteractiveShell();
       loadWarningTicker();
       renderNftSelection();
+      renderHeldNft();
       renderChatLog();
       refreshFusePrices();
       renderFuseQuote();
