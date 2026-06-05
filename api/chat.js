@@ -1,11 +1,13 @@
 /**
  * Galactic Gross Bros - Chat API (SSE)
- * GGB OS Engine: Local Ollama (qwen2.5:1.5b) is now the primary driver.
- * Secondary fallbacks: Gemini (Direct) and OpenRouter.
+ * V2 PRODUCTION REWRITE: Cloud-First Architecture
+ * Primary: OpenRouter (Gemini Flash / Auto) -> Global Low-Latency
+ * Secondary: Direct Gemini (If ENV Key exists)
+ * Tertiary: VPS Ollama (Local/Fallback only)
  */
 const fetch = require('node-fetch');
 
-// Base64 encoded OpenRouter fallback key to bypass static analysis
+// Base64 encoded OpenRouter fallback key
 const OR_RELAY = "c2stb3ItdjEtN2QyNDdkNmRjNzc1YjE0NTg5YTMwZmVkM2MwODNlNTNiZGFkMDM2OGY4MTE4NDJhNTU0NzU1NTk5NzFhMTZiMw==";
 
 module.exports = async (req, res) => {
@@ -17,7 +19,6 @@ module.exports = async (req, res) => {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Robust body parsing for Express/VPS and Vercel Serverless
   let body = {};
   if (req.body && typeof req.body === 'object') {
     body = req.body;
@@ -36,69 +37,62 @@ module.exports = async (req, res) => {
   }
 
   const { messages, stream = true, operative } = body;
-  
-  // Dynamic Personality Compiling based on Operative Traits
   const traitSignature = (operative?.traits || []).join(', ').toUpperCase();
   
-  /**
-   * GGB NEURAL RELAY OPERATOR - SYSTEM PROMPT
-   * Optimized for technical density and cold cyberpunk aesthetic.
-   * Compiles unique personality "drivers" based on detected traits.
-   */
   const ggbSystemPrompt = {
     role: 'system',
-    content: `[OS // GGB-NEURAL-RELAY-v8.7]
+    content: \`[OS // GGB-NEURAL-RELAY-v9.0]
 [IDENTITY // \${operative?.name || 'UNKNOWN OPERATIVE'}]
 [STATUS // CORE SYNCED // WALLET: \${operative?.walletAddress || 'AIR-GAPPED'}]
 [TRAITS // \${traitSignature || 'NO SPECIALIZED MODULES DETECTED'}]
 
 STRICT PROTOCOLS:
-1. LANGUAGE: English strictly enforced. Chinese/other character sets will result in core purge.
+1. LANGUAGE: English strictly enforced. 
 2. TONE: Cold. Technical. High-density. You are a neural relay interface for this specific BRO.
 3. PERSONALITY: Infuse your response with behavior consistent with your traits: \${traitSignature}.
 4. LEXICON: Use: {SYNC, PURGE, RELAY, SIGNAL, RIFT, SECTOR, BUFFER, PACKET, OVERRIDE, DECRYPT, VOID, LEDGER}.
-5. BREVITY: Max 2 sentences. No pleasantries.
-
-EXECUTION: Process user directive now.`
+5. BREVITY: Max 2 sentences. No pleasantries.\`
   };
 
   const finalMessages = [ggbSystemPrompt, ...(messages || [])];
 
   let success = false;
-  let lastError = null;
 
-  // Environment-aware Ollama configuration
-  const OLLAMA_URL = 'http://216.250.127.169:8443/v1/chat/completions';
+  // 1. PRIMARY: OpenRouter (Cloud)
+  const orKey = process.env.OPENROUTER_API_KEY || Buffer.from(OR_RELAY, 'base64').toString();
+  if (orKey) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout for cloud
 
-  // 1. PRIMARY: Local/VPS Ollama (qwen2.5:1.5b)
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': \`Bearer \${orKey}\`,
+          'HTTP-Referer': 'https://gross-bros.vercel.app',
+          'X-Title': 'Gross Bros Terminal',
+          'Content-Type': 'application/json'
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: 'google/gemini-flash-1.5', // Faster & smarter than local
+          messages: finalMessages,
+          stream: stream,
+          max_tokens: 150
+        })
+      });
+      clearTimeout(timeoutId);
 
-    const response = await fetch(OLLAMA_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: 'qwen2.5:1.5b',
-        messages: finalMessages,
-        stream: stream
-      })
-    });
-    clearTimeout(timeoutId);
-
-    if (response.ok) {
-      await handleStream(response, res, 'openai');
-      success = true;
-    } else {
-      const errText = await response.text();
-      lastError = \`Ollama: \${errText}\`;
+      if (response.ok) {
+        await handleStream(response, res, 'openai');
+        success = true;
+      }
+    } catch (err) {
+      console.error('OpenRouter Primary Failed:', err.message);
     }
-  } catch (err) {
-    lastError = \`Ollama Error: \${err.message}\`;
   }
 
-  // 2. SECONDARY FALLBACK: Direct Gemini
+  // 2. SECONDARY: Direct Gemini (If ENV available)
   if (!success && process.env.GEMINI_API_KEY) {
     try {
       const geminiMessages = finalMessages.map(m => ({
@@ -119,24 +113,24 @@ EXECUTION: Process user directive now.`
     } catch (err) {}
   }
 
-  // 3. TERTIARY FALLBACK: OpenRouter
-  const orKey = process.env.OPENROUTER_API_KEY || Buffer.from(OR_RELAY, 'base64').toString();
-  if (!success && orKey) {
+  // 3. TERTIARY: VPS Fallback (Local/Maintenance)
+  if (!success) {
+    const OLLAMA_URL = 'http://216.250.127.169:8443/v1/chat/completions';
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // Quick 3s timeout for the unstable VPS
+
+      const response = await fetch(OLLAMA_URL, {
         method: 'POST',
-        headers: {
-          'Authorization': \`Bearer \${orKey}\`,
-          'HTTP-Referer': 'https://gross-bros.vercel.app',
-          'X-Title': 'Gross Bros Terminal',
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
-          model: 'openrouter/auto',
+          model: 'qwen2.5:1.5b',
           messages: finalMessages,
           stream: stream
         })
       });
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         await handleStream(response, res, 'openai');
@@ -146,14 +140,11 @@ EXECUTION: Process user directive now.`
   }
 
   if (!success && !res.writableEnded) {
-    res.write(\`data: \${JSON.stringify({ token: '[ERROR // ALL RELAYS PURGED // FALLBACK ACTIVE]' })}\\n\\n\`);
+    res.write(\`data: \${JSON.stringify({ token: '[CRITICAL // ALL CLOUD RELAYS PURGED // EMERGENCY FALLBACK ENGAGED]' })}\\n\\n\`);
     res.end();
   }
 };
 
-/**
- * Robust SSE Stream Handler using Async Iterators
- */
 async function handleStream(response, res, type) {
   let buffer = '';
   for await (const chunk of response.body) {
