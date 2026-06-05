@@ -1171,6 +1171,11 @@
           let token = '';
           try {
             const payload = JSON.parse(payloadText);
+            if (payload.error) {
+              state.chat[assistantIndex].text = `⚠️ ${payload.error}${payload.details ? ': ' + payload.details : ''}`;
+              renderChatLog();
+              return;
+            }
             token = String(payload.token || payload.response || payload.message || payload.content || payload.text || '');
           } catch {
             token = payloadText;
