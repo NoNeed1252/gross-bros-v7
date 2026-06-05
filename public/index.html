@@ -560,7 +560,6 @@
             <div>
               <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Fusion Lab</div>
               <h2 style='font-family:Orbitron,sans-serif;font-size:clamp(24px,4vw,48px);margin:10px 0 0;'>NEURAL TERMINAL</h2>
-            </div>
             <div id='fuse-lock-badge' class='fuse-badge'>LOCKED</div>
           </div>
           <div id='held-nft-display' class='held-nft-panel'></div>
@@ -643,7 +642,7 @@
 
     <footer class='bottombar'>
       <div class='footer-links'>
-        <a href='https://x.com/thegrossbros' target='_blank'>5</a>
+        <a href='https://x.com/thegrossbros' target='_blank'>X</a>
         <a href='https://discord.gg/fcZYk7UcB' target='_blank'>Discord</a>
       </div>
       <div class='footer-links muted'>
@@ -669,11 +668,49 @@
       PEPE: { label: 'PEPE', coinGeckoId: 'pepe', price: null },
       BONK: { label: 'BONK', coinGeckoId: 'bonk', price: null }
     };
-    
+    const nftCollection = [
+      {
+        name: 'GROSS BROS FUSION RELIC',
+        image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 760"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%2300ffc8" stop-opacity=".95"/><stop offset="50%" stop-color="%23061f1b" stop-opacity=".95"/><stop offset="100%" stop-color="%237c3aed" stop-opacity=".95"/></linearGradient><radialGradient id="r" cx=".5" cy=".4" r=".5"><stop offset="0%" stop-color="%23ffffff" stop-opacity=".35"/><stop offset="45%" stop-color="%2300ffc8" stop-opacity=".18"/><stop offset="100%" stop-color="%23000000" stop-opacity="0"/></radialGradient></defs><rect width="600" height="760" fill="%23040a09"/><rect x="20" y="20" width="560" height="720" rx="34" fill="url(%23g)" stroke="%2300ffc8" stroke-opacity=".35" stroke-width="4"/><circle cx="300" cy="250" r="170" fill="url(%23r)"/><circle cx="300" cy="250" r="140" fill="none" stroke="%2300ffc8" stroke-opacity=".7" stroke-width="10"/><circle cx="300" cy="250" r="96" fill="none" stroke="%23ffffff" stroke-opacity=".12" stroke-width="4" stroke-dasharray="8 14"/><path d="M300 134 L352 222 L300 310 L248 222 Z" fill="%23ffffff" fill-opacity=".15" stroke="%2300ffc8" stroke-opacity=".9" stroke-width="5"/><path d="M192 420 C250 378 350 378 408 420 L300 542 Z" fill="%23000000" fill-opacity=".35" stroke="%2300ffc8" stroke-opacity=".5" stroke-width="4"/><rect x="100" y="602" width="400" height="46" rx="23" fill="%23000000" fill-opacity=".4" stroke="%2300ffc8" stroke-opacity=".28"/><text x="300" y="626" fill="%2300ffc8" fill-opacity=".92" font-family="monospace" font-size="26" text-anchor="middle">GROSS BROS // FUSION</text></svg>',
+        tokenId: '#0219',
+        network: 'XRPL MAINNET',
+        status: 'PORTAL SYNCED',
+        owner: 'CONNECTED WALLET',
+        traits: ['Neon Core', 'Fusion Portal', 'Terminal Frame', 'Signal Locked']
+      },
+      {
+        name: 'RIFT SIGNAL PRIME',
+        image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 760"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%2300ffc8" stop-opacity=".9"/><stop offset="55%" stop-color="%2302080a" stop-opacity=".95"/><stop offset="100%" stop-color="%2360a5fa" stop-opacity=".92"/></linearGradient></defs><rect width="600" height="760" fill="%23040909"/><rect x="24" y="24" width="552" height="712" rx="36" fill="url(%23g)" stroke="%2300ffc8" stroke-opacity=".3" stroke-width="4"/><circle cx="300" cy="240" r="142" fill="none" stroke="%2300ffc8" stroke-opacity=".7" stroke-width="10"/><circle cx="300" cy="240" r="88" fill="none" stroke="%23ffffff" stroke-opacity=".14" stroke-width="4" stroke-dasharray="10 12"/><path d="M170 430 C230 360 370 360 430 430" fill="none" stroke="%23ffffff" stroke-opacity=".28" stroke-width="5"/><path d="M220 510 L300 420 L380 510 L300 620 Z" fill="%23ffffff" fill-opacity=".12" stroke="%2300ffc8" stroke-opacity=".85" stroke-width="5"/></svg>',
+        tokenId: '#0341',
+        network: 'XRPL MAINNET',
+        status: 'SYNCED',
+        owner: 'CONNECTED WALLET',
+        traits: ['Signal Prism', 'Cold Storage', 'Phase Gate']
+      },
+      {
+        name: 'NEON CORE HUNTER',
+        image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 760"><rect width="600" height="760" fill="%23030607"/><defs><radialGradient id="r" cx=".5" cy=".4" r=".5"><stop offset="0%" stop-color="%2300ffc8" stop-opacity=".42"/><stop offset="70%" stop-color="%2300ffc8" stop-opacity="0"/></radialGradient></defs><rect x="22" y="22" width="556" height="716" rx="34" fill="%23080f0f" stroke="%2300ffc8" stroke-opacity=".26" stroke-width="4"/><circle cx="300" cy="220" r="180" fill="url(%23r)"/><path d="M300 150 L404 240 L360 416 L240 416 L196 240 Z" fill="%2300ffc8" fill-opacity=".14" stroke="%2300ffc8" stroke-opacity=".8" stroke-width="5"/><path d="M228 450 L372 450 L410 620 L190 620 Z" fill="%23000000" fill-opacity=".26" stroke="%2300ffc8" stroke-opacity=".45" stroke-width="4"/></svg>',
+        tokenId: '#0418',
+        network: 'XRPL MAINNET',
+        status: 'ARMED',
+        owner: 'CONNECTED WALLET',
+        traits: ['Hunter Frame', 'Arc Reactor', 'Static Shield']
+      },
+      {
+        name: 'BROADCAST SAGE',
+        image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 760"><rect width="600" height="760" fill="%23040a09"/><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="%2300ffc8" stop-opacity=".88"/><stop offset="100%" stop-color="%237c3aed" stop-opacity=".9"/></linearGradient></defs><rect x="28" y="28" width="544" height="704" rx="34" fill="url(%23g)" stroke="%2300ffc8" stroke-opacity=".32" stroke-width="4"/><path d="M150 250 H450" stroke="%23ffffff" stroke-opacity=".2" stroke-width="10"/><path d="M150 330 H450" stroke="%23ffffff" stroke-opacity=".18" stroke-width="10"/><path d="M150 410 H450" stroke="%23ffffff" stroke-opacity=".14" stroke-width="10"/></svg>',
+        tokenId: '#0507',
+        network: 'XRPL MAINNET',
+        status: 'ON AIR',
+        owner: 'CONNECTED WALLET',
+        traits: ['Airwave', 'Oracle', 'Terminal Frame']
+      }
+    ];
+
     const BRO_COLLECTION_ISSUER = "rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY";
     const XRPL_RPC_ENDPOINT = "https://xrplcluster.com";
     const IPFS_GATEWAY = "https://ipfs.io/ipfs/";
-    const state = { connected: false, wallet: "", chat: [], fuseUnlocked: false, fuseToken: "XRP", selectedNft: null, userNfts: [], fuseTargetUsd: 50 };
+    const state = { connected: false, wallet: "", chat: [], fuseUnlocked: false, fuseToken: "XRP", selectedNft: nftCollection[0], userNfts: [], fuseTargetUsd: 50 };
 
     function setBroOfDayStatus(message) {
       const statusEl = document.getElementById("bro-of-day-status");
@@ -983,64 +1020,51 @@
         const nfts = result?.result?.account_nfts || [];
         const filtered = nfts.filter(n => n.Issuer === BRO_COLLECTION_ISSUER && n.NFTokenTaxon === 1);
         
-        const mappedNfts = await Promise.all(filtered.map(async n => {
+        const resolvedNfts = await Promise.all(filtered.map(async (n) => {
           const baseNft = {
             name: 'BRO #' + n.NFTokenID.slice(-4),
+            image: xrplUriToHttp(n.URI),
             tokenId: '#' + n.NFTokenID.slice(-4),
             network: 'XRPL MAINNET',
             status: 'SYNCED',
             owner: address,
-            traits: [],
-            image: ''
+            traits: []
           };
 
-          const metadataUri = xrplUriToHttp(n.URI);
-          if (!metadataUri) return baseNft;
-
           try {
-            const metaRes = await fetch(metadataUri, { cache: 'no-store' });
-            if (!metaRes.ok) return baseNft;
-            const meta = await metaRes.json();
-            
-            baseNft.image = xrplUriToHttp(meta.image || meta.image_url || '');
-            
-            // Extract attributes/traits
-            const rawTraits = meta.attributes || meta.traits || [];
-            if (Array.isArray(rawTraits)) {
-              baseNft.traits = rawTraits.map(t => {
-                if (typeof t === 'string') return t;
-                return t.value || t.trait_type || '';
-              }).filter(Boolean);
+            const metadataUri = xrplUriToHttp(n.URI);
+            if (metadataUri) {
+              const metaRes = await fetch(metadataUri);
+              if (metaRes.ok) {
+                const meta = await metaRes.json();
+                if (meta.image) baseNft.image = xrplUriToHttp(meta.image);
+                if (meta.name) baseNft.name = meta.name;
+                
+                const attrSource = meta.attributes || meta.traits || [];
+                if (Array.isArray(attrSource)) {
+                  baseNft.traits = attrSource.map(a => 
+                    typeof a === 'string' ? a : (a.value || a.trait_type || '')
+                  ).filter(Boolean);
+                }
+              }
             }
-            
-            return baseNft;
-          } catch (e) {
-            console.warn("Meta fetch fail", e);
-            return baseNft;
+          } catch (err) {
+            console.warn("Metadata resolution failed for " + n.NFTokenID, err);
           }
+          return baseNft;
         }));
 
-        state.userNfts = mappedNfts;
-        
-        if (state.userNfts.length > 0) {
-          state.selectedNft = state.userNfts[0];
-        } else {
-          state.selectedNft = null;
-        }
-        
+        state.userNfts = resolvedNfts;
         renderNftSelection();
         renderHeldNft();
       } catch (e) {
         console.error("NFT Fetch error", e);
         state.userNfts = [];
-        state.selectedNft = null;
-        renderNftSelection();
-        renderHeldNft();
       }
     }
 
     function getActiveCollection() {
-      return (state.connected && state.userNfts) ? state.userNfts : [];
+      return (state.connected && state.userNfts && state.userNfts.length > 0) ? state.userNfts : nftCollection;
     }
 
 
@@ -1048,35 +1072,19 @@
     function setWalletUI(connected, address) {
       state.connected = connected;
       state.wallet = address || '';
-      if (connected && address) {
-        fetchUserNfts(address);
-      } else {
-        state.userNfts = [];
-        state.selectedNft = null;
-        renderNftSelection();
-        renderHeldNft();
-      }
+      if (connected && address) fetchUserNfts(address);
       document.getElementById('wallet-btn').textContent = connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
       document.getElementById('xaman-status').textContent = connected ? 'Connected: ' + address.slice(0, 6) + '&' + address.slice(-6) : 'Wallet disconnected.';
     }
 
     function getSelectedNft() {
-      return state.selectedNft;
+      return state.selectedNft || getActiveCollection()[0];
     }
 
     function renderNftSelection() {
       const track = document.getElementById('nft-selection-track');
       if (!track) return;
-      const collection = getActiveCollection();
-      
-      if (collection.length === 0) {
-        track.innerHTML = '<div class="muted" style="padding: 30px; text-align: center; width: 100%; letter-spacing: 0.25em; font-size: 11px; opacity: 0.6;">' + 
-          (state.connected ? 'NO GROSS BROS DETECTED IN WALLET' : 'CONNECT WALLET TO SYNC OPERATIVES') + 
-          '</div>';
-        return;
-      }
-
-      track.innerHTML = collection.map((nft, index) => {
+      track.innerHTML = getActiveCollection().map((nft, index) => {
         const active = getSelectedNft()?.name === nft.name;
         const activeClass = active ? 'active' : '';
         return '<button type="button" class="nft-select-card ' + activeClass + '" onclick="selectNft(' + index + ')">' +
@@ -1087,40 +1095,12 @@
       }).join('');
     }
 
-    function selectNft(index) {
-      const collection = getActiveCollection();
-      const nft = collection[index];
-      if (!nft) return;
-      state.selectedNft = nft;
-      renderHeldNft();
-      renderNftSelection();
-    }
-
-
-    function renderChatLog() {
-      const log = document.getElementById('chat-log');
-      if (!log) return;
-      const content = state.chat.map((entry) => {
-        if (entry.role === 'nft') {
-          return '<div class="bubble selected-nft-bubble"><img alt="Selected NFT" src="' + entry.image + '"></div>';
-        }
-        const role = entry.role === 'user' ? 'user' : 'system';
-        return '<div class="bubble ' + role + '">' + (role === 'user' ? '<strong style="display:block; margin-bottom:5px;">YOU</strong>' : '<strong style="display:block; margin-bottom:5px;">SYSTEM</strong>') + sanitizeMarkup(entry.text || entry.content || '') + '</div>';
-      });
-      log.innerHTML = content.join('');
-      log.scrollTop = log.scrollHeight;
-    }
-
-    function sanitizeMarkup(value) {
-      return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
-
-    function renderHeldNft() {
+        function renderHeldNft() {
       const container = document.getElementById('held-nft-display');
       if (!container) return;
       const nft = getSelectedNft();
       if (!nft) {
-        container.innerHTML = '<div style="padding: 24px; text-align: center; width: 100%; border: 1px dashed rgba(0,255,200,0.15); border-radius: 18px; color: rgba(0,255,200,0.4); letter-spacing: 0.2em; font-size: 11px;">NO ACTIVE OPERATIVE LINKED</div>';
+        container.innerHTML = '<div class="held-nft-empty">NO OPERATIVE HELD</div>';
         return;
       }
       const traitsHtml = (nft.traits || []).map(function(trait) {
@@ -1140,9 +1120,34 @@
         '    <span>NET: ' + sanitizeMarkup(nft.network) + '</span>',
         '    <span>STATUS: ' + sanitizeMarkup(nft.status || 'READY') + '</span>',
         '  </div>',
-        '  <div class="held-nft-badges">' + traitsHtml + '</div>',
+        '  <div class="held-nft-badges">',
+        '    ' + traitsHtml,
+        '  </div>',
         '</div>'
       ].join('');
+    }
+
+    function selectNft(index) {
+      const nft = getActiveCollection()[index];
+      if (!nft) return;
+      state.selectedNft = nft;
+      renderHeldNft();
+      renderNftSelection();
+    }
+
+
+    function renderChatLog() {
+      const log = document.getElementById('chat-log');
+      if (!log) return;
+      const content = state.chat.map((entry) => {
+        if (entry.role === 'nft') {
+          return '<div class="bubble selected-nft-bubble"><img alt="Selected NFT" src="' + entry.image + '"></div>';
+        }
+        const role = entry.role === 'user' ? 'user' : 'system';
+        return '<div class="bubble ' + role + '">' + (role === 'user' ? '<strong style="display:block; margin-bottom:5px;">YOU</strong>' : '<strong style="display:block; margin-bottom:5px;">SYSTEM</strong>') + sanitizeMarkup(entry.text || entry.content || '') + '</div>';
+      });
+      log.innerHTML = content.join('');
+      log.scrollTop = log.scrollHeight;
     }
 
     function getFuseRate(token) {
@@ -1205,9 +1210,92 @@
       renderFuseQuote();
     }
 
-    function toggleFuseUnlock() {
-      state.fuseUnlocked = !state.fuseUnlocked;
-      renderFuseQuote();
+        async function toggleFuseUnlock() {
+      if (state.fuseUnlocked) {
+        // Already unlocked, logic for "Armed" state could go here
+        return;
+      }
+
+      const token = state.fuseToken;
+      const price = getFuseRate(token);
+      if (!price || price <= 0) {
+        alert("Price signal lost. Please wait for terminal sync.");
+        return;
+      }
+
+      const btn = document.getElementById('fuse-button');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'PREPARING PAYLOAD...';
+
+      try {
+        const tokenAmount = state.fuseTargetUsd / price;
+        let amount;
+
+        if (token === 'XRP') {
+          // XRP is in drops (1,000,000 per XRP)
+          amount = Math.floor(tokenAmount * 1000000).toString();
+        } else if (token === 'RLUSD') {
+          // RLUSD is an issued token
+          amount = {
+            currency: 'RLUSD',
+            issuer: 'rMx9zbeVfTqU6KsczE6S9X7Z5D5W67qU', // Replace with actual RLUSD issuer
+            value: tokenAmount.toFixed(2)
+          };
+        } else {
+          // General mapping for other tokens
+          const issuers = {
+            'DOGE': 'rL8L19e7W9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z', // Placeholder
+            'PEPE': 'rL8L19e7W9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z',
+            'BONK': 'rL8L19e7W9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z'
+          };
+          amount = {
+            currency: token,
+            issuer: issuers[token] || '',
+            value: tokenAmount.toString()
+          };
+        }
+
+        const res = await fetch('/api/xaman?action=create-payload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            txjson: {
+              TransactionType: 'Payment',
+              Destination: 'rP1wMvanhfmsm7Af4FcHvSvfhash43LWSY', // Protocol Treasury
+              Amount: amount
+            },
+            options: {
+              path_find: true // Enabling "Pay with any Token"
+            }
+          })
+        });
+
+        const payload = await res.json();
+        if (payload?.next) window.open(payload.next, '_blank');
+        
+        const uuid = payload?.uuid;
+        if (!uuid) throw new Error('No payload uuid returned');
+
+        // Poll for signature
+        const timer = setInterval(async () => {
+          const check = await fetch('/api/xaman?action=check-payload&uuid=' + encodeURIComponent(uuid));
+          const status = await check.json();
+          if (status.signed) {
+            clearInterval(timer);
+            state.fuseUnlocked = true;
+            btn.disabled = false;
+            renderFuseQuote();
+            appendChat('system', 'Neural Link Established. Fusion Lab Unlocked.');
+          }
+        }, 2500);
+
+      } catch (error) {
+        console.error(error);
+        btn.disabled = false;
+        btn.textContent = originalText;
+        alert('Fusion unlock failed');
+      }
     }
 
     function handleFuseTokenChange(event) {
@@ -1366,17 +1454,11 @@
       }
     }
 
-    function appendChat(role, text) {
-      state.chat.push({ role, text });
-      renderChatLog();
-    }
-
 
     function bootApp() {
       initializeInteractiveShell();
       loadWarningTicker();
       renderNftSelection();
-      renderHeldNft();
       renderChatLog();
       refreshFusePrices();
       renderFuseQuote();
