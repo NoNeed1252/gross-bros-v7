@@ -45,15 +45,20 @@ module.exports = async (req, res) => {
   // 1. PRIMARY: Local/VPS Ollama (qwen2.5:1.5b)
   try {
     console.log(`Attempting primary Ollama at: ${OLLAMA_URL}`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+
     const response = await fetch(OLLAMA_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
       body: JSON.stringify({
         model: 'qwen2.5:1.5b',
         messages: messages || [{ role: 'user', content: 'Hello' }],
         stream: stream
       })
     });
+    clearTimeout(timeoutId);
 
     if (response.ok) {
       await handleStream(response, res, 'openai');
