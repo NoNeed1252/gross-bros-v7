@@ -193,7 +193,7 @@
       grid-template-columns: minmax(0, 1fr) auto auto;
       gap: 10px;
       align-items: stretch;
-      margin-top: 12px;
+      margin-top: 24px;
     }
     @media (max-width: 720px) {
       .chat-terminal-actions { grid-template-columns: 1fr; }
@@ -299,7 +299,7 @@
       font-size: 11px;
       line-height: 1.5;
     }
-    .bubble.user { background: rgba(0,255,200,.12); }    .bubble.user { background: rgba(0,255,200,.12); }
+    .bubble.user { background: rgba(0,255,200,.12); }
     .bubble.system { background: rgba(124,58,237,.12); }
     .row { display: flex; gap: 10px; flex-wrap: wrap; }
     input, select {
@@ -413,7 +413,7 @@
       <div class='brand'>
         <div class='dot'></div>
         <div>
-          <div class='title'>THE DEN // V7.4</div>
+          <div class='title'>GUARDIAN BROADCAST OS v8.7 BETA</div>
           <div class='subtitle'>Neural CRT relay // terminal interface</div>
         </div>
       </div>
@@ -483,7 +483,7 @@
           <div id='chat-terminal' class='chat-terminal'>
             <div id='chat-log' class='chat-log' aria-live='polite'></div>
             <div class='chat-terminal-actions'>
-              <input id='chat-input' maxlength='240' placeholder='Send a directive to the operative…'>
+              <input id='chat-input' maxlength='240' placeholder='Send a directive to the operative&'>
               <button class='btn' onclick='startChatStream()'>Send</button>
               <div class='fuse-button-box'>
                 <button id='fuse-button' class='btn' onclick='toggleFuseUnlock()'>Fuse</button>
@@ -559,7 +559,7 @@
 
     <footer class='bottombar'>
       <div class='footer-links'>
-        <a href='https://x.com/thegrossbros' target='_blank'>𝕏</a>
+        <a href='https://x.com/thegrossbros' target='_blank'>5</a>
         <a href='https://discord.gg/fcZYk7UcB' target='_blank'>Discord</a>
       </div>
       <div class='footer-links muted'>
@@ -849,7 +849,7 @@
     }
 
     async function loadBroOfDay() {
-      renderBroOfDayLoading("Live NFT lore is loading from the full BRO collection.", "RPC: fetching validated issuer history…");
+      renderBroOfDayLoading("Live NFT lore is loading from the full BRO collection.", "RPC: fetching validated issuer history&");
       try {
         const nfts = await fetchCollectionNfts(BRO_COLLECTION_ISSUER, 1);
         const seed = dailyRotationSeed();
@@ -867,7 +867,7 @@
             continue;
           }
 
-          const trimmedUri = metadataUri.length > 96 ? metadataUri.slice(0, 95) + "…" : metadataUri;
+          const trimmedUri = metadataUri.length > 96 ? metadataUri.slice(0, 95) + "&" : metadataUri;
           setBroOfDayStatus("Metadata fetch attempt " + (attempt + 1) + "/" + attempts + ": " + trimmedUri);
 
           let metadataResponse;
@@ -926,11 +926,11 @@
       state.connected = connected;
       state.wallet = address || '';
       document.getElementById('wallet-btn').textContent = connected ? 'XAMAN CONNECTED' : 'CONNECT XAMAN';
-      document.getElementById('xaman-status').textContent = connected ? 'Connected: ' + address.slice(0, 6) + '…' + address.slice(-6) : 'Wallet disconnected.';
+      document.getElementById('xaman-status').textContent = connected ? 'Connected: ' + address.slice(0, 6) + '&' + address.slice(-6) : 'Wallet disconnected.';
     }
 
     function sanitizeMarkup(value) {
-      return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/+/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     function getSelectedNft() {
@@ -946,7 +946,7 @@
           '<button type="button" class="nft-select-card' + (active ? ' active' : '') + '" onclick="selectNft(' + index + ')">',
           '  <img alt="' + sanitizeMarkup(nft.name) + '" src="' + nft.image + '">',
           '  <span class="label">' + sanitizeMarkup(nft.name) + '</span>',
-          '  <span class="meta">' + sanitizeMarkup(nft.tokenId) + ' • ' + sanitizeMarkup(nft.network) + '<br>' + sanitizeMarkup((nft.traits || []).join(' • ')) + '</span>',
+          '  <span class="meta">' + sanitizeMarkup(nft.tokenId) + ' " ' + sanitizeMarkup(nft.network) + '<br>' + sanitizeMarkup((nft.traits || []).join(' " ')) + '</span>',
           '</button>'
         ].join('');
       }).join('');
@@ -980,7 +980,7 @@
           return '<div class="bubble selected-nft-bubble"><img alt="Selected NFT" src="' + entry.image + '"></div>';
         }
         const role = entry.role === 'user' ? 'user' : 'system';
-        return '<div class="bubble ' + role + '">' + (role === 'user' ? 'YOU' : 'SYSTEM') + sanitizeMarkup(entry.text || entry.content || '') + '</div>';
+        return '<div class="bubble ' + role + '">' + (role === 'user' ? '<strong style="display:block; margin-bottom:5px;">YOU</strong>' : '<strong style="display:block; margin-bottom:5px;">SYSTEM</strong>') + sanitizeMarkup(entry.text || entry.content || '') + '</div>';
       });
       log.innerHTML = content.join('');
       log.scrollTop = log.scrollHeight;
@@ -1060,7 +1060,7 @@
       const track = document.getElementById('warning-ticker-track');
       if (!track) return;
       const feed = enemyFeed.concat(enemyFeed);
-      track.innerHTML = feed.map((item, index) => '<span class=\'ticker-item\'>' + item + '</span>' + (index < feed.length - 1 ? '<span class=\'ticker-item\'>•</span>' : '')).join('');
+      track.innerHTML = feed.map((item, index) => '<span class=\'ticker-item\'>' + item + '</span>' + (index < feed.length - 1 ? '<span class=\'ticker-item\'>"</span>' : '')).join('');
     }
 
     function initializeInteractiveShell() {
@@ -1144,7 +1144,7 @@
       renderChatLog();
       const assistantIndex = state.chat.length - 1;
       try {
-        const res = await fetch('/api/chat', {
+        const res = await fetch('/api/chat.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
           body: JSON.stringify({
@@ -1171,11 +1171,6 @@
           let token = '';
           try {
             const payload = JSON.parse(payloadText);
-            if (payload.error) {
-              state.chat[assistantIndex].text = `⚠️ ${payload.error}${payload.details ? ': ' + payload.details : ''}`;
-              renderChatLog();
-              return;
-            }
             token = String(payload.token || payload.response || payload.message || payload.content || payload.text || '');
           } catch {
             token = payloadText;
