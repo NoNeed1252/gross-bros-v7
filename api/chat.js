@@ -1,6 +1,6 @@
 /**
  * Galactic Gross Bros - Chat API (SSE)
- * Handles OpenRouter streaming with automatic live-model rotation and robust VPS/Local failover.
+ * Refactored to use Direct Gemini API as primary and Qwen 2.5 on VPS as fallback.
  */
 const fetch = require('node-fetch');
 
@@ -9,11 +9,10 @@ module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no'); // Critical: disable Vercel/nginx buffering for SSE
+  res.setHeader('X-Accel-Buffering', 'no');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Robust body parsing: works with Express (local) + raw Vercel serverless
   let body = {};
   if (req.body && typeof req.body === 'object') {
     body = req.body;
@@ -27,87 +26,68 @@ module.exports = async (req, res) => {
       });
       if (data) body = JSON.parse(data);
     } catch (e) {
-      console.error('Body parse error in /api/chat:', e.message);
+      console.error('Body parse error:', e.message);
     }
   }
 
-  const { messages, stream = true } = body;
-
-  // Active OpenRouter free models as of June 2026
-  const openRouterModels = [
-    'deepseek/deepseek-r1:free',
-    'meta-llama/llama-3.3-70b-instruct:free',
-    'qwen/qwen-2.5-7b-instruct:free',
-    'google/gemma-2-9b-it:free',
-    'meta-llama/llama-3.2-3b-instruct:free',
-    'openrouter/auto'
-  ];
-
+  const { messages } = body;
   let success = false;
   let lastError = null;
 
-  // 1. Try OpenRouter list
-  for (const model of openRouterModels) {
+  // 1. Direct Gemini API Fallback (Primary)
+  if (process.env.GEMINI_API_KEY) {
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const contents = (messages || []).map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+      }));
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key=${process.env.GEMINI_API_KEY}`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          'HTTP-Referer': 'https://gross-bros.vercel.app',
-          'X-Title': 'Gross Bros Terminal',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: model,
-          messages: messages || [{ role: 'user', content: 'Hello' }],
-          stream: stream
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents })
       });
 
-      if (!response.ok) {
+      if (response.ok) {
+        await handleGeminiStream(response, res);
+        success = true;
+      } else {
         const errText = await response.text();
-        console.warn(`OpenRouter model ${model} failed:`, errText);
-        lastError = `OpenRouter (${model}): ${errText}`;
-        continue;
+        lastError = `Gemini Error: ${errText}`;
       }
-
-      await handleStream(response, res);
-      success = true;
-      break;
     } catch (err) {
-      console.error(`Error with OpenRouter model ${model}:`, err.message);
+      console.error('Gemini failed:', err.message);
       lastError = err.message;
     }
+  } else {
+    lastError = 'GEMINI_API_KEY not configured';
   }
 
-  // 2. Ollama failover logic
+  // 2. Ollama Fallback (Secondary - VPS)
   if (!success) {
-    // If on Vercel, use public VPS IP; otherwise use local loopback
-    const ollamaUrl = process.env.VERCEL 
-      ? 'http://216.250.127.169:8443/v1/chat/completions'
+    const isVercel = !!process.env.VERCEL;
+    const ollamaUrl = isVercel 
+      ? 'http://216.250.127.169:8443/v1/chat/completions' 
       : 'http://127.0.0.1:8443/v1/chat/completions';
 
-    console.log(`OpenRouter exhausted. Falling back to Ollama at ${ollamaUrl}...`);
     try {
       const response = await fetch(ollamaUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'llama3',
+          model: 'qwen2.5:1.5b',
           messages: messages || [{ role: 'user', content: 'Hello' }],
-          stream: stream
+          stream: true
         })
       });
 
-      if (!response.ok) {
+      if (response.ok) {
+        await handleOllamaStream(response, res);
+        success = true;
+      } else {
         const errText = await response.text();
-        throw new Error(`Ollama failed: ${errText}`);
+        lastError = `Ollama fallback failed: ${errText}. (Previous: ${lastError})`;
       }
-
-      await handleStream(response, res);
-      success = true;
     } catch (err) {
       console.error('Ollama fallback failed:', err.message);
       lastError = `Ollama: ${err.message}. Previous: ${lastError}`;
@@ -120,53 +100,48 @@ module.exports = async (req, res) => {
   }
 };
 
-/**
- * Handle streaming logic using async iterator for stability and memory efficiency.
- */
-async function handleStream(response, res) {
-  let buffer = '';
-
-  const processLine = (line) => {
-    const trimmed = line.trim();
-    if (!trimmed.startsWith('data:')) return;
-    const dataText = trimmed.slice(5).trim();
-    if (!dataText) return;
-
-    if (dataText === '[DONE]') {
-      res.write('data: [DONE]\n\n');
-      return;
-    }
-
-    try {
-      const json = JSON.parse(dataText);
-      const content = json.choices?.[0]?.delta?.content || json.choices?.[0]?.text || '';
-      if (content) {
-        res.write(`data: ${JSON.stringify({ token: content })}\n\n`);
-      }
-    } catch (e) {
-      // Pass-through raw data if parsing fails
-      res.write(line + '\n\n');
-    }
-  };
-
-  try {
-    // Iterate over chunks using the async iterator to avoid buffer leaks
-    for await (const chunk of response.body) {
-      buffer += chunk.toString();
-      let newlineIndex;
-      while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
-        const line = buffer.slice(0, newlineIndex);
-        buffer = buffer.slice(newlineIndex + 1);
-        processLine(line);
+async function handleGeminiStream(response, res) {
+  for await (const chunk of response.body) {
+    const lines = chunk.toString().split('\n');
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        try {
+          const data = JSON.parse(line.slice(6));
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            res.write(`data: ${JSON.stringify({ token: text })}\n\n`);
+          }
+        } catch (e) {}
       }
     }
-
-    // Process any remaining data in the buffer
-    if (buffer.trim()) {
-      processLine(buffer);
-    }
-  } catch (err) {
-    console.error('Stream processing error:', err.message);
-    throw err;
   }
+  res.write('data: [DONE]\n\n');
+  res.end();
+}
+
+async function handleOllamaStream(response, res) {
+  let buffer = '';
+  for await (const chunk of response.body) {
+    buffer += chunk.toString();
+    let newlineIndex;
+    while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
+      const line = buffer.slice(0, newlineIndex).trim();
+      buffer = buffer.slice(newlineIndex + 1);
+      if (line.startsWith('data:')) {
+        const dataText = line.slice(5).trim();
+        if (dataText === '[DONE]') {
+          res.write('data: [DONE]\n\n');
+        } else {
+          try {
+            const json = JSON.parse(dataText);
+            const content = json.choices?.[0]?.delta?.content || '';
+            if (content) {
+              res.write(`data: ${JSON.stringify({ token: content })}\n\n`);
+            }
+          } catch (e) {}
+        }
+      }
+    }
+  }
+  res.end();
 }
