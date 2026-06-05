@@ -31,11 +31,14 @@ app.post('/api/deploy', (req, res) => {
     });
 });
 
-// API Routes - Dynamic loading of Vercel handlers
-const xamanHandler = require('./api/xaman.js');
-
+/**
+ * API Handler Wrapper
+ * Adapts Vercel-style (ESM/Default Export) handlers to Express.
+ * This ensures consistency across the Ionos VPS environment.
+ */
 const wrapHandler = (handler) => async (req, res) => {
     try {
+        // Support both CommonJS (require) and ESM (import) style exports
         const actualHandler = handler.default || handler;
         await actualHandler(req, res);
     } catch (error) {
@@ -46,8 +49,18 @@ const wrapHandler = (handler) => async (req, res) => {
     }
 };
 
-app.all('/api/xaman', wrapHandler(xamanHandler));
+// API Routes - Mount dynamic handlers
+const xamanHandler = require('./api/xaman.js');
+const chatHandler = require('./api/chat.js');
+const fusionGateHandler = require('./api/fusion-gate.js');
+const callbackHandler = require('./api/callback.js');
 
+app.all('/api/xaman', wrapHandler(xamanHandler));
+app.all('/api/chat', wrapHandler(chatHandler));
+app.all('/api/fusion-gate', wrapHandler(fusionGateHandler));
+app.all('/api/callback', wrapHandler(callbackHandler));
+
+// SPA Routing: Redirect all other requests to index.html
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
