@@ -505,6 +505,56 @@
     }
     .footer-links { display: flex; gap: 18px; flex-wrap: wrap; }
     .muted { color: rgba(0,255,200,.6); }
+
+    /* Sandbox Trading UI */
+    .sandbox-container {
+      display: none;
+      gap: 16px;
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 22px;
+      border: 1px solid rgba(0,255,200,.25);
+      background: rgba(0,255,200,.04);
+    }
+    .sandbox-container.active { display: grid; grid-template-columns: 1fr 1fr; }
+    @media (max-width: 850px) { .sandbox-container.active { grid-template-columns: 1fr; } }
+    .sandbox-card {
+      background: rgba(0,0,0,.45);
+      border: 1px solid rgba(0,255,200,.12);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sandbox-header {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      letter-spacing: .2em;
+      color: rgba(0,255,200,.8);
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(0,255,200,.1);
+      padding-bottom: 8px;
+    }
+    .sandbox-stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+    .sandbox-stat-label { color: rgba(0,255,200,.5); }
+    .sandbox-stat-value { color: #f1fffd; }
+    .sandbox-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .sandbox-log {
+      height: 120px;
+      overflow-y: auto;
+      font-size: 11px;
+      color: rgba(0,255,200,.7);
+      background: rgba(0,0,0,.3);
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,255,200,.08);
+      font-family: 'Share Tech Mono', monospace;
+    }
   </style>
 </head>
 <body>
@@ -572,7 +622,7 @@
 
       <section id='section-2' class='section'>
         <div class='panel fuse-panel'>
-                    <div class='fuse-head'>
+          <div class='fuse-head'>
             <div>
               <div class='muted' style='letter-spacing:.35em;text-transform:uppercase;font-size:11px;'>Fusion Lab</div>
               <h2 style='font-family:Orbitron,sans-serif;font-size:clamp(24px,4vw,48px);margin:10px 0 0;'>NEURAL TERMINAL</h2>
@@ -580,6 +630,7 @@
             <div id='fuse-lock-badge' class='fuse-badge'>LOCKED</div>
           </div>
           <div id='held-nft-display' class='held-nft-panel'></div>
+          
           <div id='chat-terminal' class='chat-terminal'>
             <div id='chat-log' class='chat-log' aria-live='polite'></div>
             <div class='chat-terminal-actions'>
@@ -594,6 +645,39 @@
               </div>
             </div>
           </div>
+
+          <!-- Trading Bot Sandbox UI (Hidden until Fuse Unlocked) -->
+          <div id='sandbox-ui' class='sandbox-container'>
+            <div class='sandbox-card'>
+              <div class='sandbox-header'>Trading Engine Status</div>
+              <div class='sandbox-stat-row'>
+                <span class='sandbox-stat-label'>Algorithm</span>
+                <span class='sandbox-stat-value'>AMM-NEURAL-V1</span>
+              </div>
+              <div class='sandbox-stat-row'>
+                <span class='sandbox-stat-label'>Status</span>
+                <span class='sandbox-stat-value' style='color: #00ffc8;'>ACTIVE / MONITORING</span>
+              </div>
+              <div class='sandbox-stat-row'>
+                <span class='sandbox-stat-label'>Target Pair</span>
+                <span class='sandbox-stat-value'>XRP / RLUSD</span>
+              </div>
+              <div class='sandbox-btn-group'>
+                <button class='btn' style='font-size: 11px; padding: 8px;'>SWAP XRP</button>
+                <button class='btn' style='font-size: 11px; padding: 8px;'>SWAP RLUSD</button>
+              </div>
+            </div>
+            <div class='sandbox-card'>
+              <div class='sandbox-header'>Neural Trade Log</div>
+              <div id='sandbox-log' class='sandbox-log'>
+                <div>[SYSTEM] Neural link confirmed...</div>
+                <div>[SIGNAL] Monitoring AMM liquidity pools...</div>
+                <div>[SIGNAL] Checking NFT floor delta...</div>
+              </div>
+              <button class='btn' style='font-size: 11px; padding: 8px;' onclick='simulateTrade()'>SIMULATE TRADE</button>
+            </div>
+          </div>
+
           <div class='fusion-bottom-divider'>
             <div class='fuse-grid'>
               <div class='fuse-readout'>
@@ -1184,12 +1268,14 @@
       const gateEl = document.getElementById('fuse-gate-state');
       const badgeEl = document.getElementById('fuse-lock-badge');
       const buttonEl = document.getElementById('fuse-button');
+      const sandboxEl = document.getElementById('sandbox-ui');
       if (!amountEl || !rateEl || !statusEl || !gateEl || !badgeEl || !buttonEl) return;
       const unlocked = state.fuseUnlocked;
       buttonEl.textContent = unlocked ? 'FUSE ARMED' : 'FUSE';
       badgeEl.textContent = unlocked ? 'UNLOCKED' : 'LOCKED';
       gateEl.textContent = unlocked ? 'OPEN' : 'SEALED';
       statusEl.textContent = unlocked ? 'Targeting $' + state.fuseTargetUsd.toFixed(2) + ' USD' : 'Awaiting unlock';
+      if (sandboxEl) sandboxEl.classList.toggle('active', unlocked);
       const label = fuseTokenConfig[token]?.label || token;
       if (!price || price <= 0) {
         amountEl.textContent = unlocked ? 'RATE PENDING' : '--';
@@ -1447,6 +1533,25 @@
       }
     }
 
+    function simulateTrade() {
+      const log = document.getElementById('sandbox-log');
+      if (!log) return;
+      const actions = [
+        '[SIGNAL] High liquidity detected in RLUSD pool.',
+        '[ACTION] Swap 10 XRP -> RLUSD initialized.',
+        '[LEDGER] Transaction pending: 0x' + Math.random().toString(16).slice(2, 10) + '...',
+        '[SUCCESS] Neural trade executed.'
+      ];
+      actions.forEach((text, i) => {
+        setTimeout(() => {
+          const div = document.createElement('div');
+          div.textContent = text;
+          log.appendChild(div);
+          log.scrollTop = log.scrollHeight;
+        }, i * 1000);
+      });
+    }
+
 
     function bootApp() {
       initializeInteractiveShell();
@@ -1484,6 +1589,7 @@
     window.renderHeldNft = renderHeldNft;
     window.handleFuseTokenChange = handleFuseTokenChange;
     window.switchTab = switchTab;
+    window.simulateTrade = simulateTrade;
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', bootApp, { once: true });
