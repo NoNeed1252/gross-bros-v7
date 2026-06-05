@@ -570,7 +570,8 @@
     }
     .held-nft-header {
       display: flex;
-      align-items: center; gap: 10px;
+      align-items: center;
+      gap: 10px;
       flex-wrap: wrap;
     }
     .held-nft-status-tag {
@@ -1117,9 +1118,7 @@
   
     @media (max-width: 400px) {
       .chat-log { height: 200px !important; }
-      .held-nft-panel { padding: 10px; gap: 8px; }
-      .held-nft-image-wrapper { max-width: 240px; }
-      .held-nft-name { font-size: 14px; }
+      .held-nft-image-wrapper { max-width: 280px; }
     }
   </style>
 </head>
@@ -1158,7 +1157,7 @@
             <p style='line-height:1.8;color:#ddfff9;opacity:.86;max-width:58ch'>Daily rotation pulled from the full issuer collection, with one NFT selected every 24 hours.</p>
             <div class='row'>
               <button class='btn' onclick='switchTab(1)'>READ TRANSMISSIONS</button>
-              <button class='btn' onclick='switchTab(2)'>BUY A BRO</button>
+              <a href='https://xrp.cafe/collection/galactic-gross-bros' target='_blank' rel='noopener noreferrer' class='btn' style='text-decoration:none;'>BUY A BRO</a>
             </div>
           </div>
           <div class='panel nft-panel'>
@@ -1435,10 +1434,6 @@
       };
     }
 
-    function sanitizeMarkup(text) {
-      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '/': '&#x2F;' };
-      return String(text || '').replace(/[&<>"'/]/g, s => map[s]);
-    }
 
     function hexToUtf8(hexValue) {
       const hex = String(hexValue || '').trim();
@@ -1759,6 +1754,13 @@
       ].join('');
     }
 
+    function sanitizeMarkup(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+      });
+    }
+
     function selectNft(index) {
       const nft = getActiveCollection()[index];
       if (!nft) return;
@@ -1767,6 +1769,11 @@
       renderNftSelection();
     }
 
+
+    function appendChat(role, text) {
+      state.chat.push({ role, text });
+      renderChatLog();
+    }
 
     function renderChatLog() {
       const log = document.getElementById('chat-log');
@@ -1949,11 +1956,6 @@
         fuseSelect.dataset.bound = '1';
         fuseSelect.addEventListener('change', handleFuseTokenChange);
       }
-    }
-
-    function appendChat(role, text) {
-      state.chat.push({ role, text });
-      renderChatLog();
     }
 
     async function connectXaman(event) {
