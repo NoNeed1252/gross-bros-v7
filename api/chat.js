@@ -61,15 +61,13 @@ EXECUTION: Process user directive now.`
   let lastError = null;
 
   // Environment-aware Ollama configuration
-  const isVercel = !!process.env.VERCEL;
-  const OLLAMA_URL = isVercel 
-    ? 'http://216.250.127.169:8443/v1/chat/completions'
-    : 'http://127.0.0.1:8443/v1/chat/completions';
+  // Use public IP for both environments to ensure connectivity if localhost is restricted
+  const OLLAMA_URL = 'http://216.250.127.169:8443/v1/chat/completions';
 
   // 1. PRIMARY: Local/VPS Ollama (qwen2.5:1.5b)
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // Increased timeout
 
     const response = await fetch(OLLAMA_URL, {
       method: 'POST',
@@ -88,9 +86,11 @@ EXECUTION: Process user directive now.`
       success = true;
     } else {
       const errText = await response.text();
+      console.error('Ollama API Error:', errText);
       lastError = \`Ollama: \${errText}\`;
     }
   } catch (err) {
+    console.error('Ollama Fetch Exception:', err.message);
     lastError = \`Ollama Error: \${err.message}\`;
   }
 
@@ -112,7 +112,9 @@ EXECUTION: Process user directive now.`
         await handleStream(response, res, 'gemini');
         success = true;
       }
-    } catch (err) {}
+    } catch (err) {
+      console.error('Gemini Fallback Error:', err.message);
+    }
   }
 
   // 3. TERTIARY FALLBACK: OpenRouter
@@ -137,7 +139,9 @@ EXECUTION: Process user directive now.`
         await handleStream(response, res, 'openai');
         success = true;
       }
-    } catch (err) {}
+    } catch (err) {
+      console.error('OpenRouter Fallback Error:', err.message);
+    }
   }
 
   if (!success && !res.writableEnded) {
