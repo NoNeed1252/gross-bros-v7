@@ -1,6 +1,7 @@
 /**
  * Galactic Gross Bros - Chat API (SSE)
  * Handles OpenRouter streaming with proper model identifiers and payload transformation.
+ * Implements a robust auto-fallback / failover model loop.
  */
 const fetch = require('node-fetch');
 
@@ -31,85 +32,114 @@ module.exports = async (req, res) => {
     }
   }
 
-  try {
-    const { messages, stream = true } = body;
-    
-    // Exact model — never truncated
-    const targetModel = 'meta-llama/llama-3.1-8b-instruct:free';
+  const { messages, stream = true } = body;
+  const userMessages = messages || [{ role: 'user', content: 'Hello' }];
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        'HTTP-Referer': 'https://gross-bros.vercel.app',
-        'X-Title': 'Gross Bros Terminal',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: targetModel,
-        messages: messages || [{ role: 'user', content: 'Hello' }],
-        stream: stream
-      })
-    });
+  // Fallback chain of models
+  const models = [
+    'meta-llama/llama-3.1-8b-instruct:free',
+    'meta-llama/llama-3.1-70b-instruct:free',
+    'google/gemma-2-9b-it:free',
+    'mistralai/mistral-7b-instruct:free',
+    'microsoft/phi-3-mini-128k-instruct:free'
+  ];
 
-    if (!response.ok) {
-      const err = await response.text();
-      res.write(`data: ${JSON.stringify({ error: 'OpenRouter Error', details: err })}\n\n`);
-      return res.end();
-    }
+  let success = false;
+  let lastError = null;
 
-    // === ROBUST CHUNK BUFFER (fixes split-JSON crashes) ===
-    let buffer = '';
+  for (const targetModel of models) {
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'HTTP-Referer': 'https://gross-bros.vercel.app',
+          'X-Title': 'Gross Bros Terminal',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: targetModel,
+          messages: userMessages,
+          stream: stream
+        })
+      });
 
-    const processLine = (line) => {
-      const trimmed = line.trim();
-      if (!trimmed.startsWith('data:')) return;
-      const dataText = trimmed.slice(5).trim();
-      if (!dataText) return;
-
-      if (dataText === '[DONE]') {
-        res.write('data: [DONE]\n\n');
-        return;
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.warn(`Model ${targetModel} failed: ${errorText}`);
+        lastError = errorText;
+        continue; // Try next model
       }
 
-      try {
-        const json = JSON.parse(dataText);
-        const content = json.choices?.[0]?.delta?.content || json.choices?.[0]?.text || '';
-        if (content) {
-          res.write(`data: ${JSON.stringify({ token: content })}\n\n`);
+      // If we reached here, the request was successful
+      success = true;
+
+      // === ROBUST CHUNK BUFFER (fixes split-JSON crashes) ===
+      let buffer = '';
+
+      const processLine = (line) => {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) return;
+        const dataText = trimmed.slice(5).trim();
+        if (!dataText) return;
+
+        if (dataText === '[DONE]') {
+          res.write('data: [DONE]\n\n');
+          return;
         }
-      } catch (e) {
-        // Only fallback on truly bad lines (rare now that we buffer)
-        res.write(line + '\n\n');
-      }
-    };
 
-    response.body.on('data', (chunk) => {
-      buffer += chunk.toString();
-      let newlineIndex;
-      while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
-        const line = buffer.slice(0, newlineIndex);
-        buffer = buffer.slice(newlineIndex + 1);
-        processLine(line);
-      }
-    });
+        try {
+          const json = JSON.parse(dataText);
+          const content = json.choices?.[0]?.delta?.content || json.choices?.[0]?.text || '';
+          if (content) {
+            res.write(`data: ${JSON.stringify({ token: content })}\n\n`);
+          }
+        } catch (e) {
+          // Only fallback on truly bad lines (rare now that we buffer)
+          res.write(line + '\n\n');
+        }
+      };
 
-    response.body.on('end', () => {
-      if (buffer.trim()) processLine(buffer);
+      await new Promise((resolve, reject) => {
+        response.body.on('data', (chunk) => {
+          buffer += chunk.toString();
+          let newlineIndex;
+          while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
+            const line = buffer.slice(0, newlineIndex);
+            buffer = buffer.slice(newlineIndex + 1);
+            processLine(line);
+          }
+        });
+
+        response.body.on('end', () => {
+          if (buffer.trim()) processLine(buffer);
+          resolve();
+        });
+
+        response.body.on('error', (err) => {
+          reject(err);
+        });
+
+        req.on('close', () => {
+          res.end();
+          resolve();
+        });
+      });
+
+      // Break out of the model loop if we successfully streamed
+      if (res.writableEnded) break;
       res.end();
-    });
+      break;
 
-    response.body.on('error', (err) => {
-      res.write(`data: ${JSON.stringify({ error: 'Stream Error', message: err.message })}\n\n`);
-      res.end();
-    });
+    } catch (error) {
+      console.error(`Fatal error with model ${targetModel}:`, error.message);
+      lastError = error.message;
+      continue;
+    }
+  }
 
-    req.on('close', () => {
-      res.end();
-    });
-
-  } catch (error) {
-    res.write(`data: ${JSON.stringify({ error: 'Internal Server Error', message: error.message })}\n\n`);
+  if (!success && !res.writableEnded) {
+    res.write(`data: ${JSON.stringify({ error: 'All models failed', details: lastError })}\n\n`);
     res.end();
   }
 };
