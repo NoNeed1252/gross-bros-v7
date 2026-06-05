@@ -13,10 +13,10 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    const { messages, model, stream = true } = req.body || {};
+    const { messages, stream = true } = req.body || {};
     
-    // FIX: Preserve the full model string. 
-    const targetModel = model || 'meta-llama/llama-3.1-8b-instruct:free';
+    // Explicitly use the full model string as requested by the owner.
+    const targetModel = 'meta-llama/llama-3.1-8b-instruct:free';
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
