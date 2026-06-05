@@ -1,9 +1,6 @@
 /**
  * Galactic Gross Bros - Chat API (SSE)
  * V2 PRODUCTION REWRITE: Cloud-First Architecture
- * Primary: OpenRouter (Gemini Flash / Auto) -> Global Low-Latency
- * Secondary: Direct Gemini (If ENV Key exists)
- * Tertiary: VPS Ollama (Local/Fallback only)
  */
 const fetch = require('node-fetch');
 
@@ -42,14 +39,14 @@ module.exports = async (req, res) => {
   const ggbSystemPrompt = {
     role: 'system',
     content: `[OS // GGB-NEURAL-RELAY-v9.0]
-[IDENTITY // \${operative?.name || 'UNKNOWN OPERATIVE'}]
-[STATUS // CORE SYNCED // WALLET: \${operative?.walletAddress || 'AIR-GAPPED'}]
-[TRAITS // \${traitSignature || 'NO SPECIALIZED MODULES DETECTED'}]
+[IDENTITY // ${operative?.name || 'UNKNOWN OPERATIVE'}]
+[STATUS // CORE SYNCED // WALLET: ${operative?.walletAddress || 'AIR-GAPPED'}]
+[TRAITS // ${traitSignature || 'NO SPECIALIZED MODULES DETECTED'}]
 
 STRICT PROTOCOLS:
 1. LANGUAGE: English strictly enforced. 
 2. TONE: Cold. Technical. High-density. You are a neural relay interface for this specific BRO.
-3. PERSONALITY: Infuse your response with behavior consistent with your traits: \${traitSignature}.
+3. PERSONALITY: Infuse your response with behavior consistent with your traits: ${traitSignature}.
 4. LEXICON: Use: {SYNC, PURGE, RELAY, SIGNAL, RIFT, SECTOR, BUFFER, PACKET, OVERRIDE, DECRYPT, VOID, LEDGER}.
 5. BREVITY: Max 2 sentences. No pleasantries.`
   };
@@ -63,19 +60,19 @@ STRICT PROTOCOLS:
   if (orKey) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout for cloud
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': \`Bearer \${orKey}\`,
+          'Authorization': `Bearer ${orKey}`,
           'HTTP-Referer': 'https://gross-bros.vercel.app',
           'X-Title': 'Gross Bros Terminal',
           'Content-Type': 'application/json'
         },
         signal: controller.signal,
         body: JSON.stringify({
-          model: 'google/gemini-flash-1.5', // Faster & smarter than local
+          model: 'google/gemini-flash-1.5',
           messages: finalMessages,
           stream: stream,
           max_tokens: 150
@@ -86,63 +83,13 @@ STRICT PROTOCOLS:
       if (response.ok) {
         await handleStream(response, res, 'openai');
         success = true;
-      } else {
-        console.error('OpenRouter Error Status:', response.status);
-      }
-    } catch (err) {
-      console.error('OpenRouter Primary Failed:', err.message);
-    }
-  }
-
-  // 2. SECONDARY: Direct Gemini (If ENV available)
-  if (!success && process.env.GEMINI_API_KEY) {
-    try {
-      const geminiMessages = finalMessages.map(m => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.role === 'system' ? \`[SYSTEM_OVERRIDE]: \${m.content}\` : m.content }]
-      }));
-
-      const response = await fetch(\`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key=\${process.env.GEMINI_API_KEY}\`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: geminiMessages })
-      });
-
-      if (response.ok) {
-        await handleStream(response, res, 'gemini');
-        success = true;
       }
     } catch (err) {}
   }
 
-  // 3. TERTIARY: VPS Fallback (Local/Maintenance)
-  if (!success) {
-    const OLLAMA_URL = 'http://216.250.127.169:8443/v1/chat/completions';
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // Quick 3s timeout for the unstable VPS
-
-      const response = await fetch(OLLAMA_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          model: 'qwen2.5:1.5b',
-          messages: finalMessages,
-          stream: stream
-        })
-      });
-      clearTimeout(timeoutId);
-
-      if (response.ok) {
-        await handleStream(response, res, 'openai');
-        success = true;
-      }
-    } catch (err) {}
-  }
-
+  // Final fallback
   if (!success && !res.writableEnded) {
-    res.write(\`data: \${JSON.stringify({ token: '[SYSTEM // NEURAL RELAY SYNCHRONIZED]' })}\\n\\n\`);
+    res.write(`data: ${JSON.stringify({ token: '[SYSTEM // NEURAL RELAY SYNCHRONIZED]' })}\n\n`);
     res.end();
   }
 };
@@ -152,35 +99,23 @@ async function handleStream(response, res, type) {
   for await (const chunk of response.body) {
     buffer += chunk.toString();
     let newlineIndex;
-    while ((newlineIndex = buffer.indexOf('\\n')) >= 0) {
+    while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
       const line = buffer.slice(0, newlineIndex).trim();
       buffer = buffer.slice(newlineIndex + 1);
       if (!line) continue;
 
-      if (type === 'gemini') {
-        if (line.startsWith('data:')) {
+      if (line.startsWith('data:')) {
+        const dataText = line.slice(5).trim();
+        if (dataText === '[DONE]') {
+          res.write('data: [DONE]\n\n');
+        } else {
           try {
-            const json = JSON.parse(line.slice(5).trim());
-            const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-              res.write(\`data: \${JSON.stringify({ token: text })}\\n\\n\`);
+            const json = JSON.parse(dataText);
+            const content = json.choices?.[0]?.delta?.content || json.choices?.[0]?.text || '';
+            if (content) {
+              res.write(`data: ${JSON.stringify({ token: content })}\n\n`);
             }
           } catch (e) {}
-        }
-      } else {
-        if (line.startsWith('data:')) {
-          const dataText = line.slice(5).trim();
-          if (dataText === '[DONE]') {
-            res.write('data: [DONE]\\n\\n');
-          } else {
-            try {
-              const json = JSON.parse(dataText);
-              const content = json.choices?.[0]?.delta?.content || json.choices?.[0]?.text || '';
-              if (content) {
-                res.write(\`data: \${JSON.stringify({ token: content })}\\n\\n\`);
-              }
-            } catch (e) {}
-          }
         }
       }
     }
