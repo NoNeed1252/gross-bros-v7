@@ -1,80 +1,44 @@
 const express = require('express');
 const path = require('path');
-const { exec } = require('child_process');
+const xamanRouter = require('./api/xaman');
+
 const app = express();
-const port = 80;
+const PORT = process.env.PORT || 8080;
+const HOST = '0.0.0.0';
 
-// Security token for deployment
-const DEPLOY_TOKEN = 'vAUL03juyPr1hu';
-
-// Middleware to parse JSON bodies
 app.use(express.json());
 
-// Serve static files from the root directory
-app.use(express.static(path.join(__dirname)));
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Auto-deployment endpoint
-app.post('/api/deploy', (req, res) => {
-    const token = req.headers['x-deploy-token'];
-    if (token !== DEPLOY_TOKEN) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
+// API Routes
+app.use('/api/xaman', xamanRouter);
 
-    console.log('Starting deployment sync...');
-    exec('git pull origin main && pm2 reload all', (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Deploy error: ${error}`);
-            return res.status(500).json({ error: 'Deployment failed', details: stderr });
-        }
-        console.log(`Deploy success: ${stdout}`);
-        res.json({ message: 'Deployment successful', output: stdout });
+// Chat API Route (Mounted directly for compatibility)
+const chatHandler = require('./chat_updated');
+app.post('/api/chat', chatHandler);
+app.post('/api/chat.js', chatHandler); // Handle legacy extension calls
+
+// Basic health check
+app.get('/api/status', (req, res) => {
+    res.json({ 
+        status: 'online', 
+        system: 'GROSS-BROS-V7', 
+        timestamp: new Date().toISOString() 
     });
 });
 
-/**
- * Dynamic ESM Loader for CommonJS
- * Caches imported modules to avoid redundant loads.
- */
-const moduleCache = new Map();
-
-const loadHandler = async (modulePath) => {
-    if (moduleCache.has(modulePath)) {
-        return moduleCache.get(modulePath);
-    }
-    // Dynamic import works from CJS to load ESM
-    const module = await import(`./api/${modulePath}`);
-    const handler = module.default || module;
-    moduleCache.set(modulePath, handler);
-    return handler;
-};
-
-const routeHandler = (fileName) => async (req, res) => {
-    try {
-        const handler = await loadHandler(fileName);
-        await handler(req, res);
-    } catch (error) {
-        console.error(`API Error [${fileName}]:`, error);
-        if (!res.headersSent) {
-            res.status(500).json({ 
-                error: 'Internal Server Error', 
-                message: error.message,
-                path: fileName
-            });
-        }
-    }
-};
-
-// API Routes - Mounted using dynamic ESM loader
-app.all('/api/xaman', routeHandler('xaman.js'));
-app.all('/api/chat', routeHandler('chat.js'));
-app.all('/api/fusion-gate', routeHandler('fusion-gate.js'));
-app.all('/api/callback', routeHandler('callback.js'));
-
-// SPA Routing: Redirect all other requests to index.html
+// Fallback to index.html for SPA behavior
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Server running on 0.0.0.0:${port}`);
+const fs = require('fs');
+app.use((req, res, next) => {
+  fs.appendFileSync('access.log', `${new Date().toISOString()} ${req.method} ${req.url}\n`);
+  next();
+});
+
+app.listen(PORT, HOST, () => {
+    console.log(`Gross-Bros-V7 Terminal Server running at http://${HOST}:${PORT}`);
 });
