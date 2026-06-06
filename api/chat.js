@@ -3,25 +3,26 @@ export const config = {
 };
 
 export default async function handler(req) {
+  // CORS Headers
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    });
+    return new Response(null, { status: 200, headers });
   }
 
   try {
     const body = await req.json();
     const { messages, operative } = body;
 
+    // Use specific keys provided by frontend: operative.name, operative.walletAddress, operative.traits
     const systemPrompt = `You are the Gross Bros AI Terminal. 
 Character: Gritty, slightly gross, but helpful operative assistant.
 Context: You are talking to an operative named ${operative?.name || 'Unknown'}. 
-Wallet: ${operative?.wallet || 'Not Connected'}. 
+Wallet: ${operative?.walletAddress || 'Not Connected'}. 
 Traits: ${(operative?.traits || []).join(', ') || 'None detected'}.
 Task: Assist with fusion, NFT analysis, and general terminal queries in character. Always stay in character. Keep responses concise unless asked for detail.`;
 
@@ -66,7 +67,7 @@ Task: Assist with fusion, NFT analysis, and general terminal queries in characte
     if (!openRouterRes || !openRouterRes.ok) {
       return new Response(JSON.stringify({ error: 'All models failed', details: lastError }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...headers, 'Content-Type': 'application/json' },
       });
     }
 
@@ -78,53 +79,58 @@ Task: Assist with fusion, NFT analysis, and general terminal queries in characte
         const reader = openRouterRes.body.getReader();
         let buffer = '';
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
 
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed || !trimmed.startsWith('data:')) continue;
-            
-            const dataText = trimmed.slice(5).trim();
-            if (dataText === '[DONE]') {
-              controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-              continue;
-            }
-
-            try {
-              const json = JSON.parse(dataText);
-              const content = json.choices?.[0]?.delta?.content || '';
-              if (content) {
-                const responseData = JSON.stringify({ token: content });
-                controller.enqueue(encoder.encode(`data: ${responseData}\n\n`));
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed || !trimmed.startsWith('data:')) continue;
+              
+              const dataText = trimmed.slice(5).trim();
+              if (dataText === '[DONE]') {
+                controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+                continue;
               }
-            } catch (e) {
-              // Ignore incomplete chunks
+
+              try {
+                const json = JSON.parse(dataText);
+                const content = json.choices?.[0]?.delta?.content || '';
+                if (content) {
+                  const responseData = JSON.stringify({ token: content });
+                  controller.enqueue(encoder.encode(`data: ${responseData}\n\n`));
+                }
+              } catch (e) {
+                // Ignore incomplete JSON chunks
+              }
             }
           }
+        } catch (e) {
+          console.error('Stream error:', e);
+        } finally {
+          controller.close();
         }
-        controller.close();
       },
     });
 
     return new Response(stream, {
       headers: {
+        ...headers,
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*',
       },
     });
 
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...headers, 'Content-Type': 'application/json' },
     });
   }
 }

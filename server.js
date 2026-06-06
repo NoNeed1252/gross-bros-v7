@@ -1,7 +1,6 @@
 const express = require('express');
 const path = require('path');
 const xamanRouter = require('./api/xaman');
-const chatHandler = require('./api/chat');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -14,8 +13,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // API Routes
 app.use('/api/xaman', xamanRouter);
-app.post('/api/chat.js', chatHandler);
-app.get('/api/chat.js', chatHandler);
 
 // Basic health check
 app.get('/api/status', (req, res) => {
@@ -31,12 +28,6 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const fs = require('fs');
-app.use((req, res, next) => {
-  fs.appendFileSync('access.log', `${new Date().toISOString()} ${req.method} ${req.url}
-`);
-  next();
-});
 app.listen(PORT, HOST, () => {
     console.log(`Gross-Bros-V7 Terminal Server running at http://${HOST}:${PORT}`);
 });
