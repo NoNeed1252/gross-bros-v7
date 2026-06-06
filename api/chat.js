@@ -1,143 +1,130 @@
-const fetch = require('node-fetch');
-
-module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no');
-
-  if (req.method === 'OPTIONS') return res.status(200).end();
-
-  let body = {};
-  if (req.body && typeof req.body === 'object') {
-    body = req.body;
-  } else {
-    try {
-      let data = '';
-      await new Promise((resolve, reject) => {
-        req.on('data', chunk => { data += chunk.toString(); });
-        req.on('end', () => resolve());
-        req.on('error', reject);
-      });
-      if (data) body = JSON.parse(data);
-    } catch (e) {
-      console.error('Body parse error:', e.message);
-    }
-  }
-
-  const { messages, stream = true, operative } = body;
-  const userMessages = messages || [{ role: 'user', content: 'Hello' }];
-  
-  const systemPrompt = `You are the Neural Terminal of the Galactic Gross Bros.
-Current Operative: ${operative?.name || 'Unknown'}
-Wallet: ${operative?.walletAddress || 'Disconnected'}
-Traits: ${operative?.traits?.join(', ') || 'None'}
-
-Keep responses concise, technical, and in-universe.`;
-
-  const finalMessages = [
-    { role: 'system', content: systemPrompt },
-    ...userMessages
-  ];
-
-  const models = [
-    'meta-llama/llama-3.1-8b-instruct:free',
-    'meta-llama/llama-3.1-70b-instruct:free',
-    'google/gemma-2-9b-it:free'
-  ];
-
-  let success = false;
-  let lastError = null;
-
-  for (const targetModel of models) {
-    try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          'HTTP-Referer': 'https://gross-bros.vercel.app',
-          'X-Title': 'Gross Bros Terminal',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: targetModel,
-          messages: finalMessages,
-          stream: stream
-        })
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.warn(`Model ${targetModel} failed: ${errorText}`);
-        lastError = errorText;
-        continue;
-      }
-
-      success = true;
-      let buffer = '';
-
-      const processLine = (line) => {
-        const trimmed = line.trim();
-        if (!trimmed.startsWith('data:')) return;
-        const dataText = trimmed.slice(5).trim();
-        if (!dataText) return;
-
-        if (dataText === '[DONE]') {
-          res.write('data: [DONE]\n\n');
-          return;
-        }
-
-        try {
-          const json = JSON.parse(dataText);
-          const content = json.choices?.[0]?.delta?.content || json.choices?.[0]?.text || '';
-          if (content) {
-            res.write(`data: ${JSON.stringify({ token: content })}\n\n`);
-          }
-        } catch (e) {
-          res.write(line + '\n\n');
-        }
-      };
-
-      await new Promise((resolve, reject) => {
-        response.body.on('data', (chunk) => {
-          buffer += chunk.toString();
-          let newlineIndex;
-          while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
-            const line = buffer.slice(0, newlineIndex);
-            buffer = buffer.slice(newlineIndex + 1);
-            processLine(line);
-          }
-        });
-
-        response.body.on('end', () => {
-          if (buffer.trim()) processLine(buffer);
-          resolve();
-        });
-
-        response.body.on('error', (err) => {
-          reject(err);
-        });
-
-        req.on('close', () => {
-          if (response.body.destroy) response.body.destroy();
-          resolve();
-        });
-      });
-
-      if (res.writableEnded) break;
-      res.end();
-      break;
-
-    } catch (error) {
-      console.error(`Fatal error with model ${targetModel}:`, error.message);
-      lastError = error.message;
-      continue;
-    }
-  }
-
-  if (!success && !res.writableEnded) {
-    res.write(`data: ${JSON.stringify({ error: 'All models failed', details: lastError })}\n\n`);
-    res.end();
-  }
+export const config = {
+  runtime: 'edge',
 };
+
+export default async function handler(req) {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    });
+  }
+
+  try {
+    const body = await req.json();
+    const { messages, operative } = body;
+
+    const systemPrompt = `You are the Gross Bros AI Terminal. 
+Character: Gritty, slightly gross, but helpful operative assistant.
+Context: You are talking to an operative named ${operative?.name || 'Unknown'}. 
+Wallet: ${operative?.wallet || 'Not Connected'}. 
+Traits: ${(operative?.traits || []).join(', ') || 'None detected'}.
+Task: Assist with fusion, NFT analysis, and general terminal queries in character. Always stay in character. Keep responses concise unless asked for detail.`;
+
+    const fullMessages = [
+      { role: 'system', content: systemPrompt },
+      ...(messages || [])
+    ];
+
+    const models = [
+      'meta-llama/llama-3.1-8b-instruct:free',
+      'meta-llama/llama-3.1-70b-instruct:free',
+      'google/gemma-2-9b-it:free'
+    ];
+
+    let openRouterRes;
+    let lastError;
+
+    for (const model of models) {
+      try {
+        openRouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            'HTTP-Referer': 'https://gross-bros.vercel.app',
+            'X-Title': 'Gross Bros Terminal',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: fullMessages,
+            stream: true,
+          }),
+        });
+
+        if (openRouterRes.ok) break;
+        lastError = await openRouterRes.text();
+      } catch (err) {
+        lastError = err.message;
+      }
+    }
+
+    if (!openRouterRes || !openRouterRes.ok) {
+      return new Response(JSON.stringify({ error: 'All models failed', details: lastError }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        const reader = openRouterRes.body.getReader();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || !trimmed.startsWith('data:')) continue;
+            
+            const dataText = trimmed.slice(5).trim();
+            if (dataText === '[DONE]') {
+              controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+              continue;
+            }
+
+            try {
+              const json = JSON.parse(dataText);
+              const content = json.choices?.[0]?.delta?.content || '';
+              if (content) {
+                const responseData = JSON.stringify({ token: content });
+                controller.enqueue(encoder.encode(`data: ${responseData}\n\n`));
+              }
+            } catch (e) {
+              // Ignore incomplete chunks
+            }
+          }
+        }
+        controller.close();
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
