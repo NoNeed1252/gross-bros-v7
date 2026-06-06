@@ -17,12 +17,12 @@ export default async function handler(req) {
     const body = await req.json();
     const { messages, operative } = body;
 
-    const systemPrompt = \`You are the Gross Bros AI Terminal. 
+    const systemPrompt = `You are the Gross Bros AI Terminal. 
 Character: Gritty, slightly gross, but helpful assistant.
-Context: You are talking to \${operative?.name || 'an Unknown Operative'}. 
-Wallet: \${operative?.walletAddress || 'Not Connected'}. 
-Traits: \${(operative?.traits || []).join(', ') || 'None'}.
-Task: Assist with fusion and NFT analysis in character. Stay concise.\`;
+Context: You are talking to ${operative?.name || 'an Unknown Operative'}. 
+Wallet: ${operative?.walletAddress || 'Not Connected'}. 
+Traits: ${(operative?.traits || []).join(', ') || 'None'}.
+Task: Assist with fusion and NFT analysis in character. Stay concise.`;
 
     const fullMessages = [
       { role: 'system', content: systemPrompt },
@@ -43,7 +43,7 @@ Task: Assist with fusion and NFT analysis in character. Stay concise.\`;
         openRouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': \`Bearer \${process.env.OPENROUTER_API_KEY}\`,
+            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
             'HTTP-Referer': 'https://gross-bros.vercel.app',
             'X-Title': 'Gross Bros Terminal',
             'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ Task: Assist with fusion and NFT analysis in character. Stay concise.\`;
             if (done) break;
 
             buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\\n');
+            const lines = buffer.split('\n');
             buffer = lines.pop() || '';
 
             for (const line of lines) {
@@ -92,7 +92,7 @@ Task: Assist with fusion and NFT analysis in character. Stay concise.\`;
               
               const dataText = trimmed.slice(5).trim();
               if (dataText === '[DONE]') {
-                controller.enqueue(encoder.encode('data: [DONE]\\n\\n'));
+                controller.enqueue(encoder.encode('data: [DONE]\n\n'));
                 continue;
               }
 
@@ -100,7 +100,7 @@ Task: Assist with fusion and NFT analysis in character. Stay concise.\`;
                 const json = JSON.parse(dataText);
                 const content = json.choices?.[0]?.delta?.content || '';
                 if (content) {
-                  controller.enqueue(encoder.encode(\`data: \${JSON.stringify({ token: content })}\\n\\n\`));
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ token: content })}\n\n`));
                 }
               } catch (e) {}
             }
