@@ -3,7 +3,6 @@ export const config = {
 };
 
 export default async function handler(req) {
-  // CORS Headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -18,13 +17,12 @@ export default async function handler(req) {
     const body = await req.json();
     const { messages, operative } = body;
 
-    // Use specific keys provided by frontend: operative.name, operative.walletAddress, operative.traits
-    const systemPrompt = `You are the Gross Bros AI Terminal. 
-Character: Gritty, slightly gross, but helpful operative assistant.
-Context: You are talking to an operative named ${operative?.name || 'Unknown'}. 
-Wallet: ${operative?.walletAddress || 'Not Connected'}. 
-Traits: ${(operative?.traits || []).join(', ') || 'None detected'}.
-Task: Assist with fusion, NFT analysis, and general terminal queries in character. Always stay in character. Keep responses concise unless asked for detail.`;
+    const systemPrompt = \`You are the Gross Bros AI Terminal. 
+Character: Gritty, slightly gross, but helpful assistant.
+Context: You are talking to \${operative?.name || 'an Unknown Operative'}. 
+Wallet: \${operative?.walletAddress || 'Not Connected'}. 
+Traits: \${(operative?.traits || []).join(', ') || 'None'}.
+Task: Assist with fusion and NFT analysis in character. Stay concise.\`;
 
     const fullMessages = [
       { role: 'system', content: systemPrompt },
@@ -45,7 +43,7 @@ Task: Assist with fusion, NFT analysis, and general terminal queries in characte
         openRouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            'Authorization': \`Bearer \${process.env.OPENROUTER_API_KEY}\`,
             'HTTP-Referer': 'https://gross-bros.vercel.app',
             'X-Title': 'Gross Bros Terminal',
             'Content-Type': 'application/json',
@@ -85,7 +83,7 @@ Task: Assist with fusion, NFT analysis, and general terminal queries in characte
             if (done) break;
 
             buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
+            const lines = buffer.split('\\n');
             buffer = lines.pop() || '';
 
             for (const line of lines) {
@@ -94,7 +92,7 @@ Task: Assist with fusion, NFT analysis, and general terminal queries in characte
               
               const dataText = trimmed.slice(5).trim();
               if (dataText === '[DONE]') {
-                controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+                controller.enqueue(encoder.encode('data: [DONE]\\n\\n'));
                 continue;
               }
 
@@ -102,12 +100,9 @@ Task: Assist with fusion, NFT analysis, and general terminal queries in characte
                 const json = JSON.parse(dataText);
                 const content = json.choices?.[0]?.delta?.content || '';
                 if (content) {
-                  const responseData = JSON.stringify({ token: content });
-                  controller.enqueue(encoder.encode(`data: ${responseData}\n\n`));
+                  controller.enqueue(encoder.encode(\`data: \${JSON.stringify({ token: content })}\\n\\n\`));
                 }
-              } catch (e) {
-                // Ignore incomplete JSON chunks
-              }
+              } catch (e) {}
             }
           }
         } catch (e) {
