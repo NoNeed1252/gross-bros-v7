@@ -17,5 +17,5 @@ jobs:
           username: root
           password: vAUL03juyPr1hu
           script: |
-            # Triggered at Thursday, June 4, 2026 at 6:50:01 PM EDT
-            cd /root/gross-bros-v7 && git fetch origin && git reset --hard origin/main && pm2 delete all && pm2 start ecosystem.config.js --update-env || (pm2 start services/guardian-ai/vtuber_engine.py --interpreter python3 && pm2 start services/guardian-signal-receiver/app.py --interpreter python3 && pm2 start server.js) && pm2 save
+            # Sync update - Friday, June 5, 2026
+            cd /root/gross-bros-v7 && git fetch origin && git reset --hard origin/main && npm install && (pm2 delete all || true) && pm2 start ecosystem.config.js --update-env || (pm2 start services/guardian-ai/vtuber_engine.py --interpreter python3 && pm2 start services/guardian-signal-receiver/app.py --interpreter python3 && pm2 start server.js) && pm2 save
