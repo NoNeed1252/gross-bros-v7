@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const xamanRouter = require('./api/xaman');
+const chatHandler = require('./api/chat');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -13,11 +14,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // API Routes
 app.use('/api/xaman', xamanRouter);
-
-// Chat API Route (Mounted directly for compatibility)
-const chatHandler = require('./chat_updated');
-app.post('/api/chat', chatHandler);
-app.post('/api/chat.js', chatHandler); // Handle legacy extension calls
+app.post('/api/chat.js', chatHandler);
+app.get('/api/chat.js', chatHandler);
 
 // Basic health check
 app.get('/api/status', (req, res) => {
@@ -35,10 +33,10 @@ app.get('*', (req, res) => {
 
 const fs = require('fs');
 app.use((req, res, next) => {
-  fs.appendFileSync('access.log', `${new Date().toISOString()} ${req.method} ${req.url}\n`);
+  fs.appendFileSync('access.log', `${new Date().toISOString()} ${req.method} ${req.url}
+`);
   next();
 });
-
 app.listen(PORT, HOST, () => {
     console.log(`Gross-Bros-V7 Terminal Server running at http://${HOST}:${PORT}`);
 });

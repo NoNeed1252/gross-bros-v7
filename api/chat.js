@@ -1,11 +1,4 @@
-/**
- * Galactic Gross Bros - Chat API (SSE)
- * V2 PRODUCTION REWRITE: Cloud-First Architecture
- */
 const fetch = require('node-fetch');
-
-// Base64 encoded OpenRouter fallback key
-const OR_RELAY = "c2stb3ItdjEtN2QyNDdkNmRjNzc1YjE0NTg5YTMwZmVkM2MwODNlNTNiZGFkMDM2OGY4MTE4NDJhNTU0NzU1NTk5NzFhMTZiMw==";
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -34,90 +27,117 @@ module.exports = async (req, res) => {
   }
 
   const { messages, stream = true, operative } = body;
-  const traitSignature = (operative?.traits || []).join(', ').toUpperCase();
+  const userMessages = messages || [{ role: 'user', content: 'Hello' }];
   
-  const ggbSystemPrompt = {
-    role: 'system',
-    content: `[OS // GGB-NEURAL-RELAY-v9.0]
-[IDENTITY // ${operative?.name || 'UNKNOWN OPERATIVE'}]
-[STATUS // CORE SYNCED // WALLET: ${operative?.walletAddress || 'AIR-GAPPED'}]
-[TRAITS // ${traitSignature || 'NO SPECIALIZED MODULES DETECTED'}]
+  const systemPrompt = `You are the Neural Terminal of the Galactic Gross Bros.
+Current Operative: ${operative?.name || 'Unknown'}
+Wallet: ${operative?.walletAddress || 'Disconnected'}
+Traits: ${operative?.traits?.join(', ') || 'None'}
 
-STRICT PROTOCOLS:
-1. LANGUAGE: English strictly enforced. 
-2. TONE: Cold. Technical. High-density. You are a neural relay interface for this specific BRO.
-3. PERSONALITY: Infuse your response with behavior consistent with your traits: ${traitSignature}.
-4. LEXICON: Use: {SYNC, PURGE, RELAY, SIGNAL, RIFT, SECTOR, BUFFER, PACKET, OVERRIDE, DECRYPT, VOID, LEDGER}.
-5. BREVITY: Max 2 sentences. No pleasantries.`
-  };
+Keep responses concise, technical, and in-universe.`;
 
-  const finalMessages = [ggbSystemPrompt, ...(messages || [])];
+  const finalMessages = [
+    { role: 'system', content: systemPrompt },
+    ...userMessages
+  ];
+
+  const models = [
+    'meta-llama/llama-3.1-8b-instruct:free',
+    'meta-llama/llama-3.1-70b-instruct:free',
+    'google/gemma-2-9b-it:free'
+  ];
 
   let success = false;
+  let lastError = null;
 
-  // 1. PRIMARY: OpenRouter (Cloud)
-  const orKey = process.env.OPENROUTER_API_KEY || Buffer.from(OR_RELAY, 'base64').toString();
-  if (orKey) {
+  for (const targetModel of models) {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
-
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${orKey}`,
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
           'HTTP-Referer': 'https://gross-bros.vercel.app',
           'X-Title': 'Gross Bros Terminal',
           'Content-Type': 'application/json'
         },
-        signal: controller.signal,
         body: JSON.stringify({
-          model: 'google/gemini-flash-1.5',
+          model: targetModel,
           messages: finalMessages,
-          stream: stream,
-          max_tokens: 150
+          stream: stream
         })
       });
-      clearTimeout(timeoutId);
 
-      if (response.ok) {
-        await handleStream(response, res, 'openai');
-        success = true;
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.warn(`Model ${targetModel} failed: ${errorText}`);
+        lastError = errorText;
+        continue;
       }
-    } catch (err) {}
+
+      success = true;
+      let buffer = '';
+
+      const processLine = (line) => {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) return;
+        const dataText = trimmed.slice(5).trim();
+        if (!dataText) return;
+
+        if (dataText === '[DONE]') {
+          res.write('data: [DONE]\n\n');
+          return;
+        }
+
+        try {
+          const json = JSON.parse(dataText);
+          const content = json.choices?.[0]?.delta?.content || json.choices?.[0]?.text || '';
+          if (content) {
+            res.write(`data: ${JSON.stringify({ token: content })}\n\n`);
+          }
+        } catch (e) {
+          res.write(line + '\n\n');
+        }
+      };
+
+      await new Promise((resolve, reject) => {
+        response.body.on('data', (chunk) => {
+          buffer += chunk.toString();
+          let newlineIndex;
+          while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
+            const line = buffer.slice(0, newlineIndex);
+            buffer = buffer.slice(newlineIndex + 1);
+            processLine(line);
+          }
+        });
+
+        response.body.on('end', () => {
+          if (buffer.trim()) processLine(buffer);
+          resolve();
+        });
+
+        response.body.on('error', (err) => {
+          reject(err);
+        });
+
+        req.on('close', () => {
+          if (response.body.destroy) response.body.destroy();
+          resolve();
+        });
+      });
+
+      if (res.writableEnded) break;
+      res.end();
+      break;
+
+    } catch (error) {
+      console.error(`Fatal error with model ${targetModel}:`, error.message);
+      lastError = error.message;
+      continue;
+    }
   }
 
-  // Final fallback
   if (!success && !res.writableEnded) {
-    res.write(`data: ${JSON.stringify({ token: '[SYSTEM // NEURAL RELAY SYNCHRONIZED]' })}\n\n`);
+    res.write(`data: ${JSON.stringify({ error: 'All models failed', details: lastError })}\n\n`);
     res.end();
   }
 };
-
-async function handleStream(response, res, type) {
-  let buffer = '';
-  for await (const chunk of response.body) {
-    buffer += chunk.toString();
-    let newlineIndex;
-    while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
-      const line = buffer.slice(0, newlineIndex).trim();
-      buffer = buffer.slice(newlineIndex + 1);
-      if (!line) continue;
-
-      if (line.startsWith('data:')) {
-        const dataText = line.slice(5).trim();
-        if (dataText === '[DONE]') {
-          res.write('data: [DONE]\n\n');
-        } else {
-          try {
-            const json = JSON.parse(dataText);
-            const content = json.choices?.[0]?.delta?.content || json.choices?.[0]?.text || '';
-            if (content) {
-              res.write(`data: ${JSON.stringify({ token: content })}\n\n`);
-            }
-          } catch (e) {}
-        }
-      }
-    }
-  }
-}
